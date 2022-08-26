@@ -1,0 +1,105 @@
+#!/bin/bash
+
+mkdir results 2>/dev/null
+
+#function freespaceme(){
+#freespace=3072
+#ddcount=0
+#mkdir /home/jeongho/mnt/stuffing
+#while true; do
+#dd if=/dev/zero of=/home/jeongho/mnt/stuffing/s$ddcount bs=1M count=$freespace >/dev/null 2>&1
+#if [[ $? != 0 ]]; then rm -rf /home/jeongho/mnt/stuffing/s0; break; fi
+#ddcount=$(($ddcount+1))
+#done
+#}
+
+function freespaceme(){
+freespace=3072
+mkdir /home/jeongho/mnt/stuffing
+dd if=/dev/zero of=/home/jeongho/mnt/stuffing/s0 bs=1M count=$freespace >/dev/null 2>&1
+openssl enc -aes-256-ctr -pass pass:"$(dd if=/dev/urandom bs=128 count=1 2>/dev/null | base64)" -nosalt < /dev/zero > /home/jeongho/mnt/stuffing/s1 2>/dev/null
+rm -rf /home/jeongho/mnt/stuffing/s0
+}
+
+# arg1: name, arg2: appending num, arg3: dataset, arg4: which level, arg5: devicename, arg6: space?
+function testme(){
+if [[ ! -d /home/jeongho/fillbackup_"$4" ]]; then
+	./fill.sh $((7255012*16)) "$4"
+fi
+cp /home/jeongho/fillbackup_"$4"/* /home/jeongho/mnt
+if [[ "$6" == "" ]]; then
+	freespaceme
+fi
+../blktrace_results/traceme_"$name".sh "$1"_"$2"g &
+blkcheck=$!
+echo begin check "$1"...
+smartctl -A /dev/"$5" &> results/results_"$1"_smartctl_begin_"$2"g.txt
+iostat | grep "$5" > results/results_"$1"_iostat_begin_"$2"g.txt
+./run_bench.sh "$3" false "$4" &> results/results_"$1"_"$2"g.txt
+smartctl -A /dev/"$5" &> results/results_"$1"_smartctl_end_"$2"g.txt
+iostat | grep "$5" > results/results_"$1"_iostat_end_"$2"g.txt
+killall blktrace
+}
+
+#for each workloads
+# $1 = num
+# $2 = workload type
+
+name="sata"
+devicename="sdb"
+
+for x in 4 8 16; do
+	dataset_size=$x
+	dataset=$((7255012*$dataset_size))
+
+	# with ssr
+	echo testing ssr...
+	./"$name"_f2fs.sh
+	testme "ssr" "$x" "$dataset" "l0" "$devicename"
+
+	# with no ssr
+	#echo testing nossr...
+	#./"$name"_f2fs_nossr.sh
+	#testme "nossr" "$x" "$dataset" "l0" "$devicename"
+
+	# with l1+ as cold
+	echo testing l0...
+	./"$name"_f2fs_ext.sh
+	testme "l0" "$x" "$dataset" "l0" "$devicename"
+
+	# with l2+ as cold
+	echo testing l1...
+	./"$name"_f2fs_ext.sh
+	testme "l1" "$x" "$dataset" "l1" "$devicename"
+
+	# with ssr with space
+	echo testing ssr... with space
+	./"$name"_f2fs.sh
+	testme "ssr_space" "$x" "$dataset" "l0" "$devicename" "space"
+
+	# with l1+ as cold with space
+	echo testing l0... with space
+	./"$name"_f2fs_ext.sh
+	testme "l0_space" "$x" "$dataset" "l0" "$devicename" "space"
+
+	# with l2+ as cold with space
+	echo testing l1... with space
+	./"$name"_f2fs_ext.sh
+	testme "l1_space" "$x" "$dataset" "l1" "$devicename" "space"
+
+
+	# ext4
+	echo testing ext4...
+	./"$name"_ext4.sh
+	testme "ext4" "$x" "$dataset" "l0" "$devicename"
+
+done
+
+#7255012 (1GB)
+#43530074 (6GB)
+#72550123 (10GB)
+#116080197 (16GB)
+#232160394 (32GB)
+#464320788 (64GB)
+
+

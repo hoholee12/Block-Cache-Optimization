@@ -1,0 +1,562 @@
+RocksDB:    version 6.24
+Date:       Thu Aug 18 21:08:53 2022
+CPU:        8 * Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
+CPUCache:   8192 KB
+... finished 100 ops                              ... finished 200 ops                              ... finished 300 ops                              ... finished 400 ops                              ... finished 500 ops                              ... finished 600 ops                              ... finished 700 ops                              ... finished 800 ops                              ... finished 900 ops                              ... finished 1000 ops                              ... finished 1500 ops                              ... finished 2000 ops                              ... finished 2500 ops                              ... finished 3000 ops                              ... finished 3500 ops                              ... finished 4000 ops                              ... finished 4500 ops                              ... finished 5000 ops                              ... finished 6000 ops                              ... finished 7000 ops                              ... finished 8000 ops                              ... finished 9000 ops                              ... finished 10000 ops                              ... finished 15000 ops                              ... finished 20000 ops                              ... finished 25000 ops                              ... finished 30000 ops                              ... finished 35000 ops                              ... finished 40000 ops                              ... finished 45000 ops                              ... finished 50000 ops                              ... finished 60000 ops                              ... finished 70000 ops                              ... finished 80000 ops                              ... finished 90000 ops                              ... finished 100000 ops                              ... finished 150000 ops                              ... finished 200000 ops                              ... finished 250000 ops                              ... finished 300000 ops                              ... finished 350000 ops                              ... finished 400000 ops                              ... finished 450000 ops                              ... finished 500000 ops                              ... finished 600000 ops                              ... finished 700000 ops                              ... finished 800000 ops                              ... finished 900000 ops                              ... finished 1000000 ops                              ... finished 1100000 ops                              ... finished 1200000 ops                              ... finished 1300000 ops                              ... finished 1400000 ops                              ... finished 1500000 ops                              ... finished 1600000 ops                              ... finished 1700000 ops                              ... finished 1800000 ops                              ... finished 1900000 ops                              ... finished 2000000 ops                              ... finished 2100000 ops                              ... finished 2200000 ops                              ... finished 2300000 ops                              ... finished 2400000 ops                              ... finished 2500000 ops                              ... finished 2600000 ops                              ... finished 2700000 ops                              ... finished 2800000 ops                              ... finished 2900000 ops                              ... finished 3000000 ops                              ... finished 3100000 ops                              ... finished 3200000 ops                              ... finished 3300000 ops                              ... finished 3400000 ops                              ... finished 3500000 ops                              ... finished 3600000 ops                              ... finished 3700000 ops                              ... finished 3800000 ops                              ... finished 3900000 ops                              ... finished 4000000 ops                              ... finished 4100000 ops                              ... finished 4200000 ops                              ... finished 4300000 ops                              ... finished 4400000 ops                              ... finished 4500000 ops                              ... finished 4600000 ops                              ... finished 4700000 ops                              ... finished 4800000 ops                              ... finished 4900000 ops                              ... finished 5000000 ops                              ... finished 5100000 ops                              ... finished 5200000 ops                              ... finished 5300000 ops                              ... finished 5400000 ops                              ... finished 5500000 ops                              ... finished 5600000 ops                              ... finished 5700000 ops                              ... finished 5800000 ops                              ... finished 5900000 ops                              ... finished 6000000 ops                              ... finished 6100000 ops                              ... finished 6200000 ops                              ... finished 6300000 ops                              ... finished 6400000 ops                              ... finished 6500000 ops                              ... finished 6600000 ops                              ... finished 6700000 ops                              ... finished 6800000 ops                              ... finished 6900000 ops                              ... finished 7000000 ops                              ... finished 7100000 ops                              ... finished 7200000 ops                              ... finished 7300000 ops                              ... finished 7400000 ops                              ... finished 7500000 ops                              ... finished 7600000 ops                              ... finished 7700000 ops                              ... finished 7800000 ops                              ... finished 7900000 ops                              ... finished 8000000 ops                              ... finished 8100000 ops                              ... finished 8200000 ops                              ... finished 8300000 ops                              ... finished 8400000 ops                              ... finished 8500000 ops                              ... finished 8600000 ops                              ... finished 8700000 ops                              ... finished 8800000 ops                              ... finished 8900000 ops                              ... finished 9000000 ops                              ... finished 9100000 ops                              ... finished 9200000 ops                              ... finished 9300000 ops                              ... finished 9400000 ops                              ... finished 9500000 ops                              ... finished 9600000 ops                              ... finished 9700000 ops                              ... finished 9800000 ops                              ... finished 9900000 ops                              ... finished 10000000 ops                              ... finished 10100000 ops                              ... finished 10200000 ops                              ... finished 10300000 ops                              ... finished 10400000 ops                              ... finished 10500000 ops                              ... finished 10600000 ops                              ... finished 10700000 ops                              ... finished 10800000 ops                              ... finished 10900000 ops                              ... finished 11000000 ops                              ... finished 11100000 ops                              ... finished 11200000 ops                              ... finished 11300000 ops                              ... finished 11400000 ops                              ... finished 11500000 ops                              ... finished 11600000 ops                              ... finished 11700000 ops                              ... finished 11800000 ops                              ... finished 11900000 ops                              ... finished 12000000 ops                              ... finished 12100000 ops                              ... finished 12200000 ops                              ... finished 12300000 ops                              ... finished 12400000 ops                              ... finished 12500000 ops                              ... finished 12600000 ops                              ... finished 12700000 ops                              ... finished 12800000 ops                              ... finished 12900000 ops                              ... finished 13000000 ops                              ... finished 13100000 ops                              ... finished 13200000 ops                              ... finished 13300000 ops                              ... finished 13400000 ops                              ... finished 13500000 ops                              ... finished 13600000 ops                              ... finished 13700000 ops                              ... finished 13800000 ops                              ... finished 13900000 ops                              ... finished 14000000 ops                              ... finished 14100000 ops                              ... finished 14200000 ops                              ... finished 14300000 ops                              ... finished 14400000 ops                              ... finished 14500000 ops                              ... finished 14600000 ops                              ... finished 14700000 ops                              ... finished 14800000 ops                              Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+Rocks2level is called on db_impl.cc 2
+Keys:       16 bytes each (+ 0 bytes user-defined timestamp)
+Values:     100 bytes each (50 bytes after compression)
+Entries:    92559360
+Prefix:    0 bytes
+Keys per prefix:    0
+RawSize:    10239.5 MB (estimated)
+FileSize:   5825.9 MB (estimated)
+Write rate: 0 bytes/second
+Read rate: 0 ops/second
+Compression: Snappy
+Compression sampling rate: 0
+Memtablerep: skip_list
+Perf Level: 1
+------------------------------------------------
+DB path: [/home/jeongho/mnt/]
+current level: 0
+mymsg /home/jeongho/mnt//000009.buf CREATE
+mymsg /home/jeongho/mnt/000005.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000011.buf CREATE
+mymsg /home/jeongho/mnt/000008.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000013.buf CREATE
+mymsg /home/jeongho/mnt/000010.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000015.buf CREATE
+mymsg /home/jeongho/mnt/000012.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000017.buf CREATE
+mymsg /home/jeongho/mnt/000014.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000019.buf CREATE
+mymsg /home/jeongho/mnt/000016.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000021.buf CREATE
+mymsg /home/jeongho/mnt/000018.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000023.buf CREATE
+mymsg /home/jeongho/mnt/000020.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000025.buf CREATE
+mymsg /home/jeongho/mnt/000022.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000027.buf CREATE
+mymsg /home/jeongho/mnt/000024.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000029.buf CREATE
+mymsg /home/jeongho/mnt/000026.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000031.buf CREATE
+mymsg /home/jeongho/mnt/000028.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000033.buf CREATE
+mymsg /home/jeongho/mnt/000030.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000035.buf CREATE
+mymsg /home/jeongho/mnt/000032.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000037.buf CREATE
+mymsg /home/jeongho/mnt/000034.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000039.buf CREATE
+mymsg /home/jeongho/mnt/000036.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000041.buf CREATE
+mymsg /home/jeongho/mnt/000038.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000043.buf CREATE
+mymsg /home/jeongho/mnt/000040.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000045.buf CREATE
+mymsg /home/jeongho/mnt/000042.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000047.buf CREATE
+mymsg /home/jeongho/mnt/000044.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000049.buf CREATE
+mymsg /home/jeongho/mnt/000046.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000051.buf CREATE
+mymsg /home/jeongho/mnt/000048.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000053.buf CREATE
+mymsg /home/jeongho/mnt/000050.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000055.buf CREATE
+mymsg /home/jeongho/mnt/000052.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000057.buf CREATE
+mymsg /home/jeongho/mnt/000054.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000059.buf CREATE
+mymsg /home/jeongho/mnt/000056.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000061.buf CREATE
+mymsg /home/jeongho/mnt/000058.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000063.buf CREATE
+mymsg /home/jeongho/mnt/000060.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000065.buf CREATE
+mymsg /home/jeongho/mnt/000062.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000067.buf CREATE
+mymsg /home/jeongho/mnt/000064.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000069.buf CREATE
+mymsg /home/jeongho/mnt/000066.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//00007... finished 14900000 ops                              ... finished 15000000 ops                              ... finished 15100000 ops                              ... finished 15200000 ops                              ... finished 15300000 ops                              ... finished 15400000 ops                              ... finished 15500000 ops                              ... finished 15600000 ops                              ... finished 15700000 ops                              ... finished 15800000 ops                              ... finished 15900000 ops                              ... finished 16000000 ops                              ... finished 16100000 ops                              ... finished 16200000 ops                              ... finished 16300000 ops                              ... finished 16400000 ops                              ... finished 16500000 ops                              ... finished 16600000 ops                              ... finished 16700000 ops                              ... finished 16800000 ops                              ... finished 16900000 ops                              ... finished 17000000 ops                              ... finished 17100000 ops                              ... finished 17200000 ops                              ... finished 17300000 ops                              ... finished 17400000 ops                              ... finished 17500000 ops                              ... finished 17600000 ops                              ... finished 17700000 ops                              ... finished 17800000 ops                              ... finished 17900000 ops                              ... finished 18000000 ops                              ... finished 18100000 ops                              ... finished 18200000 ops                              ... finished 18300000 ops                              ... finished 18400000 ops                              ... finished 18500000 ops                              ... finished 18600000 ops                              ... finished 18700000 ops                              ... finished 18800000 ops                              ... finished 18900000 ops                              ... finished 19000000 ops                              ... finished 19100000 ops                              ... finished 19200000 ops                              ... finished 19300000 ops                              ... finished 19400000 ops                              ... finished 19500000 ops                              ... finished 19600000 ops                              ... finished 19700000 ops                              ... finished 19800000 ops                              ... finished 19900000 ops                              ... finished 20000000 ops                              ... finished 20100000 ops                              ... finished 20200000 ops                              ... finished 20300000 ops                              ... finished 20400000 ops                              ... finished 20500000 ops                              ... finished 20600000 ops                              ... finished 20700000 ops                              ... finished 20800000 ops                              ... finished 20900000 ops                              ... finished 21000000 ops                              ... finished 21100000 ops                              ... finished 21200000 ops                              ... finished 21300000 ops                              ... finished 21400000 ops                              ... finished 21500000 ops                              ... finished 21600000 ops                              ... finished 21700000 ops                              ... finished 21800000 ops                              ... finished 21900000 ops                              ... finished 22000000 ops                              ... finished 22100000 ops                              ... finished 22200000 ops                              ... finished 22300000 ops                              ... finished 22400000 ops                              ... finished 22500000 ops                              ... finished 22600000 ops                              ... finished 22700000 ops                              ... finished 22800000 ops                              ... finished 22900000 ops                              ... finished 23000000 ops                              ... finished 23100000 ops                              ... finished 23200000 ops                              ... finished 23300000 ops                              ... finished 23400000 ops                              ... finished 23500000 ops                              ... finished 23600000 ops                              ... finished 23700000 ops                              ... finished 23800000 ops                              ... finished 23900000 ops                              ... finished 24000000 ops                              ... finished 24100000 ops                              ... finished 24200000 ops                              ... finished 24300000 ops                              ... finished 24400000 ops                              ... finished 24500000 ops                              ... finished 24600000 ops                              ... finished 24700000 ops                              ... finished 24800000 ops                              ... finished 24900000 ops                              ... finished 25000000 ops                              ... finished 25100000 ops                              ... finished 25200000 ops                              ... finished 25300000 ops                              ... finished 25400000 ops                              ... finished 25500000 ops                              ... finished 25600000 ops                              ... finished 25700000 ops                              ... finished 25800000 ops                              ... finished 25900000 ops                              ... finished 26000000 ops                              ... finished 26100000 ops                              ... finished 26200000 ops                              ... finished 26300000 ops                              ... finished 26400000 ops                              ... finished 26500000 ops                              ... finished 26600000 ops                              ... finished 26700000 ops                              ... finished 26800000 ops                              ... finished 26900000 ops                              ... finished 27000000 ops                              ... finished 27100000 ops                              ... finished 27200000 ops                              ... finished 27300000 ops                              ... finished 27400000 ops                              ... finished 27500000 ops                              ... finished 27600000 ops                              ... finished 27700000 ops                              ... finished 27800000 ops                              ... finished 27900000 ops                              ... finished 28000000 ops                              ... finished 28100000 ops                              ... finished 28200000 ops                              ... finished 28300000 ops                              ... finished 28400000 ops                              ... finished 28500000 ops                              ... finished 28600000 ops                              ... finished 28700000 ops                              ... finished 28800000 ops                              ... finished 28900000 ops                              ... finished 29000000 ops                              ... finished 29100000 ops                              ... finished 29200000 ops                              ... finished 29300000 ops                              ... finished 29400000 ops                              ... finished 29500000 ops                              ... finished 29600000 ops                              ... finished 29700000 ops                              ... finished 29800000 ops                              ... finished 29900000 ops                              ... finished 30000000 ops                              ... finished 30100000 ops                              ... finished 30200000 ops                              ... finished 30300000 ops                              ... finished 30400000 ops                              ... finished 30500000 ops                              ... finished 30600000 ops                              ... finished 30700000 ops                              ... finished 30800000 ops                              ... finished 30900000 ops                              ... finished 31000000 ops                              ... finished 31100000 ops                              ... finished 31200000 ops                              ... finished 31300000 ops                              ... finished 31400000 ops                              ... finished 31500000 ops                              ... finished 31600000 ops                              ... finished 31700000 ops                              ... finished 31800000 ops                              1.buf CREATE
+mymsg /home/jeongho/mnt/000068.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000073.buf CREATE
+mymsg /home/jeongho/mnt/000070.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000075.buf CREATE
+mymsg /home/jeongho/mnt/000072.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000077.buf CREATE
+mymsg /home/jeongho/mnt/000074.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000079.buf CREATE
+mymsg /home/jeongho/mnt/000076.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000081.buf CREATE
+mymsg /home/jeongho/mnt/000078.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000083.buf CREATE
+mymsg /home/jeongho/mnt/000080.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000085.buf CREATE
+mymsg /home/jeongho/mnt/000082.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000087.buf CREATE
+mymsg /home/jeongho/mnt/000084.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000089.buf CREATE
+mymsg /home/jeongho/mnt/000086.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000091.buf CREATE
+mymsg /home/jeongho/mnt/000088.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000093.buf CREATE
+mymsg /home/jeongho/mnt/000090.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000095.buf CREATE
+mymsg /home/jeongho/mnt/000092.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000097.buf CREATE
+mymsg /home/jeongho/mnt/000094.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000099.buf CREATE
+mymsg /home/jeongho/mnt/000096.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000101.buf CREATE
+mymsg /home/jeongho/mnt/000098.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000103.buf CREATE
+mymsg /home/jeongho/mnt/000100.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000105.buf CREATE
+mymsg /home/jeongho/mnt/000102.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000107.buf CREATE
+mymsg /home/jeongho/mnt/000104.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000109.buf CREATE
+mymsg /home/jeongho/mnt/000106.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000111.buf CREATE
+mymsg /home/jeongho/mnt/000108.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000113.buf CREATE
+mymsg /home/jeongho/mnt/000110.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000115.buf CREATE
+mymsg /home/jeongho/mnt/000112.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000117.buf CREATE
+mymsg /home/jeongho/mnt/000114.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000119.buf CREATE
+mymsg /home/jeongho/mnt/000116.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000121.buf CREATE
+mymsg /home/jeongho/mnt/000118.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000123.buf CREATE
+mymsg /home/jeongho/mnt/000120.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000125.buf CREATE
+mymsg /home/jeongho/mnt/000122.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000127.buf CREATE
+mymsg /home/jeongho/mnt/000124.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000129.buf CREATE
+mymsg /home/jeongho/mnt/000126.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000131.buf CREATE
+mymsg /home/jeongho/mnt/000128.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000133.buf CREATE
+mymsg /home/jeongho/mnt/000130.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000135.buf CREATE
+mymsg /home/jeongho/mnt/000132.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000137.buf CREATE
+mymsg /home/jeongho/mnt/000134.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000139.buf CREATE
+mymsg /home/jeongho/mnt/000136.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000141.buf CREATE
+mymsg /home/jeongho/mnt/000138.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000143.buf CREATE
+mymsg /home/jeongho/mnt/000140.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho... finished 31900000 ops                              ... finished 32000000 ops                              ... finished 32100000 ops                              ... finished 32200000 ops                              ... finished 32300000 ops                              ... finished 32400000 ops                              ... finished 32500000 ops                              ... finished 32600000 ops                              ... finished 32700000 ops                              ... finished 32800000 ops                              ... finished 32900000 ops                              ... finished 33000000 ops                              ... finished 33100000 ops                              ... finished 33200000 ops                              ... finished 33300000 ops                              ... finished 33400000 ops                              ... finished 33500000 ops                              ... finished 33600000 ops                              ... finished 33700000 ops                              ... finished 33800000 ops                              ... finished 33900000 ops                              ... finished 34000000 ops                              ... finished 34100000 ops                              ... finished 34200000 ops                              ... finished 34300000 ops                              ... finished 34400000 ops                              ... finished 34500000 ops                              ... finished 34600000 ops                              ... finished 34700000 ops                              ... finished 34800000 ops                              ... finished 34900000 ops                              ... finished 35000000 ops                              ... finished 35100000 ops                              ... finished 35200000 ops                              ... finished 35300000 ops                              ... finished 35400000 ops                              ... finished 35500000 ops                              ... finished 35600000 ops                              ... finished 35700000 ops                              ... finished 35800000 ops                              ... finished 35900000 ops                              ... finished 36000000 ops                              ... finished 36100000 ops                              ... finished 36200000 ops                              ... finished 36300000 ops                              ... finished 36400000 ops                              ... finished 36500000 ops                              ... finished 36600000 ops                              ... finished 36700000 ops                              ... finished 36800000 ops                              ... finished 36900000 ops                              ... finished 37000000 ops                              ... finished 37100000 ops                              ... finished 37200000 ops                              ... finished 37300000 ops                              ... finished 37400000 ops                              ... finished 37500000 ops                              ... finished 37600000 ops                              ... finished 37700000 ops                              ... finished 37800000 ops                              ... finished 37900000 ops                              ... finished 38000000 ops                              ... finished 38100000 ops                              ... finished 38200000 ops                              ... finished 38300000 ops                              ... finished 38400000 ops                              ... finished 38500000 ops                              ... finished 38600000 ops                              ... finished 38700000 ops                              ... finished 38800000 ops                              ... finished 38900000 ops                              ... finished 39000000 ops                              ... finished 39100000 ops                              ... finished 39200000 ops                              ... finished 39300000 ops                              ... finished 39400000 ops                              ... finished 39500000 ops                              ... finished 39600000 ops                              ... finished 39700000 ops                              ... finished 39800000 ops                              ... finished 39900000 ops                              ... finished 40000000 ops                              ... finished 40100000 ops                              ... finished 40200000 ops                              ... finished 40300000 ops                              ... finished 40400000 ops                              ... finished 40500000 ops                              ... finished 40600000 ops                              ... finished 40700000 ops                              ... finished 40800000 ops                              ... finished 40900000 ops                              ... finished 41000000 ops                              ... finished 41100000 ops                              ... finished 41200000 ops                              ... finished 41300000 ops                              ... finished 41400000 ops                              ... finished 41500000 ops                              ... finished 41600000 ops                              ... finished 41700000 ops                              ... finished 41800000 ops                              ... finished 41900000 ops                              ... finished 42000000 ops                              ... finished 42100000 ops                              ... finished 42200000 ops                              ... finished 42300000 ops                              ... finished 42400000 ops                              ... finished 42500000 ops                              ... finished 42600000 ops                              ... finished 42700000 ops                              ... finished 42800000 ops                              ... finished 42900000 ops                              ... finished 43000000 ops                              ... finished 43100000 ops                              ... finished 43200000 ops                              ... finished 43300000 ops                              ... finished 43400000 ops                              ... finished 43500000 ops                              ... finished 43600000 ops                              ... finished 43700000 ops                              ... finished 43800000 ops                              ... finished 43900000 ops                              ... finished 44000000 ops                              ... finished 44100000 ops                              ... finished 44200000 ops                              ... finished 44300000 ops                              ... finished 44400000 ops                              ... finished 44500000 ops                              ... finished 44600000 ops                              ... finished 44700000 ops                              ... finished 44800000 ops                              ... finished 44900000 ops                              ... finished 45000000 ops                              ... finished 45100000 ops                              ... finished 45200000 ops                              ... finished 45300000 ops                              ... finished 45400000 ops                              ... finished 45500000 ops                              ... finished 45600000 ops                              ... finished 45700000 ops                              ... finished 45800000 ops                              ... finished 45900000 ops                              ... finished 46000000 ops                              ... finished 46100000 ops                              ... finished 46200000 ops                              ... finished 46300000 ops                              ... finished 46400000 ops                              ... finished 46500000 ops                              ... finished 46600000 ops                              ... finished 46700000 ops                              ... finished 46800000 ops                              ... finished 46900000 ops                              ... finished 47000000 ops                              ... finished 47100000 ops                              ... finished 47200000 ops                              ... finished 47300000 ops                              ... finished 47400000 ops                              ... finished 47500000 ops                              ... finished 47600000 ops                              ... finished 47700000 ops                              ... finished 47800000 ops                              ... finished 47900000 ops                              ... finished 48000000 ops                              ... finished 48100000 ops                              ... finished 48200000 ops                              ... finished 48300000 ops                              ... finished 48400000 ops                              ... finished 48500000 ops                              ... finished 48600000 ops                              ... finished 48700000 ops                              ... finished 48800000 ops                              ... finished 48900000 ops                              /mnt//000145.buf CREATE
+mymsg /home/jeongho/mnt/000142.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000147.buf CREATE
+mymsg /home/jeongho/mnt/000144.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000149.buf CREATE
+mymsg /home/jeongho/mnt/000146.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000151.buf CREATE
+mymsg /home/jeongho/mnt/000148.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000153.buf CREATE
+mymsg /home/jeongho/mnt/000150.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000155.buf CREATE
+mymsg /home/jeongho/mnt/000152.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000157.buf CREATE
+mymsg /home/jeongho/mnt/000154.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000159.buf CREATE
+mymsg /home/jeongho/mnt/000156.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000161.buf CREATE
+mymsg /home/jeongho/mnt/000158.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000163.buf CREATE
+mymsg /home/jeongho/mnt/000160.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000165.buf CREATE
+mymsg /home/jeongho/mnt/000162.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000167.buf CREATE
+mymsg /home/jeongho/mnt/000164.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000169.buf CREATE
+mymsg /home/jeongho/mnt/000166.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000171.buf CREATE
+mymsg /home/jeongho/mnt/000168.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000173.buf CREATE
+mymsg /home/jeongho/mnt/000170.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000175.buf CREATE
+mymsg /home/jeongho/mnt/000172.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000177.buf CREATE
+mymsg /home/jeongho/mnt/000174.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000179.buf CREATE
+mymsg /home/jeongho/mnt/000176.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000181.buf CREATE
+mymsg /home/jeongho/mnt/000178.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000183.buf CREATE
+mymsg /home/jeongho/mnt/000180.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000185.buf CREATE
+mymsg /home/jeongho/mnt/000182.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000187.buf CREATE
+mymsg /home/jeongho/mnt/000184.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000189.buf CREATE
+mymsg /home/jeongho/mnt/000186.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000191.buf CREATE
+mymsg /home/jeongho/mnt/000188.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000193.buf CREATE
+mymsg /home/jeongho/mnt/000190.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000195.buf CREATE
+mymsg /home/jeongho/mnt/000192.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000197.buf CREATE
+mymsg /home/jeongho/mnt/000194.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000199.buf CREATE
+mymsg /home/jeongho/mnt/000196.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000201.buf CREATE
+mymsg /home/jeongho/mnt/000198.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000203.buf CREATE
+mymsg /home/jeongho/mnt/000200.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000205.buf CREATE
+mymsg /home/jeongho/mnt/000202.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000207.buf CREATE
+mymsg /home/jeongho/mnt/000204.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000209.buf CREATE
+mymsg /home/jeongho/mnt/000206.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000211.buf CREATE
+mymsg /home/jeongho/mnt/000208.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000213.buf CREATE
+mymsg /home/jeongho/mnt/000210.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000215.buf CREATE
+mymsg /home/jeongho/mnt/000212.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000217.buf CREATE
+mymsg /home/jeongho/mnt/000214.log DELETE level:-1
+current level: 0
+mymsg /h... finished 49000000 ops                              ... finished 49100000 ops                              ... finished 49200000 ops                              ... finished 49300000 ops                              ... finished 49400000 ops                              ... finished 49500000 ops                              ... finished 49600000 ops                              ... finished 49700000 ops                              ... finished 49800000 ops                              ... finished 49900000 ops                              ... finished 50000000 ops                              ... finished 50100000 ops                              ... finished 50200000 ops                              ... finished 50300000 ops                              ... finished 50400000 ops                              ... finished 50500000 ops                              ... finished 50600000 ops                              ... finished 50700000 ops                              ... finished 50800000 ops                              ... finished 50900000 ops                              ... finished 51000000 ops                              ... finished 51100000 ops                              ... finished 51200000 ops                              ... finished 51300000 ops                              ... finished 51400000 ops                              ... finished 51500000 ops                              ... finished 51600000 ops                              ... finished 51700000 ops                              ... finished 51800000 ops                              ... finished 51900000 ops                              ... finished 52000000 ops                              ... finished 52100000 ops                              ... finished 52200000 ops                              ... finished 52300000 ops                              ... finished 52400000 ops                              ... finished 52500000 ops                              ... finished 52600000 ops                              ... finished 52700000 ops                              ... finished 52800000 ops                              ... finished 52900000 ops                              ... finished 53000000 ops                              ... finished 53100000 ops                              ... finished 53200000 ops                              ... finished 53300000 ops                              ... finished 53400000 ops                              ... finished 53500000 ops                              ... finished 53600000 ops                              ... finished 53700000 ops                              ... finished 53800000 ops                              ... finished 53900000 ops                              ... finished 54000000 ops                              ... finished 54100000 ops                              ... finished 54200000 ops                              ... finished 54300000 ops                              ... finished 54400000 ops                              ... finished 54500000 ops                              ... finished 54600000 ops                              ... finished 54700000 ops                              ... finished 54800000 ops                              ... finished 54900000 ops                              ... finished 55000000 ops                              ... finished 55100000 ops                              ... finished 55200000 ops                              ... finished 55300000 ops                              ... finished 55400000 ops                              ... finished 55500000 ops                              ... finished 55600000 ops                              ... finished 55700000 ops                              ... finished 55800000 ops                              ... finished 55900000 ops                              ... finished 56000000 ops                              ... finished 56100000 ops                              ... finished 56200000 ops                              ... finished 56300000 ops                              ... finished 56400000 ops                              ... finished 56500000 ops                              ... finished 56600000 ops                              ... finished 56700000 ops                              ... finished 56800000 ops                              ... finished 56900000 ops                              ... finished 57000000 ops                              ... finished 57100000 ops                              ... finished 57200000 ops                              ... finished 57300000 ops                              ... finished 57400000 ops                              ... finished 57500000 ops                              ... finished 57600000 ops                              ... finished 57700000 ops                              ... finished 57800000 ops                              ... finished 57900000 ops                              ... finished 58000000 ops                              ... finished 58100000 ops                              ... finished 58200000 ops                              ... finished 58300000 ops                              ... finished 58400000 ops                              ... finished 58500000 ops                              ... finished 58600000 ops                              ... finished 58700000 ops                              ... finished 58800000 ops                              ... finished 58900000 ops                              ... finished 59000000 ops                              ... finished 59100000 ops                              ... finished 59200000 ops                              ... finished 59300000 ops                              ... finished 59400000 ops                              ... finished 59500000 ops                              ... finished 59600000 ops                              ... finished 59700000 ops                              ... finished 59800000 ops                              ... finished 59900000 ops                              ... finished 60000000 ops                              ... finished 60100000 ops                              ... finished 60200000 ops                              ... finished 60300000 ops                              ... finished 60400000 ops                              ... finished 60500000 ops                              ... finished 60600000 ops                              ... finished 60700000 ops                              ... finished 60800000 ops                              ... finished 60900000 ops                              ... finished 61000000 ops                              ... finished 61100000 ops                              ... finished 61200000 ops                              ... finished 61300000 ops                              ... finished 61400000 ops                              ... finished 61500000 ops                              ... finished 61600000 ops                              ... finished 61700000 ops                              ... finished 61800000 ops                              ... finished 61900000 ops                              ... finished 62000000 ops                              ... finished 62100000 ops                              ... finished 62200000 ops                              ... finished 62300000 ops                              ... finished 62400000 ops                              ... finished 62500000 ops                              ... finished 62600000 ops                              ... finished 62700000 ops                              ... finished 62800000 ops                              ... finished 62900000 ops                              ... finished 63000000 ops                              ... finished 63100000 ops                              ... finished 63200000 ops                              ... finished 63300000 ops                              ... finished 63400000 ops                              ... finished 63500000 ops                              ... finished 63600000 ops                              ... finished 63700000 ops                              ... finished 63800000 ops                              ... finished 63900000 ops                              ... finished 64000000 ops                              ... finished 64100000 ops                              ... finished 64200000 ops                              ... finished 64300000 ops                              ... finished 64400000 ops                              ... finished 64500000 ops                              ... finished 64600000 ops                              ... finished 64700000 ops                              ... finished 64800000 ops                              ... finished 64900000 ops                              ... finished 65000000 ops                              ... finished 65100000 ops                              ... finished 65200000 ops                              ... finished 65300000 ops                              ... finished 65400000 ops                              ... finished 65500000 ops                              ... finished 65600000 ops                              ... finished 65700000 ops                              ... finished 65800000 ops                              ... finished 65900000 ops                              ome/jeongho/mnt//000219.buf CREATE
+mymsg /home/jeongho/mnt/000216.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000221.buf CREATE
+mymsg /home/jeongho/mnt/000218.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000223.buf CREATE
+mymsg /home/jeongho/mnt/000220.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000225.buf CREATE
+mymsg /home/jeongho/mnt/000222.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000227.buf CREATE
+mymsg /home/jeongho/mnt/000224.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000229.buf CREATE
+mymsg /home/jeongho/mnt/000226.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000231.buf CREATE
+mymsg /home/jeongho/mnt/000228.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000233.buf CREATE
+mymsg /home/jeongho/mnt/000230.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000235.buf CREATE
+mymsg /home/jeongho/mnt/000232.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000237.buf CREATE
+mymsg /home/jeongho/mnt/000234.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000239.buf CREATE
+mymsg /home/jeongho/mnt/000236.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000241.buf CREATE
+mymsg /home/jeongho/mnt/000238.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000243.buf CREATE
+mymsg /home/jeongho/mnt/000240.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000245.buf CREATE
+mymsg /home/jeongho/mnt/000242.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000247.buf CREATE
+mymsg /home/jeongho/mnt/000244.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000249.buf CREATE
+mymsg /home/jeongho/mnt/000246.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000251.buf CREATE
+mymsg /home/jeongho/mnt/000248.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000253.buf CREATE
+mymsg /home/jeongho/mnt/000250.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000255.buf CREATE
+mymsg /home/jeongho/mnt/000252.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000257.buf CREATE
+mymsg /home/jeongho/mnt/000254.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000259.buf CREATE
+mymsg /home/jeongho/mnt/000256.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000261.buf CREATE
+mymsg /home/jeongho/mnt/000258.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000263.buf CREATE
+mymsg /home/jeongho/mnt/000260.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000265.buf CREATE
+mymsg /home/jeongho/mnt/000262.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000267.buf CREATE
+mymsg /home/jeongho/mnt/000264.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000269.buf CREATE
+mymsg /home/jeongho/mnt/000266.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000271.buf CREATE
+mymsg /home/jeongho/mnt/000268.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000273.buf CREATE
+mymsg /home/jeongho/mnt/000270.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000275.buf CREATE
+mymsg /home/jeongho/mnt/000272.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000277.buf CREATE
+mymsg /home/jeongho/mnt/000274.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000279.buf CREATE
+mymsg /home/jeongho/mnt/000276.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000281.buf CREATE
+mymsg /home/jeongho/mnt/000278.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000283.buf CREATE
+mymsg /home/jeongho/mnt/000280.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000285.buf CREATE
+mymsg /home/jeongho/mnt/000282.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000287.buf CREATE
+mymsg /home/jeongho/mnt/000284.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000289.buf CREATE
+mymsg /home/jeongho/mnt/000286.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000291.buf CREATE
+mymsg /home/jeongho/mnt/000288.log DELETE level:-1
+current level:... finished 66000000 ops                              ... finished 66100000 ops                              ... finished 66200000 ops                              ... finished 66300000 ops                              ... finished 66400000 ops                              ... finished 66500000 ops                              ... finished 66600000 ops                              ... finished 66700000 ops                              ... finished 66800000 ops                              ... finished 66900000 ops                              ... finished 67000000 ops                              ... finished 67100000 ops                              ... finished 67200000 ops                              ... finished 67300000 ops                              ... finished 67400000 ops                              ... finished 67500000 ops                              ... finished 67600000 ops                              ... finished 67700000 ops                              ... finished 67800000 ops                              ... finished 67900000 ops                              ... finished 68000000 ops                              ... finished 68100000 ops                              ... finished 68200000 ops                              ... finished 68300000 ops                              ... finished 68400000 ops                              ... finished 68500000 ops                              ... finished 68600000 ops                              ... finished 68700000 ops                              ... finished 68800000 ops                              ... finished 68900000 ops                              ... finished 69000000 ops                              ... finished 69100000 ops                              ... finished 69200000 ops                              ... finished 69300000 ops                              ... finished 69400000 ops                              ... finished 69500000 ops                              ... finished 69600000 ops                              ... finished 69700000 ops                              ... finished 69800000 ops                              ... finished 69900000 ops                              ... finished 70000000 ops                              ... finished 70100000 ops                              ... finished 70200000 ops                              ... finished 70300000 ops                              ... finished 70400000 ops                              ... finished 70500000 ops                              ... finished 70600000 ops                              ... finished 70700000 ops                              ... finished 70800000 ops                              ... finished 70900000 ops                              ... finished 71000000 ops                              ... finished 71100000 ops                              ... finished 71200000 ops                              ... finished 71300000 ops                              ... finished 71400000 ops                              ... finished 71500000 ops                              ... finished 71600000 ops                              ... finished 71700000 ops                              ... finished 71800000 ops                              ... finished 71900000 ops                              ... finished 72000000 ops                              ... finished 72100000 ops                              ... finished 72200000 ops                              ... finished 72300000 ops                              ... finished 72400000 ops                              ... finished 72500000 ops                              ... finished 72600000 ops                              ... finished 72700000 ops                              ... finished 72800000 ops                              ... finished 72900000 ops                              ... finished 73000000 ops                              ... finished 73100000 ops                              ... finished 73200000 ops                              ... finished 73300000 ops                              ... finished 73400000 ops                              ... finished 73500000 ops                              ... finished 73600000 ops                              ... finished 73700000 ops                              ... finished 73800000 ops                              ... finished 73900000 ops                              ... finished 74000000 ops                              ... finished 74100000 ops                              ... finished 74200000 ops                              ... finished 74300000 ops                              ... finished 74400000 ops                              ... finished 74500000 ops                              ... finished 74600000 ops                              ... finished 74700000 ops                              ... finished 74800000 ops                              ... finished 74900000 ops                              ... finished 75000000 ops                              ... finished 75100000 ops                              ... finished 75200000 ops                              ... finished 75300000 ops                              ... finished 75400000 ops                              ... finished 75500000 ops                              ... finished 75600000 ops                              ... finished 75700000 ops                              ... finished 75800000 ops                              ... finished 75900000 ops                              ... finished 76000000 ops                              ... finished 76100000 ops                              ... finished 76200000 ops                              ... finished 76300000 ops                              ... finished 76400000 ops                              ... finished 76500000 ops                              ... finished 76600000 ops                              ... finished 76700000 ops                              ... finished 76800000 ops                              ... finished 76900000 ops                              ... finished 77000000 ops                              ... finished 77100000 ops                              ... finished 77200000 ops                              ... finished 77300000 ops                              ... finished 77400000 ops                              ... finished 77500000 ops                              ... finished 77600000 ops                              ... finished 77700000 ops                              ... finished 77800000 ops                              ... finished 77900000 ops                              ... finished 78000000 ops                              ... finished 78100000 ops                              ... finished 78200000 ops                              ... finished 78300000 ops                              ... finished 78400000 ops                              ... finished 78500000 ops                              ... finished 78600000 ops                              ... finished 78700000 ops                              ... finished 78800000 ops                              ... finished 78900000 ops                              ... finished 79000000 ops                              ... finished 79100000 ops                              ... finished 79200000 ops                              ... finished 79300000 ops                              ... finished 79400000 ops                              ... finished 79500000 ops                              ... finished 79600000 ops                              ... finished 79700000 ops                              ... finished 79800000 ops                              ... finished 79900000 ops                              ... finished 80000000 ops                              ... finished 80100000 ops                              ... finished 80200000 ops                              ... finished 80300000 ops                              ... finished 80400000 ops                              ... finished 80500000 ops                              ... finished 80600000 ops                              ... finished 80700000 ops                              ... finished 80800000 ops                              ... finished 80900000 ops                              ... finished 81000000 ops                              ... finished 81100000 ops                              ... finished 81200000 ops                              ... finished 81300000 ops                              ... finished 81400000 ops                              ... finished 81500000 ops                              ... finished 81600000 ops                              ... finished 81700000 ops                              ... finished 81800000 ops                              ... finished 81900000 ops                              ... finished 82000000 ops                              ... finished 82100000 ops                              ... finished 82200000 ops                              ... finished 82300000 ops                              ... finished 82400000 ops                              ... finished 82500000 ops                              ... finished 82600000 ops                              ... finished 82700000 ops                              ... finished 82800000 ops                              ... finished 82900000 ops                              ... finished 83000000 ops                               0
+mymsg /home/jeongho/mnt//000293.buf CREATE
+mymsg /home/jeongho/mnt/000290.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000295.buf CREATE
+mymsg /home/jeongho/mnt/000292.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000297.buf CREATE
+mymsg /home/jeongho/mnt/000294.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000299.buf CREATE
+mymsg /home/jeongho/mnt/000296.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000301.buf CREATE
+mymsg /home/jeongho/mnt/000298.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000303.buf CREATE
+mymsg /home/jeongho/mnt/000300.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000305.buf CREATE
+mymsg /home/jeongho/mnt/000302.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000307.buf CREATE
+mymsg /home/jeongho/mnt/000304.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000309.buf CREATE
+mymsg /home/jeongho/mnt/000306.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000311.buf CREATE
+mymsg /home/jeongho/mnt/000308.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000313.buf CREATE
+mymsg /home/jeongho/mnt/000310.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000315.buf CREATE
+mymsg /home/jeongho/mnt/000312.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000317.buf CREATE
+mymsg /home/jeongho/mnt/000314.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000319.buf CREATE
+mymsg /home/jeongho/mnt/000316.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000321.buf CREATE
+mymsg /home/jeongho/mnt/000318.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000323.buf CREATE
+mymsg /home/jeongho/mnt/000320.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000325.buf CREATE
+mymsg /home/jeongho/mnt/000322.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000327.buf CREATE
+mymsg /home/jeongho/mnt/000324.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000329.buf CREATE
+mymsg /home/jeongho/mnt/000326.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000331.buf CREATE
+mymsg /home/jeongho/mnt/000328.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000333.buf CREATE
+mymsg /home/jeongho/mnt/000330.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000335.buf CREATE
+mymsg /home/jeongho/mnt/000332.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000337.buf CREATE
+mymsg /home/jeongho/mnt/000334.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000339.buf CREATE
+mymsg /home/jeongho/mnt/000336.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000341.buf CREATE
+mymsg /home/jeongho/mnt/000338.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000343.buf CREATE
+mymsg /home/jeongho/mnt/000340.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000345.buf CREATE
+mymsg /home/jeongho/mnt/000342.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000347.buf CREATE
+mymsg /home/jeongho/mnt/000344.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000349.buf CREATE
+mymsg /home/jeongho/mnt/000346.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000351.buf CREATE
+mymsg /home/jeongho/mnt/000348.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000353.buf CREATE
+mymsg /home/jeongho/mnt/000350.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000355.buf CREATE
+mymsg /home/jeongho/mnt/000352.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000357.buf CREATE
+mymsg /home/jeongho/mnt/000354.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000359.buf CREATE
+mymsg /home/jeongho/mnt/000356.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000361.buf CREATE
+mymsg /home/jeongho/mnt/000358.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000363.buf CREATE
+mymsg /home/jeongho/mnt/000360.log DELETE level:-1
+current level: 0
+mymsg /home/jeongho/mnt//000365.buf CREATE
+mymsg /home/jeongho/mnt/000362.log DELETE level:-1
+cur... finished 83100000 ops                              ... finished 83200000 ops                              ... finished 83300000 ops                              ... finished 83400000 ops                              ... finished 83500000 ops                              ... finished 83600000 ops                              ... finished 83700000 ops                              ... finished 83800000 ops                              Command terminated by signal 2
+134.40user 92.07system 3:14.35elapsed 116%CPU (0avgtext+0avgdata 254876maxresident)k
+12664inputs+33830552outputs (58major+396823minor)pagefaults 0swaps

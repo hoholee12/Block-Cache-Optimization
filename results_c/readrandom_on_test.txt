@@ -1,0 +1,1463 @@
+RocksDB:    version 6.24
+Date:       Thu Jun 23 12:00:50 2022
+CPU:        8 * Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
+CPUCache:   8192 KB
+... finished 100 ops                              ... finished 200 ops                              ... finished 300 ops                              ... finished 400 ops                              ... finished 500 ops                              ... finished 600 ops                              ... finished 700 ops                              ... finished 800 ops                              ... finished 900 ops                              ... finished 1000 ops                              ... finished 1500 ops                              ... finished 2000 ops                              ... finished 2500 ops                              ... finished 3000 ops                              ... finished 3500 ops                              ... finished 4000 ops                              ... finished 4500 ops                              ... finished 5000 ops                              ... finished 6000 ops                              ... finished 7000 ops                              ... finished 8000 ops                              ... finished 9000 ops                              ... finished 10000 ops                              ... finished 15000 ops                              ... finished 20000 ops                              ... finished 25000 ops                              ... finished 30000 ops                              ... finished 35000 ops                              ... finished 40000 ops                              Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+current level: 0
+mymsg /home/jeongho/mnt/000009.buf CREATE
+Rocks2level is called on db_impl.cc 2
+current level: 0
+mymsg /home/jeongho/mnt/000013.buf CREATE
+mymsg /home/jeongho/mnt/000008.log DELETE level:-1
+Keys:       16 bytes each (+ 0 bytes user-defined timestamp)
+Values:     100 bytes each (50 bytes after compression)
+Entries:    903900
+Prefix:    0 bytes
+Keys per prefix:    0
+RawSize:    100.0 MB (estimated)
+FileSize:   56.9 MB (estimated)
+Write rate: 0 bytes/second
+Read rate: 0 ops/second
+Compression: Snappy
+Compression sampling rate: 0
+Memtablerep: skip_list
+Perf Level: 1
+------------------------------------------------
+DB path: [/home/jeongho/mnt]
+table cache access after 10000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 10000 times, 4 milliseconds elapsed.
+filter block wasted 3794 times, 2 milliseconds elapsed.
+index block access after 10000 times, 9 milliseconds elapsed.
+index block wasted 3794 times, 5 milliseconds elapsed.
+data block access after 10000 times, 53 milliseconds elapsed.
+data block wasted 3794 times, 85 milliseconds elapsed.
+file search access after 10000 times, 7 milliseconds elapsed.
+file search wasted 6139 times, 4 milliseconds elapsed.
+table cache access after 20000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 20000 times, 8 milliseconds elapsed.
+filter block wasted 7634 times, 4 milliseconds elapsed.
+index block access after 20000 times, 15 milliseconds elapsed.
+index block wasted 7634 times, 8 milliseconds elapsed.
+data block access after 20000 times, 77 milliseconds elapsed.
+data block wasted 7634 times, 116 milliseconds elapsed.
+table cache access after 30000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 30000 times, 11 milliseconds elapsed.
+filter block wasted 11351 times, 6 milliseconds elapsed.
+index block access after 30000 times, 21 milliseconds elapsed.
+index block wasted 11351 times, 12 milliseconds elapsed.
+data block access after 30000 times, 94 milliseconds elapsed.
+data block wasted 11351 times, 135 milliseconds elapsed.
+file search access after 20000 times, 13 milliseconds elapsed.
+file search wasted 12158 times, 7 milliseconds elapsed.
+table cache access after 40000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 40000 times, 14 milliseconds elapsed.
+filter block wasted 15153 times, 8 milliseconds elapsed.
+index block access after 40000 times, 26 milliseconds elapsed.
+index block wasted 15153 times, 15 milliseconds elapsed.
+data block access after 40000 times, 108 milliseconds elapsed.
+data block wasted 15153 times, 152 milliseconds elapsed.
+file search access after 30000 times, 18 milliseconds elapsed.
+file search wasted 18341 times, 10 milliseconds elapsed.
+table cache access after 50000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 50000 times, 17 milliseconds elapsed.
+filter block wasted 18965 times, 10 milliseconds elapsed.
+index block access after 50000 times, 32 milliseconds elapsed.
+index block wasted 18965 times, 18 milliseconds elapsed.
+data block access after 50000 times, 120 milliseconds elapsed.
+data block wasted 18965 times, 163 milliseconds elapsed.
+table cache access after 60000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 60000 times, 21 milliseconds elapsed.
+filter block wasted 22787 times, 12 milliseconds elapsed.
+index block access after 60000 times, 38 milliseconds elapsed.
+index block wasted 22787 times, 22 milliseconds elapsed.
+data block access after 60000 times, 131 milliseconds elapsed.
+data block wasted 22787 times, 173 milliseconds elapsed.
+file search access after 40000 times, 24 milliseconds elapsed.
+file search wasted 24470 times, 13 milliseconds elapsed.
+table cache a... finished 45000 ops                              ... finished 50000 ops                              ... finished 60000 ops                              ... finished 70000 ops                              ... finished 80000 ops                              ccess after 70000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 70000 times, 24 milliseconds elapsed.
+filter block wasted 26568 times, 14 milliseconds elapsed.
+index block access after 70000 times, 43 milliseconds elapsed.
+index block wasted 26568 times, 25 milliseconds elapsed.
+data block access after 70000 times, 141 milliseconds elapsed.
+data block wasted 26568 times, 181 milliseconds elapsed.
+table cache access after 80000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 80000 times, 27 milliseconds elapsed.
+filter block wasted 30376 times, 16 milliseconds elapsed.
+index block access after 80000 times, 48 milliseconds elapsed.
+index block wasted 30376 times, 28 milliseconds elapsed.
+data block access after 80000 times, 150 milliseconds elapsed.
+data block wasted 30376 times, 187 milliseconds elapsed.
+file search access after 50000 times, 29 milliseconds elapsed.
+file search wasted 30610 times, 17 milliseconds elapsed.
+table cache access after 90000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 90000 times, 30 milliseconds elapsed.
+filter block wasted 34165 times, 18 milliseconds elapsed.
+index block access after 90000 times, 53 milliseconds elapsed.
+index block wasted 34165 times, 31 milliseconds elapsed.
+data block access after 90000 times, 158 milliseconds elapsed.
+data block wasted 34165 times, 193 milliseconds elapsed.
+file search access after 60000 times, 34 milliseconds elapsed.
+file search wasted 36729 times, 20 milliseconds elapsed.
+table cache access after 100000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 100000 times, 33 milliseconds elapsed.
+filter block wasted 37984 times, 20 milliseconds elapsed.
+index block access after 100000 times, 58 milliseconds elapsed.
+index block wasted 37984 times, 34 milliseconds elapsed.
+data block access after 100000 times, 167 milliseconds elapsed.
+data block wasted 37984 times, 199 milliseconds elapsed.
+table cache access after 110000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 110000 times, 36 milliseconds elapsed.
+filter block wasted 41734 times, 22 milliseconds elapsed.
+index block access after 110000 times, 63 milliseconds elapsed.
+index block wasted 41734 times, 37 milliseconds elapsed.
+data block access after 110000 times, 176 milliseconds elapsed.
+data block wasted 41734 times, 204 milliseconds elapsed.
+file search access after 70000 times, 40 milliseconds elapsed.
+file search wasted 42771 times, 23 milliseconds elapsed.
+table cache access after 120000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 120000 times, 39 milliseconds elapsed.
+filter block wasted 45498 times, 24 milliseconds elapsed.
+index block access after 120000 times, 68 milliseconds elapsed.
+index block wasted 45498 times, 40 milliseconds elapsed.
+data block access after 120000 times, 184 milliseconds elapsed.
+data block wasted 45498 times, 209 milliseconds elapsed.
+file search access after 80000 times, 45 milliseconds elapsed.
+file search wasted 48866 times, 26 milliseconds elapsed.
+table cache access after 130000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 130000 times, 42 milliseconds elapsed.
+filter block wasted 49315 times, 26 milliseconds elapsed.
+index block access after 130000 times, 74 milliseconds elapsed.
+index block wasted 49315 times, 43 milliseconds elapsed.
+data block access after 130000 times, 192 milliseconds elapsed.
+data block wasted 49315 times, 215 milliseconds elapsed.
+table cache access after 140000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 140000 times, 45 milliseconds elapsed.
+filter block wasted 53155 times, 27 milliseconds elapsed.
+index block access after 140000 times, 79 m... finished 90000 ops                              ... finished 100000 ops                              illiseconds elapsed.
+index block wasted 53155 times, 47 milliseconds elapsed.
+data block access after 140000 times, 201 milliseconds elapsed.
+data block wasted 53155 times, 220 milliseconds elapsed.
+file search access after 90000 times, 50 milliseconds elapsed.
+file search wasted 55119 times, 29 milliseconds elapsed.
+table cache access after 150000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 150000 times, 48 milliseconds elapsed.
+filter block wasted 56952 times, 29 milliseconds elapsed.
+index block access after 150000 times, 84 milliseconds elapsed.
+index block wasted 56952 times, 50 milliseconds elapsed.
+data block access after 150000 times, 209 milliseconds elapsed.
+data block wasted 56952 times, 225 milliseconds elapsed.
+table cache access after 160000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 160000 times, 51 milliseconds elapsed.
+filter block wasted 60737 times, 31 milliseconds elapsed.
+index block access after 160000 times, 89 milliseconds elapsed.
+index block wasted 60737 times, 53 milliseconds elapsed.
+data block access after 160000 times, 217 milliseconds elapsed.
+data block wasted 60737 times, 230 milliseconds elapsed.
+file search access after 100000 times, 55 milliseconds elapsed.
+file search wasted 61174 times, 32 milliseconds elapsed.
+table cache access after 170000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 170000 times, 54 milliseconds elapsed.
+filter block wasted 64558 times, 33 milliseconds elapsed.
+index block access after 170000 times, 94 milliseconds elapsed.
+index block wasted 64558 times, 56 milliseconds elapsed.
+data block access after 170000 times, 226 milliseconds elapsed.
+data block wasted 64558 times, 235 milliseconds elapsed.
+file search access after 110000 times, 60 milliseconds elapsed.
+file search wasted 67317 times, 35 milliseconds elapsed.
+table cache access after 180000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 180000 times, 58 milliseconds elapsed.
+filter block wasted 68327 times, 35 milliseconds elapsed.
+index block access after 180000 times, 99 milliseconds elapsed.
+index block wasted 68327 times, 59 milliseconds elapsed.
+data block access after 180000 times, 234 milliseconds elapsed.
+data block wasted 68327 times, 240 milliseconds elapsed.
+table cache access after 190000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 190000 times, 61 milliseconds elapsed.
+filter block wasted 72132 times, 37 milliseconds elapsed.
+index block access after 190000 times, 104 milliseconds elapsed.
+index block wasted 72132 times, 62 milliseconds elapsed.
+data block access after 190000 times, 242 milliseconds elapsed.
+data block wasted 72132 times, 245 milliseconds elapsed.
+file search access after 120000 times, 65 milliseconds elapsed.
+file search wasted 73452 times, 38 milliseconds elapsed.
+table cache access after 200000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 200000 times, 64 milliseconds elapsed.
+filter block wasted 75935 times, 39 milliseconds elapsed.
+index block access after 200000 times, 109 milliseconds elapsed.
+index block wasted 75935 times, 65 milliseconds elapsed.
+data block access after 200000 times, 250 milliseconds elapsed.
+data block wasted 75935 times, 250 milliseconds elapsed.
+file search access after 130000 times, 71 milliseconds elapsed.
+file search wasted 79530 times, 41 milliseconds elapsed.
+table cache access after 210000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 210000 times, 67 milliseconds elapsed.
+filter block wasted 79692 times, 40 milliseconds elapsed.
+index block access after 210000 times, 114 milliseconds elapsed.
+index block wasted 79692 times, 68 milliseconds elapsed.
+data block access after 210000 times, 258 milliseco... finished 150000 ops                              nds elapsed.
+data block wasted 79692 times, 255 milliseconds elapsed.
+table cache access after 220000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 220000 times, 70 milliseconds elapsed.
+filter block wasted 83473 times, 42 milliseconds elapsed.
+index block access after 220000 times, 119 milliseconds elapsed.
+index block wasted 83473 times, 71 milliseconds elapsed.
+data block access after 220000 times, 267 milliseconds elapsed.
+data block wasted 83473 times, 259 milliseconds elapsed.
+file search access after 140000 times, 76 milliseconds elapsed.
+file search wasted 85599 times, 44 milliseconds elapsed.
+table cache access after 230000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 230000 times, 73 milliseconds elapsed.
+filter block wasted 87279 times, 44 milliseconds elapsed.
+index block access after 230000 times, 124 milliseconds elapsed.
+index block wasted 87279 times, 74 milliseconds elapsed.
+data block access after 230000 times, 275 milliseconds elapsed.
+data block wasted 87279 times, 265 milliseconds elapsed.
+table cache access after 240000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 240000 times, 76 milliseconds elapsed.
+filter block wasted 91045 times, 46 milliseconds elapsed.
+index block access after 240000 times, 129 milliseconds elapsed.
+index block wasted 91045 times, 77 milliseconds elapsed.
+data block access after 240000 times, 284 milliseconds elapsed.
+data block wasted 91045 times, 269 milliseconds elapsed.
+file search access after 150000 times, 81 milliseconds elapsed.
+file search wasted 91680 times, 47 milliseconds elapsed.
+table cache access after 250000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 250000 times, 79 milliseconds elapsed.
+filter block wasted 94863 times, 48 milliseconds elapsed.
+index block access after 250000 times, 134 milliseconds elapsed.
+index block wasted 94863 times, 80 milliseconds elapsed.
+data block access after 250000 times, 292 milliseconds elapsed.
+data block wasted 94863 times, 274 milliseconds elapsed.
+file search access after 160000 times, 86 milliseconds elapsed.
+file search wasted 97834 times, 50 milliseconds elapsed.
+table cache access after 260000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 260000 times, 82 milliseconds elapsed.
+filter block wasted 98661 times, 50 milliseconds elapsed.
+index block access after 260000 times, 140 milliseconds elapsed.
+index block wasted 98661 times, 83 milliseconds elapsed.
+data block access after 260000 times, 300 milliseconds elapsed.
+data block wasted 98661 times, 279 milliseconds elapsed.
+table cache access after 270000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 270000 times, 85 milliseconds elapsed.
+filter block wasted 102445 times, 52 milliseconds elapsed.
+index block access after 270000 times, 145 milliseconds elapsed.
+index block wasted 102445 times, 86 milliseconds elapsed.
+data block access after 270000 times, 309 milliseconds elapsed.
+data block wasted 102445 times, 284 milliseconds elapsed.
+file search access after 170000 times, 91 milliseconds elapsed.
+file search wasted 103976 times, 53 milliseconds elapsed.
+table cache access after 280000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 280000 times, 88 milliseconds elapsed.
+filter block wasted 106252 times, 54 milliseconds elapsed.
+index block access after 280000 times, 150 milliseconds elapsed.
+index block wasted 106252 times, 90 milliseconds elapsed.
+data block access after 280000 times, 317 milliseconds elapsed.
+data block wasted 106252 times, 289 milliseconds elapsed.
+table cache access after 290000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 290000 times, 91 millisecon... finished 200000 ops                              ds elapsed.
+filter block wasted 110031 times, 55 milliseconds elapsed.
+index block access after 290000 times, 155 milliseconds elapsed.
+index block wasted 110031 times, 93 milliseconds elapsed.
+data block access after 290000 times, 325 milliseconds elapsed.
+data block wasted 110031 times, 294 milliseconds elapsed.
+file search access after 180000 times, 97 milliseconds elapsed.
+file search wasted 110053 times, 56 milliseconds elapsed.
+table cache access after 300000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 300000 times, 94 milliseconds elapsed.
+filter block wasted 113810 times, 57 milliseconds elapsed.
+index block access after 300000 times, 160 milliseconds elapsed.
+index block wasted 113810 times, 96 milliseconds elapsed.
+data block access after 300000 times, 333 milliseconds elapsed.
+data block wasted 113810 times, 299 milliseconds elapsed.
+file search access after 190000 times, 102 milliseconds elapsed.
+file search wasted 116165 times, 59 milliseconds elapsed.
+table cache access after 310000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 310000 times, 97 milliseconds elapsed.
+filter block wasted 117626 times, 59 milliseconds elapsed.
+index block access after 310000 times, 165 milliseconds elapsed.
+index block wasted 117626 times, 99 milliseconds elapsed.
+data block access after 310000 times, 341 milliseconds elapsed.
+data block wasted 117626 times, 304 milliseconds elapsed.
+table cache access after 320000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 320000 times, 100 milliseconds elapsed.
+filter block wasted 121421 times, 61 milliseconds elapsed.
+index block access after 320000 times, 170 milliseconds elapsed.
+index block wasted 121421 times, 102 milliseconds elapsed.
+data block access after 320000 times, 349 milliseconds elapsed.
+data block wasted 121421 times, 309 milliseconds elapsed.
+file search access after 200000 times, 107 milliseconds elapsed.
+file search wasted 122280 times, 62 milliseconds elapsed.
+table cache access after 330000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 330000 times, 103 milliseconds elapsed.
+filter block wasted 125235 times, 63 milliseconds elapsed.
+index block access after 330000 times, 175 milliseconds elapsed.
+index block wasted 125235 times, 105 milliseconds elapsed.
+data block access after 330000 times, 358 milliseconds elapsed.
+data block wasted 125235 times, 314 milliseconds elapsed.
+file search access after 210000 times, 112 milliseconds elapsed.
+file search wasted 128459 times, 65 milliseconds elapsed.
+table cache access after 340000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 340000 times, 106 milliseconds elapsed.
+filter block wasted 129039 times, 65 milliseconds elapsed.
+index block access after 340000 times, 180 milliseconds elapsed.
+index block wasted 129039 times, 108 milliseconds elapsed.
+data block access after 340000 times, 366 milliseconds elapsed.
+data block wasted 129039 times, 319 milliseconds elapsed.
+table cache access after 350000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 350000 times, 109 milliseconds elapsed.
+filter block wasted 132807 times, 67 milliseconds elapsed.
+index block access after 350000 times, 185 milliseconds elapsed.
+index block wasted 132807 times, 111 milliseconds elapsed.
+data block access after 350000 times, 374 milliseconds elapsed.
+data block wasted 132807 times, 323 milliseconds elapsed.
+file search access after 220000 times, 117 milliseconds elapsed.
+file search wasted 134557 times, 68 milliseconds elapsed.
+table cache access after 360000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 360000 times, 112 milliseconds elapsed.
+filter block wasted 136629 times, 68 milliseconds elapsed.
+index block ac... finished 250000 ops                              cess after 360000 times, 190 milliseconds elapsed.
+index block wasted 136629 times, 114 milliseconds elapsed.
+data block access after 360000 times, 382 milliseconds elapsed.
+data block wasted 136629 times, 328 milliseconds elapsed.
+table cache access after 370000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 370000 times, 115 milliseconds elapsed.
+filter block wasted 140427 times, 70 milliseconds elapsed.
+index block access after 370000 times, 195 milliseconds elapsed.
+index block wasted 140427 times, 117 milliseconds elapsed.
+data block access after 370000 times, 390 milliseconds elapsed.
+data block wasted 140427 times, 333 milliseconds elapsed.
+file search access after 230000 times, 122 milliseconds elapsed.
+file search wasted 140677 times, 72 milliseconds elapsed.
+table cache access after 380000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 380000 times, 118 milliseconds elapsed.
+filter block wasted 144188 times, 72 milliseconds elapsed.
+index block access after 380000 times, 201 milliseconds elapsed.
+index block wasted 144188 times, 120 milliseconds elapsed.
+data block access after 380000 times, 399 milliseconds elapsed.
+data block wasted 144188 times, 338 milliseconds elapsed.
+file search access after 240000 times, 128 milliseconds elapsed.
+file search wasted 146765 times, 75 milliseconds elapsed.
+table cache access after 390000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 390000 times, 121 milliseconds elapsed.
+filter block wasted 148003 times, 74 milliseconds elapsed.
+index block access after 390000 times, 206 milliseconds elapsed.
+index block wasted 148003 times, 123 milliseconds elapsed.
+data block access after 390000 times, 407 milliseconds elapsed.
+data block wasted 148003 times, 343 milliseconds elapsed.
+table cache access after 400000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 400000 times, 124 milliseconds elapsed.
+filter block wasted 151784 times, 76 milliseconds elapsed.
+index block access after 400000 times, 211 milliseconds elapsed.
+index block wasted 151784 times, 126 milliseconds elapsed.
+data block access after 400000 times, 415 milliseconds elapsed.
+data block wasted 151784 times, 348 milliseconds elapsed.
+file search access after 250000 times, 133 milliseconds elapsed.
+file search wasted 152858 times, 78 milliseconds elapsed.
+table cache access after 410000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 410000 times, 127 milliseconds elapsed.
+filter block wasted 155576 times, 78 milliseconds elapsed.
+index block access after 410000 times, 216 milliseconds elapsed.
+index block wasted 155576 times, 129 milliseconds elapsed.
+data block access after 410000 times, 423 milliseconds elapsed.
+data block wasted 155576 times, 353 milliseconds elapsed.
+file search access after 260000 times, 138 milliseconds elapsed.
+file search wasted 158992 times, 81 milliseconds elapsed.
+table cache access after 420000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 420000 times, 131 milliseconds elapsed.
+filter block wasted 159388 times, 80 milliseconds elapsed.
+index block access after 420000 times, 221 milliseconds elapsed.
+index block wasted 159388 times, 132 milliseconds elapsed.
+data block access after 420000 times, 431 milliseconds elapsed.
+data block wasted 159388 times, 358 milliseconds elapsed.
+table cache access after 430000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 430000 times, 134 milliseconds elapsed.
+filter block wasted 163218 times, 81 milliseconds elapsed.
+index block access after 430000 times, 226 milliseconds elapsed.
+index block wasted 163218 times, 135 milliseconds elapsed.
+data block access after 430000 times, 440 milliseconds elapsed.
+data block wasted 163218 tim... finished 300000 ops                              es, 363 milliseconds elapsed.
+file search access after 270000 times, 143 milliseconds elapsed.
+file search wasted 165188 times, 84 milliseconds elapsed.
+table cache access after 440000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 440000 times, 137 milliseconds elapsed.
+filter block wasted 167030 times, 83 milliseconds elapsed.
+index block access after 440000 times, 231 milliseconds elapsed.
+index block wasted 167030 times, 138 milliseconds elapsed.
+data block access after 440000 times, 448 milliseconds elapsed.
+data block wasted 167030 times, 367 milliseconds elapsed.
+table cache access after 450000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 450000 times, 140 milliseconds elapsed.
+filter block wasted 170868 times, 85 milliseconds elapsed.
+index block access after 450000 times, 236 milliseconds elapsed.
+index block wasted 170868 times, 142 milliseconds elapsed.
+data block access after 450000 times, 456 milliseconds elapsed.
+data block wasted 170868 times, 372 milliseconds elapsed.
+file search access after 280000 times, 148 milliseconds elapsed.
+file search wasted 171429 times, 87 milliseconds elapsed.
+table cache access after 460000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 460000 times, 143 milliseconds elapsed.
+filter block wasted 174660 times, 87 milliseconds elapsed.
+index block access after 460000 times, 241 milliseconds elapsed.
+index block wasted 174660 times, 145 milliseconds elapsed.
+data block access after 460000 times, 464 milliseconds elapsed.
+data block wasted 174660 times, 377 milliseconds elapsed.
+file search access after 290000 times, 154 milliseconds elapsed.
+file search wasted 177510 times, 90 milliseconds elapsed.
+table cache access after 470000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 470000 times, 146 milliseconds elapsed.
+filter block wasted 178449 times, 89 milliseconds elapsed.
+index block access after 470000 times, 246 milliseconds elapsed.
+index block wasted 178449 times, 148 milliseconds elapsed.
+data block access after 470000 times, 472 milliseconds elapsed.
+data block wasted 178449 times, 382 milliseconds elapsed.
+table cache access after 480000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 480000 times, 149 milliseconds elapsed.
+filter block wasted 182229 times, 91 milliseconds elapsed.
+index block access after 480000 times, 251 milliseconds elapsed.
+index block wasted 182229 times, 151 milliseconds elapsed.
+data block access after 480000 times, 481 milliseconds elapsed.
+data block wasted 182229 times, 387 milliseconds elapsed.
+file search access after 300000 times, 159 milliseconds elapsed.
+file search wasted 183586 times, 93 milliseconds elapsed.
+table cache access after 490000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 490000 times, 152 milliseconds elapsed.
+filter block wasted 186027 times, 93 milliseconds elapsed.
+index block access after 490000 times, 256 milliseconds elapsed.
+index block wasted 186027 times, 154 milliseconds elapsed.
+data block access after 490000 times, 489 milliseconds elapsed.
+data block wasted 186027 times, 392 milliseconds elapsed.
+file search access after 310000 times, 164 milliseconds elapsed.
+file search wasted 189723 times, 96 milliseconds elapsed.
+table cache access after 500000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 500000 times, 155 milliseconds elapsed.
+filter block wasted 189824 times, 94 milliseconds elapsed.
+index block access after 500000 times, 261 milliseconds elapsed.
+index block wasted 189824 times, 157 milliseconds elapsed.
+data block access after 500000 times, 497 milliseconds elapsed.
+data block wasted 189824 times, 397 milliseconds elapsed.
+table cache access after 510000 times, 0 millisec... finished 350000 ops                              onds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 510000 times, 158 milliseconds elapsed.
+filter block wasted 193614 times, 96 milliseconds elapsed.
+index block access after 510000 times, 266 milliseconds elapsed.
+index block wasted 193614 times, 160 milliseconds elapsed.
+data block access after 510000 times, 505 milliseconds elapsed.
+data block wasted 193614 times, 402 milliseconds elapsed.
+file search access after 320000 times, 169 milliseconds elapsed.
+file search wasted 195829 times, 99 milliseconds elapsed.
+table cache access after 520000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 520000 times, 161 milliseconds elapsed.
+filter block wasted 197421 times, 98 milliseconds elapsed.
+index block access after 520000 times, 271 milliseconds elapsed.
+index block wasted 197421 times, 163 milliseconds elapsed.
+data block access after 520000 times, 513 milliseconds elapsed.
+data block wasted 197421 times, 407 milliseconds elapsed.
+table cache access after 530000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 530000 times, 164 milliseconds elapsed.
+filter block wasted 201231 times, 100 milliseconds elapsed.
+index block access after 530000 times, 277 milliseconds elapsed.
+index block wasted 201231 times, 166 milliseconds elapsed.
+data block access after 530000 times, 522 milliseconds elapsed.
+data block wasted 201231 times, 412 milliseconds elapsed.
+file search access after 330000 times, 174 milliseconds elapsed.
+file search wasted 201981 times, 102 milliseconds elapsed.
+table cache access after 540000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 540000 times, 167 milliseconds elapsed.
+filter block wasted 205003 times, 102 milliseconds elapsed.
+index block access after 540000 times, 282 milliseconds elapsed.
+index block wasted 205003 times, 169 milliseconds elapsed.
+data block access after 540000 times, 530 milliseconds elapsed.
+data block wasted 205003 times, 416 milliseconds elapsed.
+file search access after 340000 times, 179 milliseconds elapsed.
+file search wasted 208082 times, 105 milliseconds elapsed.
+table cache access after 550000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 550000 times, 170 milliseconds elapsed.
+filter block wasted 208813 times, 104 milliseconds elapsed.
+index block access after 550000 times, 287 milliseconds elapsed.
+index block wasted 208813 times, 172 milliseconds elapsed.
+data block access after 550000 times, 538 milliseconds elapsed.
+data block wasted 208813 times, 421 milliseconds elapsed.
+table cache access after 560000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 560000 times, 173 milliseconds elapsed.
+filter block wasted 212619 times, 106 milliseconds elapsed.
+index block access after 560000 times, 292 milliseconds elapsed.
+index block wasted 212619 times, 175 milliseconds elapsed.
+data block access after 560000 times, 546 milliseconds elapsed.
+data block wasted 212619 times, 426 milliseconds elapsed.
+file search access after 350000 times, 185 milliseconds elapsed.
+file search wasted 214210 times, 108 milliseconds elapsed.
+table cache access after 570000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 570000 times, 176 milliseconds elapsed.
+filter block wasted 216392 times, 107 milliseconds elapsed.
+index block access after 570000 times, 297 milliseconds elapsed.
+index block wasted 216392 times, 179 milliseconds elapsed.
+data block access after 570000 times, 554 milliseconds elapsed.
+data block wasted 216392 times, 431 milliseconds elapsed.
+table cache access after 580000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 580000 times, 179 milliseconds elapsed.
+filter block wasted 220204 times, 109 milliseconds elapsed.
+in... finished 400000 ops                              dex block access after 580000 times, 302 milliseconds elapsed.
+index block wasted 220204 times, 182 milliseconds elapsed.
+data block access after 580000 times, 563 milliseconds elapsed.
+data block wasted 220204 times, 436 milliseconds elapsed.
+file search access after 360000 times, 190 milliseconds elapsed.
+file search wasted 220329 times, 111 milliseconds elapsed.
+table cache access after 590000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 590000 times, 182 milliseconds elapsed.
+filter block wasted 223988 times, 111 milliseconds elapsed.
+index block access after 590000 times, 307 milliseconds elapsed.
+index block wasted 223988 times, 185 milliseconds elapsed.
+data block access after 590000 times, 571 milliseconds elapsed.
+data block wasted 223988 times, 441 milliseconds elapsed.
+file search access after 370000 times, 195 milliseconds elapsed.
+file search wasted 226462 times, 114 milliseconds elapsed.
+table cache access after 600000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 600000 times, 185 milliseconds elapsed.
+filter block wasted 227817 times, 113 milliseconds elapsed.
+index block access after 600000 times, 312 milliseconds elapsed.
+index block wasted 227817 times, 188 milliseconds elapsed.
+data block access after 600000 times, 579 milliseconds elapsed.
+data block wasted 227817 times, 446 milliseconds elapsed.
+table cache access after 610000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 610000 times, 188 milliseconds elapsed.
+filter block wasted 231629 times, 115 milliseconds elapsed.
+index block access after 610000 times, 317 milliseconds elapsed.
+index block wasted 231629 times, 191 milliseconds elapsed.
+data block access after 610000 times, 587 milliseconds elapsed.
+data block wasted 231629 times, 451 milliseconds elapsed.
+file search access after 380000 times, 200 milliseconds elapsed.
+file search wasted 232633 times, 117 milliseconds elapsed.
+table cache access after 620000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 620000 times, 191 milliseconds elapsed.
+filter block wasted 235447 times, 117 milliseconds elapsed.
+index block access after 620000 times, 322 milliseconds elapsed.
+index block wasted 235447 times, 194 milliseconds elapsed.
+data block access after 620000 times, 595 milliseconds elapsed.
+data block wasted 235447 times, 455 milliseconds elapsed.
+file search access after 390000 times, 205 milliseconds elapsed.
+file search wasted 238719 times, 120 milliseconds elapsed.
+table cache access after 630000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 630000 times, 194 milliseconds elapsed.
+filter block wasted 239195 times, 119 milliseconds elapsed.
+index block access after 630000 times, 327 milliseconds elapsed.
+index block wasted 239195 times, 197 milliseconds elapsed.
+data block access after 630000 times, 603 milliseconds elapsed.
+data block wasted 239195 times, 460 milliseconds elapsed.
+table cache access after 640000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 640000 times, 197 milliseconds elapsed.
+filter block wasted 242979 times, 121 milliseconds elapsed.
+index block access after 640000 times, 332 milliseconds elapsed.
+index block wasted 242979 times, 200 milliseconds elapsed.
+data block access after 640000 times, 611 milliseconds elapsed.
+data block wasted 242979 times, 465 milliseconds elapsed.
+file search access after 400000 times, 210 milliseconds elapsed.
+file search wasted 244718 times, 123 milliseconds elapsed.
+table cache access after 650000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 650000 times, 200 milliseconds elapsed.
+filter block wasted 246721 times, 122 milliseconds elapsed.
+index block access after 650000 times, 337 milliseconds elapsed.
+index block wasted 246721 times, 203 milliseconds elapsed.
+data block access after 650000 times, 620 milliseconds elapsed.
+data block wasted 246721 times, 470 milliseconds elapsed.
+table cache access after 660000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 660000 times, 203 milliseconds elapsed.
+filter block wasted 250497 times, 124 milliseconds elapsed.
+index block access after 660000 times, 343 milliseconds elapsed.
+index block wasted 250497 times, 206 milliseconds elapsed.
+data block access after 660000 times, 628 milliseconds elapsed.
+data block wasted 250497 times, 474 milliseconds elapsed.
+file search access after 410000 times, 216 milliseconds elapsed.
+file search wasted 250804 times, 126 milliseconds elapsed.
+table cache access after 670000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 670000 times, 206 milliseconds elapsed.
+filter block wasted 254279 times, 126 milliseconds elapsed.
+index block access after 670000 times, 348 milliseconds elapsed.
+index block wasted 254279 times, 209 milliseconds elapsed.
+data block access after 670000 times, 636 milliseconds elapsed.
+data block wasted 254279 times, 479 milliseconds elapsed.
+file search access after 420000 times, 221 milliseconds elapsed.
+file search wasted 256867 times, 129 milliseconds elapsed.
+table cache access after 680000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 680000 times, 210 milliseconds elapsed.
+filter block wasted 258066 times, 128 milliseconds elapsed.
+index block access after 680000 times, 353 milliseconds elapsed.
+index block wasted 258066 times, 212 milliseconds elapsed.
+data block access after 680000 times, 644 milliseconds elapsed.
+data block wasted 258066 times, 484 milliseconds elapsed.
+table cache access after 690000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 690000 times, 213 milliseconds elapsed.
+filter block wasted 261879 times, 130 milliseconds elapsed.
+index block access after 690000 times, 358 milliseconds elapsed.
+index block wasted 261879 times, 215 milliseconds elapsed.
+data block access after 690000 times, 652 milliseconds elapsed.
+data block wasted 261879 times, 489 milliseconds elapsed.
+file search access after 430000 times, 226 milliseconds elapsed.
+file search wasted 263042 times, 132 milliseconds elapsed.
+table cache access after 700000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 700000 times, 216 milliseconds elapsed.
+filter block wasted 265657 times, 132 milliseconds elapsed.
+index block access after 700000 times, 363 milliseconds elapsed.
+index block wasted 265657 times, 218 milliseconds elapsed.
+data block access after 700000 times, 660 milliseconds elapsed.
+data block wasted 265657 times, 494 milliseconds elapsed.
+file search access after 440000 times, 231 milliseconds elapsed.
+file search wasted 269104 times, 135 milliseconds elapsed.
+table cache access after 710000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 710000 times, 219 milliseconds elapsed.
+filter block wasted 269439 times, 133 milliseconds elapsed.
+index block access after 710000 times, 368 milliseconds elapsed.
+index block wasted 269439 times, 221 milliseconds elapsed.
+data block access after 710000 times, 668 milliseconds elapsed.
+data block wasted 269439 times, 499 milliseconds elapsed.
+table cache access after 720000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 720000 times, 222 milliseconds elapsed.
+filter block wasted 273253 times, 135 milliseconds elapsed.
+index block access after 720000 times, 374 milliseconds elapsed.
+index block wasted 273253 times, 225 milliseconds elapsed.
+data block access after 720000 times, 676 milliseconds elapsed.
+data block wasted 273253 times, 503 milliseconds elapsed.
+file search ac... finished 450000 ops                              ... finished 500000 ops                              cess after 450000 times, 236 milliseconds elapsed.
+file search wasted 275241 times, 138 milliseconds elapsed.
+table cache access after 730000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 730000 times, 225 milliseconds elapsed.
+filter block wasted 277068 times, 137 milliseconds elapsed.
+index block access after 730000 times, 379 milliseconds elapsed.
+index block wasted 277068 times, 228 milliseconds elapsed.
+data block access after 730000 times, 684 milliseconds elapsed.
+data block wasted 277068 times, 508 milliseconds elapsed.
+table cache access after 740000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 740000 times, 228 milliseconds elapsed.
+filter block wasted 280870 times, 139 milliseconds elapsed.
+index block access after 740000 times, 384 milliseconds elapsed.
+index block wasted 280870 times, 231 milliseconds elapsed.
+data block access after 740000 times, 693 milliseconds elapsed.
+data block wasted 280870 times, 513 milliseconds elapsed.
+file search access after 460000 times, 242 milliseconds elapsed.
+file search wasted 281425 times, 142 milliseconds elapsed.
+table cache access after 750000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 750000 times, 232 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 750000 times, 391 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 750000 times, 704 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 470000 times, 247 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 760000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 760000 times, 237 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 760000 times, 399 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 760000 times, 717 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 480000 times, 252 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 770000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 770000 times, 242 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 770000 times, 408 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 770000 times, 730 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 490000 times, 257 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 780000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 780000 times, 247 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 780000 times, 416 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 780000 times, 743 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 500000 times, 262 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 790000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 790000 times, 252 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 790000 times, 424 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 790000 times, 755 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 510000 times, 268 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 800000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 800000 times, 257 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 800000 times, 432 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 800000 times, 768 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 520000 times, 273 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 810000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 810000 times, 262 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 810000 times, 440 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 810000 times, 781 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 530000 times, 278 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 820000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 820000 times, 267 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 820000 times, 448 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 820000 times, 794 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 540000 times, 283 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 830000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 830000 times, 272 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 830000 times, 456 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 830000 times, 806 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 550000 times, 288 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 840000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 840000 times, 276 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 840000 times, 464 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 840000 times, 818 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 560000 times, 293 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 850000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 850000 times, 281 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 850000 times, 472 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 850000 times, 831 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 570000 times, 299 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 860000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 860000 times, 286 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access aft... finished 600000 ops                              er 860000 times, 481 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 860000 times, 843 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 580000 times, 304 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 870000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 870000 times, 291 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 870000 times, 489 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 870000 times, 855 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 590000 times, 309 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 880000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 880000 times, 296 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 880000 times, 497 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 880000 times, 868 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 600000 times, 314 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 890000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 890000 times, 301 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 890000 times, 505 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 890000 times, 881 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 610000 times, 319 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 900000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 900000 times, 306 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 900000 times, 513 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 900000 times, 894 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 620000 times, 324 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 910000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 910000 times, 311 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 910000 times, 521 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 910000 times, 907 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 630000 times, 330 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 920000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 920000 times, 316 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 920000 times, 529 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 920000 times, 919 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 640000 times, 335 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 930000 times, 0 milliseconds elapsed.
+table cache wasted ... finished 700000 ops                              0 times, 0 milliseconds elapsed.
+filter block access after 930000 times, 321 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 930000 times, 537 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 930000 times, 932 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 650000 times, 340 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 940000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 940000 times, 325 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 940000 times, 545 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 940000 times, 944 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 660000 times, 345 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 950000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 950000 times, 330 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 950000 times, 554 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 950000 times, 957 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 670000 times, 350 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 960000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 960000 times, 335 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 960000 times, 562 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 960000 times, 970 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 680000 times, 355 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 970000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 970000 times, 340 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 970000 times, 570 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 970000 times, 982 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 690000 times, 361 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 980000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 980000 times, 345 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 980000 times, 578 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 980000 times, 995 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 700000 times, 366 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 990000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 990000 times, 350 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 990000 times, 586 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 990000 times, 1007 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 710000 times, 371 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1000000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1000000 times, 355 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1000000 times, 594 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1000000 times, 1019 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 720000 times, 376 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1010000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1010000 times, 360 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1010000 times, 602 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1010000 times, 1033 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 730000 times, 381 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1020000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1020000 times, 365 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1020000 times, 610 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1020000 times, 1045 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 740000 times, 386 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1030000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1030000 times, 370 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1030000 times, 619 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1030000 times, 1058 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 750000 times, 392 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1040000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1040000 times, 374 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1040000 times, 627 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1040000 times, 1070 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 760000 times, 397 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1050000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1050000 times, 379 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1050000 times, 635 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1050000 times, 1082 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 770000 times, 402 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1060000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1060000 times, 384 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1060000 times, 643 milliseconds ... finished 800000 ops                              elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1060000 times, 1095 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 780000 times, 407 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1070000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1070000 times, 389 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1070000 times, 651 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1070000 times, 1108 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 790000 times, 412 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1080000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1080000 times, 394 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1080000 times, 659 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1080000 times, 1121 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 800000 times, 417 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1090000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1090000 times, 399 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1090000 times, 667 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1090000 times, 1134 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 810000 times, 423 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1100000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1100000 times, 404 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1100000 times, 675 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1100000 times, 1146 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 820000 times, 428 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1110000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1110000 times, 409 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1110000 times, 683 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1110000 times, 1159 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 830000 times, 433 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1120000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1120000 times, 414 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1120000 times, 691 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1120000 times, 1172 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 840000 times, 438 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1130000 times, 0 milliseconds elapsed.
+table cache wasted 0... finished 900000 ops                               times, 0 milliseconds elapsed.
+filter block access after 1130000 times, 419 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1130000 times, 700 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1130000 times, 1184 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 850000 times, 443 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1140000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1140000 times, 424 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1140000 times, 708 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1140000 times, 1197 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 860000 times, 449 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1150000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1150000 times, 429 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1150000 times, 716 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1150000 times, 1210 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 870000 times, 454 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1160000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1160000 times, 434 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1160000 times, 724 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1160000 times, 1222 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 880000 times, 459 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1170000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1170000 times, 438 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1170000 times, 732 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1170000 times, 1235 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 890000 times, 464 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+table cache access after 1180000 times, 0 milliseconds elapsed.
+table cache wasted 0 times, 0 milliseconds elapsed.
+filter block access after 1180000 times, 443 milliseconds elapsed.
+filter block wasted 281911 times, 140 milliseconds elapsed.
+index block access after 1180000 times, 740 milliseconds elapsed.
+index block wasted 281911 times, 232 milliseconds elapsed.
+data block access after 1180000 times, 1247 milliseconds elapsed.
+data block wasted 281911 times, 514 milliseconds elapsed.
+file search access after 900000 times, 469 milliseconds elapsed.
+file search wasted 281911 times, 142 milliseconds elapsed.
+readrandom   :       8.359 micros/op 119630 ops/sec;   13.2 MB/s (903900 of 903900 found)
+
+Microseconds per read:
+Count: 903900 Average: 8.3592  StdDev: 19.93
+Min: 5  Median: 5.5108  Max: 4491
+Percentiles: P50: 5.51 P75: 10.42 P99: 21.77 P99.9: 168.12 P99.99: 370.88
+------------------------------------------------------
+(       4,       6 ]   598279  66.189%  66.189% #############
+(       6,      10 ]    60835   6.730%  72.919% #
+(      10,      15 ]   226178  25.022%  97.941% #####
+(      15,      22 ]     9890   1.094%  99.036% 
+(      22,      34 ]     3368   0.373%  99.408% 
+(      34,      51 ]      458   0.051%  99.459% 
+(      51,      76 ]      192   0.021%  99.480% 
+(      76,     110 ]      253   0.028%  99.508% 
+(     110,     170 ]     3658   0.405%  99.913% 
+(     170,     250 ]      243   0.027%  99.940% 
+(     250,     380 ]      490   0.054%  99.994% 
+(     380,     580 ]       38   0.004%  99.998% 
+(     870,    1300 ]        1   0.000%  99.998% 
+(    1300,    1900 ]        1   0.000%  99.998% 
+(    1900,    2900 ]        1   0.000%  99.998% 
+(    2900,    4400 ]       13   0.001% 100.000% 
+(    4400,    6600 ]        2   0.000% 100.000% 
+
+
+
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop Rblob(GB) Wblob(GB)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      2/0   46.48 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0    112.1      0.20              0.00         1    0.204       0      0       0.0       0.0
+ Sum      2/0   46.48 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0    112.1      0.20              0.00         1    0.204       0      0       0.0       0.0
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0       0.0       0.0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop Rblob(GB) Wblob(GB)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0    112.1      0.20              0.00         1    0.204       0      0       0.0       0.0
+
+Blob file count: 0, total size: 0.0 GB
+
+Uptime(secs): 8.4 total, 7.6 interval
+Flush(GB): cumulative 0.022, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.02 GB write, 2.72 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.2 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+Block cache LRUCache@0x5592bc138570#22497 capacity: 2.00 GB collections: 1 last_copies: 0 last_secs: 0.000164 secs_since: 7
+Block cache entry stats(count,size,portion): Misc(1,0.00 KB,0%)
+
+** File Read Latency Histogram By Level [default] **
+** Level 0 read latency histogram (micros):
+Count: 21549 Average: 29.7908  StdDev: 115.09
+Min: 0  Median: 1.1365  Max: 4432
+Percentiles: P50: 1.14 P75: 3.94 P99: 211.05 P99.9: 372.07 P99.99: 4276.26
+------------------------------------------------------
+[       0,       1 ]    10061  46.689%  46.689% #########
+(       1,       2 ]     5226  24.252%  70.941% #####
+(       2,       3 ]      616   2.859%  73.799% #
+(       3,       4 ]      276   1.281%  75.080% 
+(       4,       6 ]      528   2.450%  77.530% 
+(       6,      10 ]      163   0.756%  78.287% 
+(      10,      15 ]       43   0.200%  78.486% 
+(      15,      22 ]        9   0.042%  78.528% 
+(      76,     110 ]     2652  12.307%  90.835% ##
+(     110,     170 ]     1564   7.258%  98.093% #
+(     170,     250 ]      381   1.768%  99.861% 
+(     250,     380 ]        9   0.042%  99.903% 
+(     380,     580 ]        2   0.009%  99.912% 
+(     870,    1300 ]        2   0.009%  99.921% 
+(    1300,    1900 ]        1   0.005%  99.926% 
+(    1900,    2900 ]        1   0.005%  99.930% 
+(    2900,    4400 ]       14   0.065%  99.995% 
+(    4400,    6600 ]        1   0.005% 100.000% 
+
+
+** DB Stats **
+Uptime(secs): 8.4 total, 7.6 interval
+Cumulative writes: 0 writes, 0 keys, 0 commit groups, 0.0 writes per commit group, ingest: 0.00 GB, 0.00 MB/s
+Cumulative WAL: 0 writes, 0 syncs, 0.00 writes per sync, written: 0.00 GB, 0.00 MB/s
+Cumulative stall: 00:00:0.000 H:M:S, 0.0 percent
+Interval writes: 0 writes, 0 keys, 0 commit groups, 0.0 writes per commit group, ingest: 0.00 MB, 0.00 MB/s
+Interval WAL: 0 writes, 0 syncs, 0.00 writes per sync, written: 0.00 GB, 0.00 MB/s
+Interval stall: 00:00:0.000 H:M:S, 0.0 percent
+
+STATISTICS:
+rocksdb.block.cache.miss COUNT : 21541
+rocksdb.block.cache.hit COUNT : 1164364
+rocksdb.block.cache.add COUNT : 21541
+rocksdb.block.cache.add.failures COUNT : 0
+rocksdb.block.cache.index.miss COUNT : 0
+rocksdb.block.cache.index.hit COUNT : 0
+rocksdb.block.cache.index.add COUNT : 0
+rocksdb.block.cache.index.bytes.insert COUNT : 0
+rocksdb.block.cache.index.bytes.evict COUNT : 0
+rocksdb.block.cache.filter.miss COUNT : 0
+rocksdb.block.cache.filter.hit COUNT : 0
+rocksdb.block.cache.filter.add COUNT : 0
+rocksdb.block.cache.filter.bytes.insert COUNT : 0
+rocksdb.block.cache.filter.bytes.evict COUNT : 0
+rocksdb.block.cache.data.miss COUNT : 21541
+rocksdb.block.cache.data.hit COUNT : 1164364
+rocksdb.block.cache.data.add COUNT : 21541
+rocksdb.block.cache.data.bytes.insert COUNT : 87885648
+rocksdb.block.cache.bytes.read COUNT : 4750575504
+rocksdb.block.cache.bytes.write COUNT : 87885648
+rocksdb.bloom.filter.useful COUNT : 0
+rocksdb.bloom.filter.full.positive COUNT : 0
+rocksdb.bloom.filter.full.true.positive COUNT : 0
+rocksdb.bloom.filter.micros COUNT : 0
+rocksdb.persistent.cache.hit COUNT : 0
+rocksdb.persistent.cache.miss COUNT : 0
+rocksdb.sim.block.cache.hit COUNT : 0
+rocksdb.sim.block.cache.miss COUNT : 0
+rocksdb.memtable.hit COUNT : 0
+rocksdb.memtable.miss COUNT : 903900
+rocksdb.l0.hit COUNT : 903900
+rocksdb.l1.hit COUNT : 0
+rocksdb.l2andup.hit COUNT : 0
+rocksdb.compaction.key.drop.new COUNT : 0
+rocksdb.compaction.key.drop.obsolete COUNT : 0
+rocksdb.compaction.key.drop.range_del COUNT : 0
+rocksdb.compaction.key.drop.user COUNT : 0
+rocksdb.compaction.range_del.drop.obsolete COUNT : 0
+rocksdb.compaction.optimized.del.drop.obsolete COUNT : 0
+rocksdb.compaction.cancelled COUNT : 0
+rocksdb.number.keys.written COUNT : 0
+rocksdb.number.keys.read COUNT : 903900
+rocksdb.number.keys.updated COUNT : 0
+rocksdb.bytes.written COUNT : 0
+rocksdb.bytes.read COUNT : 90390000
+rocksdb.number.db.seek COUNT : 0
+rocksdb.number.db.next COUNT : 0
+rocksdb.number.db.prev COUNT : 0
+rocksdb.number.db.seek.found COUNT : 0
+rocksdb.number.db.next.found COUNT : 0
+rocksdb.number.db.prev.found COUNT : 0
+rocksdb.db.iter.bytes.read COUNT : 0
+rocksdb.no.file.closes COUNT : 0
+rocksdb.no.file.opens COUNT : 2
+rocksdb.no.file.errors COUNT : 0
+rocksdb.l0.slowdown.micros COUNT : 0
+rocksdb.memtable.compaction.micros COUNT : 0
+rocksdb.l0.num.files.stall.micros COUNT : 0
+rocksdb.stall.micros COUNT : 0
+rocksdb.db.mutex.wait.micros COUNT : 0
+rocksdb.rate.limit.delay.millis COUNT : 0
+rocksdb.num.iterators COUNT : 0
+rocksdb.number.multiget.get COUNT : 0
+rocksdb.number.multiget.keys.read COUNT : 0
+rocksdb.number.multiget.bytes.read COUNT : 0
+rocksdb.number.deletes.filtered COUNT : 0
+rocksdb.number.merge.failures COUNT : 0
+rocksdb.bloom.filter.prefix.checked COUNT : 0
+rocksdb.bloom.filter.prefix.useful COUNT : 0
+rocksdb.number.reseeks.iteration COUNT : 0
+rocksdb.getupdatessince.calls COUNT : 0
+rocksdb.block.cachecompressed.miss COUNT : 0
+rocksdb.block.cachecompressed.hit COUNT : 0
+rocksdb.block.cachecompressed.add COUNT : 0
+rocksdb.block.cachecompressed.add.failures COUNT : 0
+rocksdb.wal.synced COUNT : 0
+rocksdb.wal.bytes COUNT : 0
+rocksdb.write.self COUNT : 0
+rocksdb.write.other COUNT : 0
+rocksdb.write.timeout COUNT : 0
+rocksdb.write.wal COUNT : 0
+rocksdb.compact.read.bytes COUNT : 0
+rocksdb.compact.write.bytes COUNT : 24004624
+rocksdb.flush.write.bytes COUNT : 0
+rocksdb.compact.read.marked.bytes COUNT : 0
+rocksdb.compact.read.periodic.bytes COUNT : 0
+rocksdb.compact.read.ttl.bytes COUNT : 0
+rocksdb.compact.write.marked.bytes COUNT : 0
+rocksdb.compact.write.periodic.bytes COUNT : 0
+rocksdb.compact.write.ttl.bytes COUNT : 0
+rocksdb.number.direct.load.table.properties COUNT : 0
+rocksdb.number.superversion_acquires COUNT : 1
+rocksdb.number.superversion_releases COUNT : 0
+rocksdb.number.superversion_cleanups COUNT : 0
+rocksdb.number.block.compressed COUNT : 10608
+rocksdb.number.block.decompressed COUNT : 21543
+rocksdb.number.block.not_compressed COUNT : 0
+rocksdb.merge.operation.time.nanos COUNT : 0
+rocksdb.filter.operation.time.nanos COUNT : 0
+rocksdb.row.cache.hit COUNT : 0
+rocksdb.row.cache.miss COUNT : 0
+rocksdb.read.amp.estimate.useful.bytes COUNT : 0
+rocksdb.read.amp.total.read.bytes COUNT : 0
+rocksdb.number.rate_limiter.drains COUNT : 0
+rocksdb.number.iter.skip COUNT : 0
+rocksdb.blobdb.num.put COUNT : 0
+rocksdb.blobdb.num.write COUNT : 0
+rocksdb.blobdb.num.get COUNT : 0
+rocksdb.blobdb.num.multiget COUNT : 0
+rocksdb.blobdb.num.seek COUNT : 0
+rocksdb.blobdb.num.next COUNT : 0
+rocksdb.blobdb.num.prev COUNT : 0
+rocksdb.blobdb.num.keys.written COUNT : 0
+rocksdb.blobdb.num.keys.read COUNT : 0
+rocksdb.blobdb.bytes.written COUNT : 0
+rocksdb.blobdb.bytes.read COUNT : 0
+rocksdb.blobdb.write.inlined COUNT : 0
+rocksdb.blobdb.write.inlined.ttl COUNT : 0
+rocksdb.blobdb.write.blob COUNT : 0
+rocksdb.blobdb.write.blob.ttl COUNT : 0
+rocksdb.blobdb.blob.file.bytes.written COUNT : 0
+rocksdb.blobdb.blob.file.bytes.read COUNT : 0
+rocksdb.blobdb.blob.file.synced COUNT : 0
+rocksdb.blobdb.blob.index.expired.count COUNT : 0
+rocksdb.blobdb.blob.index.expired.size COUNT : 0
+rocksdb.blobdb.blob.index.evicted.count COUNT : 0
+rocksdb.blobdb.blob.index.evicted.size COUNT : 0
+rocksdb.blobdb.gc.num.files COUNT : 0
+rocksdb.blobdb.gc.num.new.files COUNT : 0
+rocksdb.blobdb.gc.failures COUNT : 0
+rocksdb.blobdb.gc.num.keys.overwritten COUNT : 0
+rocksdb.blobdb.gc.num.keys.expired COUNT : 0
+rocksdb.blobdb.gc.num.keys.relocated COUNT : 0
+rocksdb.blobdb.gc.bytes.overwritten COUNT : 0
+rocksdb.blobdb.gc.bytes.expired COUNT : 0
+rocksdb.blobdb.gc.bytes.relocated COUNT : 0
+rocksdb.blobdb.fifo.num.files.evicted COUNT : 0
+rocksdb.blobdb.fifo.num.keys.evicted COUNT : 0
+rocksdb.blobdb.fifo.bytes.evicted COUNT : 0
+rocksdb.txn.overhead.mutex.prepare COUNT : 0
+rocksdb.txn.overhead.mutex.old.commit.map COUNT : 0
+rocksdb.txn.overhead.duplicate.key COUNT : 0
+rocksdb.txn.overhead.mutex.snapshot COUNT : 0
+rocksdb.txn.get.tryagain COUNT : 0
+rocksdb.number.multiget.keys.found COUNT : 0
+rocksdb.num.iterator.created COUNT : 0
+rocksdb.num.iterator.deleted COUNT : 0
+rocksdb.block.cache.compression.dict.miss COUNT : 0
+rocksdb.block.cache.compression.dict.hit COUNT : 0
+rocksdb.block.cache.compression.dict.add COUNT : 0
+rocksdb.block.cache.compression.dict.bytes.insert COUNT : 0
+rocksdb.block.cache.compression.dict.bytes.evict COUNT : 0
+rocksdb.block.cache.add.redundant COUNT : 0
+rocksdb.block.cache.index.add.redundant COUNT : 0
+rocksdb.block.cache.filter.add.redundant COUNT : 0
+rocksdb.block.cache.data.add.redundant COUNT : 0
+rocksdb.block.cache.compression.dict.add.redundant COUNT : 0
+rocksdb.files.marked.trash COUNT : 0
+rocksdb.files.deleted.immediately COUNT : 0
+rocksdb.error.handler.bg.errro.count COUNT : 0
+rocksdb.error.handler.bg.io.errro.count COUNT : 0
+rocksdb.error.handler.bg.retryable.io.errro.count COUNT : 0
+rocksdb.error.handler.autoresume.count COUNT : 0
+rocksdb.error.handler.autoresume.retry.total.count COUNT : 0
+rocksdb.error.handler.autoresume.success.count COUNT : 0
+rocksdb.memtable.payload.bytes.at.flush COUNT : 0
+rocksdb.memtable.garbage.bytes.at.flush COUNT : 0
+rocksdb.secondary.cache.hits COUNT : 0
+rocksdb.db.get.micros P50 : 5.483680 P95 : 14.274917 P99 : 21.608303 P100 : 4490.000000 COUNT : 903900 SUM : 7367812
+rocksdb.db.write.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.compaction.times.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.compaction.times.cpu_micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.subcompaction.setup.times.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.table.sync.micros P50 : 59632.000000 P95 : 59632.000000 P99 : 59632.000000 P100 : 59632.000000 COUNT : 1 SUM : 59632
+rocksdb.compaction.outfile.sync.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.wal.file.sync.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.manifest.file.sync.micros P50 : 9900.000000 P95 : 11192.000000 P99 : 11192.000000 P100 : 11192.000000 COUNT : 2 SUM : 20944
+rocksdb.table.open.io.micros P50 : 380.000000 P95 : 2597.000000 P99 : 2597.000000 P100 : 2597.000000 COUNT : 2 SUM : 2865
+rocksdb.db.multiget.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.read.block.compaction.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.read.block.get.micros P50 : 4.770503 P95 : 151.972298 P99 : 256.128571 P100 : 4470.000000 COUNT : 21543 SUM : 744841
+rocksdb.write.raw.block.micros P50 : 0.505768 P95 : 0.960959 P99 : 1.169318 P100 : 393.000000 COUNT : 10610 SUM : 11380
+rocksdb.l0.slowdown.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.memtable.compaction.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.num.files.stall.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.hard.rate.limit.delay.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.soft.rate.limit.delay.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.numfiles.in.singlecompaction P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.db.seek.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.db.write.stall P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.sst.read.micros P50 : 1.136529 P95 : 144.432864 P99 : 211.051969 P100 : 4432.000000 COUNT : 21549 SUM : 641963
+rocksdb.num.subcompactions.scheduled P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.bytes.per.read P50 : 100.000000 P95 : 100.000000 P99 : 100.000000 P100 : 100.000000 COUNT : 903900 SUM : 90390000
+rocksdb.bytes.per.write P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.bytes.per.multiget P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.bytes.compressed P50 : 3650.000000 P95 : 4325.127286 P99 : 4385.138601 P100 : 211085.000000 COUNT : 10608 SUM : 42608073
+rocksdb.bytes.decompressed P50 : 3650.034819 P95 : 4325.128830 P99 : 4385.137187 P100 : 217619.000000 COUNT : 21543 SUM : 86532091
+rocksdb.compression.times.nanos P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.decompression.times.nanos P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.read.num.merge_operands P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.key.size P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.value.size P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.write.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.get.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.multiget.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.seek.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.next.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.prev.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.blob.file.write.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.blob.file.read.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.blob.file.sync.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.gc.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.compression.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.blobdb.decompression.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.db.flush.micros P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.sst.batch.size P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.num.index.and.filter.blocks.read.per.level P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.num.data.blocks.read.per.level P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.num.sst.read.per.level P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+rocksdb.error.handler.autoresume.retry.count P50 : 0.000000 P95 : 0.000000 P99 : 0.000000 P100 : 0.000000 COUNT : 0 SUM : 0
+
+5.21user 2.51system 0:08.44elapsed 91%CPU (0avgtext+0avgdata 99268maxresident)k
+181144inputs+47224outputs (60major+39290minor)pagefaults 0swaps

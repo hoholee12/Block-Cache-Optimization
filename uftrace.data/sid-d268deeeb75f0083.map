@@ -1,0 +1,80 @@
+561ba74a5000-561ba7a0f000 r-xp 00000000 08:01 4862955                    /home/jeongho/rocksdb/db_bench
+561ba7c0e000-561ba7c22000 r--p 00569000 08:01 4862955                    /home/jeongho/rocksdb/db_bench
+561ba7c22000-561ba7c23000 rw-p 0057d000 08:01 4862955                    /home/jeongho/rocksdb/db_bench
+561ba7c23000-561ba8000000 rw-p 00000000 00:00 0 
+561ba8f02000-561ba8f23000 rw-p 00000000 00:00 0                          [heap]
+7f8503c68000-7f8503c81000 r-xp 00000000 08:01 3678475                    /usr/lib/x86_64-linux-gnu/libelf-0.170.so
+7f8503c81000-7f8503e80000 ---p 00019000 08:01 3678475                    /usr/lib/x86_64-linux-gnu/libelf-0.170.so
+7f8503e80000-7f8503e81000 r--p 00018000 08:01 3678475                    /usr/lib/x86_64-linux-gnu/libelf-0.170.so
+7f8503e81000-7f8503e82000 rw-p 00019000 08:01 3678475                    /usr/lib/x86_64-linux-gnu/libelf-0.170.so
+7f8503e82000-7f8504069000 r-xp 00000000 08:01 2621651                    /lib/x86_64-linux-gnu/libc-2.27.so
+7f8504069000-7f8504269000 ---p 001e7000 08:01 2621651                    /lib/x86_64-linux-gnu/libc-2.27.so
+7f8504269000-7f850426d000 r--p 001e7000 08:01 2621651                    /lib/x86_64-linux-gnu/libc-2.27.so
+7f850426d000-7f850426f000 rw-p 001eb000 08:01 2621651                    /lib/x86_64-linux-gnu/libc-2.27.so
+7f850426f000-7f8504273000 rw-p 00000000 00:00 0 
+7f8504273000-7f850428a000 r-xp 00000000 08:01 2622758                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f850428a000-7f8504489000 ---p 00017000 08:01 2622758                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f8504489000-7f850448a000 r--p 00016000 08:01 2622758                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f850448a000-7f850448b000 rw-p 00017000 08:01 2622758                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f850448b000-7f8504628000 r-xp 00000000 08:01 2621655                    /lib/x86_64-linux-gnu/libm-2.27.so
+7f8504628000-7f8504827000 ---p 0019d000 08:01 2621655                    /lib/x86_64-linux-gnu/libm-2.27.so
+7f8504827000-7f8504828000 r--p 0019c000 08:01 2621655                    /lib/x86_64-linux-gnu/libm-2.27.so
+7f8504828000-7f8504829000 rw-p 0019d000 08:01 2621655                    /lib/x86_64-linux-gnu/libm-2.27.so
+7f8504829000-7f8504a25000 r-xp 00000000 08:01 3683843                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.29
+7f8504a25000-7f8504c25000 ---p 001fc000 08:01 3683843                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.29
+7f8504c25000-7f8504c30000 r--p 001fc000 08:01 3683843                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.29
+7f8504c30000-7f8504c33000 rw-p 00207000 08:01 3683843                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.29
+7f8504c33000-7f8504c36000 rw-p 00000000 00:00 0 
+7f8504c36000-7f8504cb0000 r-xp 00000000 08:01 3670734                    /usr/lib/x86_64-linux-gnu/libzstd.so.1.3.3
+7f8504cb0000-7f8504eaf000 ---p 0007a000 08:01 3670734                    /usr/lib/x86_64-linux-gnu/libzstd.so.1.3.3
+7f8504eaf000-7f8504eb0000 r--p 00079000 08:01 3670734                    /usr/lib/x86_64-linux-gnu/libzstd.so.1.3.3
+7f8504eb0000-7f8504eb1000 rw-p 0007a000 08:01 3670734                    /usr/lib/x86_64-linux-gnu/libzstd.so.1.3.3
+7f8504eb1000-7f8504ecc000 r-xp 00000000 08:01 3670149                    /usr/lib/x86_64-linux-gnu/liblz4.so.1.7.1
+7f8504ecc000-7f85050cb000 ---p 0001b000 08:01 3670149                    /usr/lib/x86_64-linux-gnu/liblz4.so.1.7.1
+7f85050cb000-7f85050cc000 r--p 0001a000 08:01 3670149                    /usr/lib/x86_64-linux-gnu/liblz4.so.1.7.1
+7f85050cc000-7f85050cd000 rw-p 0001b000 08:01 3670149                    /usr/lib/x86_64-linux-gnu/liblz4.so.1.7.1
+7f85050cd000-7f85050dc000 r-xp 00000000 08:01 2626847                    /lib/x86_64-linux-gnu/libbz2.so.1.0.4
+7f85050dc000-7f85052db000 ---p 0000f000 08:01 2626847                    /lib/x86_64-linux-gnu/libbz2.so.1.0.4
+7f85052db000-7f85052dc000 r--p 0000e000 08:01 2626847                    /lib/x86_64-linux-gnu/libbz2.so.1.0.4
+7f85052dc000-7f85052dd000 rw-p 0000f000 08:01 2626847                    /lib/x86_64-linux-gnu/libbz2.so.1.0.4
+7f85052dd000-7f85052f9000 r-xp 00000000 08:01 2621815                    /lib/x86_64-linux-gnu/libz.so.1.2.11
+7f85052f9000-7f85054f8000 ---p 0001c000 08:01 2621815                    /lib/x86_64-linux-gnu/libz.so.1.2.11
+7f85054f8000-7f85054f9000 r--p 0001b000 08:01 2621815                    /lib/x86_64-linux-gnu/libz.so.1.2.11
+7f85054f9000-7f85054fa000 rw-p 0001c000 08:01 2621815                    /lib/x86_64-linux-gnu/libz.so.1.2.11
+7f85054fa000-7f850551e000 r-xp 00000000 08:01 3683161                    /usr/lib/x86_64-linux-gnu/libgflags.so.2.2.1
+7f850551e000-7f850571d000 ---p 00024000 08:01 3683161                    /usr/lib/x86_64-linux-gnu/libgflags.so.2.2.1
+7f850571d000-7f850571e000 r--p 00023000 08:01 3683161                    /usr/lib/x86_64-linux-gnu/libgflags.so.2.2.1
+7f850571e000-7f850571f000 rw-p 00024000 08:01 3683161                    /usr/lib/x86_64-linux-gnu/libgflags.so.2.2.1
+7f850571f000-7f8505726000 r-xp 00000000 08:01 3681869                    /usr/lib/x86_64-linux-gnu/libsnappy.so.1.1.7
+7f8505726000-7f8505925000 ---p 00007000 08:01 3681869                    /usr/lib/x86_64-linux-gnu/libsnappy.so.1.1.7
+7f8505925000-7f8505926000 r--p 00006000 08:01 3681869                    /usr/lib/x86_64-linux-gnu/libsnappy.so.1.1.7
+7f8505926000-7f8505927000 rw-p 00007000 08:01 3681869                    /usr/lib/x86_64-linux-gnu/libsnappy.so.1.1.7
+7f8505927000-7f850592e000 r-xp 00000000 08:01 2621668                    /lib/x86_64-linux-gnu/librt-2.27.so
+7f850592e000-7f8505b2d000 ---p 00007000 08:01 2621668                    /lib/x86_64-linux-gnu/librt-2.27.so
+7f8505b2d000-7f8505b2e000 r--p 00006000 08:01 2621668                    /lib/x86_64-linux-gnu/librt-2.27.so
+7f8505b2e000-7f8505b2f000 rw-p 00007000 08:01 2621668                    /lib/x86_64-linux-gnu/librt-2.27.so
+7f8505b2f000-7f8505b49000 r-xp 00000000 08:01 2621666                    /lib/x86_64-linux-gnu/libpthread-2.27.so
+7f8505b49000-7f8505d48000 ---p 0001a000 08:01 2621666                    /lib/x86_64-linux-gnu/libpthread-2.27.so
+7f8505d48000-7f8505d49000 r--p 00019000 08:01 2621666                    /lib/x86_64-linux-gnu/libpthread-2.27.so
+7f8505d49000-7f8505d4a000 rw-p 0001a000 08:01 2621666                    /lib/x86_64-linux-gnu/libpthread-2.27.so
+7f8505d4a000-7f8505d4e000 rw-p 00000000 00:00 0 
+7f8505d4e000-7f8505d51000 r-xp 00000000 08:01 2621654                    /lib/x86_64-linux-gnu/libdl-2.27.so
+7f8505d51000-7f8505f50000 ---p 00003000 08:01 2621654                    /lib/x86_64-linux-gnu/libdl-2.27.so
+7f8505f50000-7f8505f51000 r--p 00002000 08:01 2621654                    /lib/x86_64-linux-gnu/libdl-2.27.so
+7f8505f51000-7f8505f52000 rw-p 00003000 08:01 2621654                    /lib/x86_64-linux-gnu/libdl-2.27.so
+7f8505f52000-7f8505f75000 r-xp 00000000 08:01 6686947                    /usr/lib/uftrace/libmcount-fast.so
+7f8505f75000-7f8506175000 ---p 00023000 08:01 6686947                    /usr/lib/uftrace/libmcount-fast.so
+7f8506175000-7f8506176000 r--p 00023000 08:01 6686947                    /usr/lib/uftrace/libmcount-fast.so
+7f8506176000-7f8506177000 rw-p 00024000 08:01 6686947                    /usr/lib/uftrace/libmcount-fast.so
+7f8506177000-7f8506178000 rw-p 00000000 00:00 0 
+7f8506178000-7f85061a1000 r-xp 00000000 08:01 2621647                    /lib/x86_64-linux-gnu/ld-2.27.so
+7f8506371000-7f850637d000 rw-p 00000000 00:00 0 
+7f850639f000-7f85063a1000 rw-p 00000000 00:00 0 
+7f85063a1000-7f85063a2000 r--p 00029000 08:01 2621647                    /lib/x86_64-linux-gnu/ld-2.27.so
+7f85063a2000-7f85063a3000 rw-p 0002a000 08:01 2621647                    /lib/x86_64-linux-gnu/ld-2.27.so
+7f85063a3000-7f85063a4000 rw-p 00000000 00:00 0 
+7ffe18d66000-7ffe18d86000 rwxp 00000000 00:00 0                          [stack]
+7ffe18d86000-7ffe18d87000 rw-p 00000000 00:00 0 
+7ffe18df7000-7ffe18dfa000 r--p 00000000 00:00 0                          [vvar]
+7ffe18dfa000-7ffe18dfb000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]

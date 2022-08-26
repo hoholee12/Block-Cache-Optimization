@@ -1,0 +1,30 @@
+RocksDB:    version 6.24
+Date:       Mon Jun 20 14:15:58 2022
+CPU:        8 * Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
+CPUCache:   8192 KB
+unknown benchmark 'readandom'
+Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+current level: 0
+mymsg /home/jeongho/mnt/000009.buf CREATE
+Rocks2level is called on db_impl.cc 2
+current level: 0
+mymsg /home/jeongho/mnt/000013.buf CREATE
+mymsg /home/jeongho/mnt/000008.log DELETE level:-1
+Keys:       16 bytes each (+ 0 bytes user-defined timestamp)
+Values:     100 bytes each (50 bytes after compression)
+Entries:    903900
+Prefix:    0 bytes
+Keys per prefix:    0
+RawSize:    100.0 MB (estimated)
+FileSize:   56.9 MB (estimated)
+Write rate: 0 bytes/second
+Read rate: 0 ops/second
+Compression: Snappy
+Compression sampling rate: 0
+Memtablerep: skip_list
+Perf Level: 1
+------------------------------------------------
+Command exited with non-zero status 1
+0.66user 0.05system 0:00.90elapsed 79%CPU (0avgtext+0avgdata 75124maxresident)k
+134096inputs+47056outputs (60major+17266minor)pagefaults 0swaps
