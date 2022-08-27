@@ -240,7 +240,10 @@ void LRUCacheShard::EraseUnRefEntries() {
       assert(old->InCache() && !old->HasRefs());
       LRU_Remove(old);
       table_.Remove(old->key(), old->hash);
-      cbhtable_.Remove(old->key(), old->hash);
+      {
+        WriteLock wl(&rwmutex_);
+        cbhtable_.Remove(old->key(), old->hash);
+      }
       old->SetInCache(false);
       size_t total_charge = old->CalcTotalCharge(metadata_charge_policy_);
       assert(usage_ >= total_charge);
@@ -371,10 +374,6 @@ void LRUCacheShard::MaintainPoolSize() {
 
 void LRUCacheShard::EvictFromLRU(size_t charge,
                                  autovector<LRUHandle*>* deleted) {
-
-  WriteLock wl(&rwmutex_);
-
-
   while ((usage_ + charge) > capacity_ && lru_.next != &lru_) {
     LRUHandle* old = lru_.next;
     // LRU list contains only elements which can be evicted
@@ -382,7 +381,10 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     LRU_Remove(old);
     table_.Remove(old->key(), old->hash);
     //evict from cbhtable as well
-    cbhtable_.Remove(old->key(), old->hash);
+    {
+      WriteLock wl(&rwmutex_);
+      cbhtable_.Remove(old->key(), old->hash);
+    }
     old->SetInCache(false);
     size_t old_total_charge = old->CalcTotalCharge(metadata_charge_policy_);
     assert(usage_ >= old_total_charge);
@@ -430,6 +432,7 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
     // is freed or the lru list is empty
     EvictFromLRU(total_charge, &last_reference_list);
 
+
     if ((usage_ + total_charge) > capacity_ &&
         (strict_capacity_limit_ || handle == nullptr)) {
       e->SetInCache(false);
@@ -451,7 +454,10 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
       usage_ += total_charge;
       if (old != nullptr) {
         //remove the entry from cbhtable
-        cbhtable_.Remove(old->key(), old->hash);
+        {
+          WriteLock wl(&rwmutex_);
+          cbhtable_.Remove(old->key(), old->hash);
+        }
         s = Status::OkOverwritten();
         assert(old->InCache());
         old->SetInCache(false);
@@ -541,18 +547,14 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   {
-    
-    rwmutex_.ReadLock();
-    e = cbhtable_.Lookup(key, hash);
-    //hit!
-    if(e != nullptr){
-      rwmutex_.ReadUnlock();
-      return reinterpret_cast<Cache::Handle*>(e);
+    {
+      ReadLock rl(&rwmutex_);
+      e = cbhtable_.Lookup(key, hash);
+      //hit!
+      if(e != nullptr){
+        return reinterpret_cast<Cache::Handle*>(e);
+      }
     }
-    else{
-      rwmutex_.ReadUnlock();
-    }
-
 /*
     struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
@@ -593,10 +595,11 @@ Cache::Handle* LRUCacheShard::Lookup(
       //i am the most accessed
       if(i == numshards){
         printf("called %d times\n", ++called);
-        rwmutex_.WriteLock();
-        //insert to cbhtable
-        cbhtable_.Insert(e);
-        rwmutex_.WriteUnlock();
+        {
+          WriteLock wl(&rwmutex_);
+          //insert to cbhtable
+          cbhtable_.Insert(e);
+        }
       }
 
       //reset accesscounts
@@ -703,7 +706,10 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
-        cbhtable_.Remove(e->key(), e->hash);
+        {
+          WriteLock wl(&rwmutex_);
+          cbhtable_.Remove(e->key(), e->hash);
+        }
         e->SetInCache(false);
       } else {
         // Put the item back on the LRU list, and don't free it
@@ -770,7 +776,10 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   {
     MutexLock l(&mutex_);
     e = table_.Remove(key, hash);
-    cbhtable_.Remove(key, hash);
+    {
+      WriteLock wl(&rwmutex_);
+      cbhtable_.Remove(key, hash);
+    }
     if (e != nullptr) {
       assert(e->InCache());
       e->SetInCache(false);
