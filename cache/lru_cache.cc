@@ -367,12 +367,18 @@ void LRUCacheShard::MaintainPoolSize() {
 
 void LRUCacheShard::EvictFromLRU(size_t charge,
                                  autovector<LRUHandle*>* deleted) {
+
+  WriteLock wl(&rwmutex_);
+
+
   while ((usage_ + charge) > capacity_ && lru_.next != &lru_) {
     LRUHandle* old = lru_.next;
     // LRU list contains only elements which can be evicted
     assert(old->InCache() && !old->HasRefs());
     LRU_Remove(old);
     table_.Remove(old->key(), old->hash);
+    //evict from cbhtable as well
+    cbhtable_.Remove(old->key(), old->hash);
     old->SetInCache(false);
     size_t old_total_charge = old->CalcTotalCharge(metadata_charge_policy_);
     assert(usage_ >= old_total_charge);
