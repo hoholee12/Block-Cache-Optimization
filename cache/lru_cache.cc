@@ -546,11 +546,12 @@ Cache::Handle* LRUCacheShard::Lookup(
     e = cbhtable_.Lookup(key, hash);
     //hit!
     if(e != nullptr){
+      rwmutex_.ReadUnlock();
       return reinterpret_cast<Cache::Handle*>(e);
     }
-    rwmutex_.ReadUnlock();
-    
-
+    else{
+      rwmutex_.ReadUnlock();
+    }
 
 /*
     struct timespec telapsed = {0, 0};
@@ -592,8 +593,10 @@ Cache::Handle* LRUCacheShard::Lookup(
       //i am the most accessed
       if(i == numshards){
         printf("called %d times\n", ++called);
+        rwmutex_.WriteLock();
         //insert to cbhtable
         cbhtable_.Insert(e);
+        rwmutex_.WriteUnlock();
       }
 
       //reset accesscounts
