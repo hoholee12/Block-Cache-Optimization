@@ -541,7 +541,7 @@ uint32_t GetNumShards() {
 }
 
 
-#define NLIMIT 1000
+#define NLIMIT 100000
 
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
@@ -612,8 +612,9 @@ Cache::Handle* LRUCacheShard::Lookup(
           f->SetPriority(priority);
           memcpy(f->key_data, e->key_data, e->key_length);
           f->value = e->value;
-          f->sec_handle = e->sec_handle;
+          f->sec_handle = nullptr;
           f->Ref();
+          f->SetinCBHT(true);
 
 
           cbhtable_.Insert(f);
@@ -716,6 +717,21 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
+    
+    /*
+    if(e->IsinCBHT()){
+      LRUHandle* tmp = e;
+      {
+        WriteLock wl(&rwmutex_);
+        cbhtable_.Remove(e->key(), e->hash);
+      }
+      e = table_.Lookup(e->key(), e->hash);
+      //tmp->Free();
+      if(e == nullptr){
+        return false;
+      }
+    }
+    */
     last_reference = e->Unref();
     if (last_reference && e->InCache()) {
       // The item is still in cache, and nobody else holds a reference to it
@@ -724,10 +740,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
-        {
-          WriteLock wl(&rwmutex_);
-          cbhtable_.Remove(e->key(), e->hash);
-        }
+          
         e->SetInCache(false);
       } else {
         // Put the item back on the LRU list, and don't free it
@@ -749,7 +762,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
 
   // Free the entry here outside of mutex for performance reasons
   if (last_reference) {
-    e->Free();
+    //e->Free();
   }
   return last_reference;
 }
