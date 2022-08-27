@@ -17,6 +17,9 @@
 #include "monitoring/statistics.h"
 #include "util/mutexlock.h"
 
+int N = 0;
+int called = 0;
+
 namespace ROCKSDB_NAMESPACE {
 
 LRUHandleTable::LRUHandleTable(int max_upper_hash_bits)
@@ -567,18 +570,16 @@ Cache::Handle* LRUCacheShard::Lookup(
     shardaccesscount[hashshard] += 1;
    
 */
-    e = table_.Lookup(key, hash);
-
   //miss
     //1. mutex lock
     MutexLock l(&mutex_);
+    e = table_.Lookup(key, hash);
+
     uint32_t hashshard = Shard(hash);
     shardaccesscount_internal[hashshard] += 1;
-    static int N = 0;
-    const int Nlimit = 100;
     uint32_t numshards = GetNumShards();
     //count to N
-    if(N++ > Nlimit){
+    if(N++ > NLIMIT){
       N = 0;
       uint64_t i = 0;
       //check which shard is the most accessed
@@ -590,6 +591,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       
       //i am the most accessed
       if(i == numshards){
+        printf("called %d times\n", ++called);
         //insert to cbhtable
         cbhtable_.Insert(e);
       }
