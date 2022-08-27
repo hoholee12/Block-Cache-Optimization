@@ -540,6 +540,9 @@ uint32_t GetNumShards() {
    return shard_mask_ + 1; 
 }
 
+
+#define NLIMIT 1000
+
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
     const ShardedCache::CacheItemHelper* helper,
@@ -555,8 +558,12 @@ Cache::Handle* LRUCacheShard::Lookup(
         return reinterpret_cast<Cache::Handle*>(e);
       }
     }
-/*
-    struct timespec telapsed = {0, 0};
+
+   
+  
+  //miss
+    //1. mutex lock
+     struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
@@ -571,14 +578,8 @@ Cache::Handle* LRUCacheShard::Lookup(
     }
     shardtotaltime[hashshard] += telapsedtotal;
     shardaccesscount[hashshard] += 1;
-   
-*/
-  //miss
-    //1. mutex lock
-    MutexLock l(&mutex_);
     e = table_.Lookup(key, hash);
 
-    uint32_t hashshard = Shard(hash);
     shardaccesscount_internal[hashshard] += 1;
     uint32_t numshards = GetNumShards();
     //count to N
@@ -597,8 +598,25 @@ Cache::Handle* LRUCacheShard::Lookup(
         printf("called %d times\n", ++called);
         {
           WriteLock wl(&rwmutex_);
-          //insert to cbhtable
-          cbhtable_.Insert(e);
+          //copy and insert to cbhtable
+          LRUHandle* f = reinterpret_cast<LRUHandle*>(
+          new char[sizeof(LRUHandle) - 1 + e->key_length]);
+
+          f->flags = e->flags;
+          f->SetSecondaryCacheCompatible(true);
+          f->info_.helper = e->info_.helper;
+          f->key_length = e->key_length;
+          f->hash = e->hash;
+          f->refs = e->refs;
+          f->next = f->prev = nullptr;
+          f->SetPriority(priority);
+          memcpy(f->key_data, e->key_data, e->key_length);
+          f->value = e->value;
+          f->sec_handle = e->sec_handle;
+          f->Ref();
+
+
+          cbhtable_.Insert(f);
         }
       }
 
