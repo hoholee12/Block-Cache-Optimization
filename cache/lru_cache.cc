@@ -541,7 +541,7 @@ uint32_t GetNumShards() {
 }
 
 
-#define NLIMIT 100000
+#define NLIMIT 1000000
 
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
@@ -595,7 +595,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       
       //i am the most accessed
       if(i == numshards){
-        printf("called %d times\n", ++called);
+        //printf("called %d times\n", ++called);
         {
           WriteLock wl(&rwmutex_);
           //copy and insert to cbhtable
@@ -614,8 +614,6 @@ Cache::Handle* LRUCacheShard::Lookup(
           f->value = e->value;
           f->sec_handle = nullptr;
           f->Ref();
-          f->SetinCBHT(true);
-
 
           cbhtable_.Insert(f);
         }
@@ -717,36 +715,30 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
-    
-    /*
-    if(e->IsinCBHT()){
-      LRUHandle* tmp = e;
-      {
-        WriteLock wl(&rwmutex_);
-        cbhtable_.Remove(e->key(), e->hash);
-      }
-      e = table_.Lookup(e->key(), e->hash);
-      //tmp->Free();
-      if(e == nullptr){
-        return false;
-      }
-    }
-    */
+
     last_reference = e->Unref();
     if (last_reference && e->InCache()) {
       // The item is still in cache, and nobody else holds a reference to it
+
       if (usage_ > capacity_ || force_erase) {
+              /*
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
-          
+        
+        {
+          WriteLock wl(&rwmutex_);
+          cbhtable_.Remove(e->key(), e->hash);
+        }
+        
         e->SetInCache(false);
-      } else {
+        */
+      } //else {
         // Put the item back on the LRU list, and don't free it
         LRU_Insert(e);
         last_reference = false;
-      }
+      //}
     }
     // If it was the last reference, and the entry is either not secondary
     // cache compatible (i.e a dummy entry for accounting), or is secondary
@@ -761,6 +753,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   }
 
   // Free the entry here outside of mutex for performance reasons
+  //crashes here
   if (last_reference) {
     //e->Free();
   }

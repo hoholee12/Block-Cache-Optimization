@@ -116,11 +116,6 @@ struct LRUHandle {
 
   // Return true if there are external refs, false otherwise.
   bool HasRefs() const { return refs > 0; }
-  
-  //cbht
-  bool incbht = false;
-  bool IsinCBHT() const {return  incbht; }
-  void SetinCBHT(bool what){ this->incbht = what;}
 
   bool InCache() const { return flags & IN_CACHE; }
   bool IsHighPri() const { return flags & IS_HIGH_PRI; }
