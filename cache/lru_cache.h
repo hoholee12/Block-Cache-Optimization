@@ -279,6 +279,56 @@ class LRUHandleTable {
   const int max_length_bits_;
 };
 
+class CBHTable {
+ public:
+  // If the table uses more hash bits than `max_upper_hash_bits`,
+  // it will eat into the bits used for sharding, which are constant
+  // for a given CBHTable.
+  explicit CBHTable(int max_upper_hash_bits);
+  ~CBHTable();
+
+  LRUHandle* Lookup(const Slice& key, uint32_t hash);
+  LRUHandle* Insert(LRUHandle* h);
+  LRUHandle* Remove(const Slice& key, uint32_t hash);
+
+  template <typename T>
+  void ApplyToEntriesRange(T func, uint32_t index_begin, uint32_t index_end) {
+    for (uint32_t i = index_begin; i < index_end; i++) {
+      LRUHandle* h = list_[i];
+      while (h != nullptr) {
+        auto n = h->next_hash;
+        assert(h->InCache());
+        func(h);
+        h = n;
+      }
+    }
+  }
+
+  int GetLengthBits() const { return length_bits_; }
+
+ private:
+  // Return a pointer to slot that points to a cache entry that
+  // matches key/hash.  If there is no such cache entry, return a
+  // pointer to the trailing slot in the corresponding linked list.
+  LRUHandle** FindPointer(const Slice& key, uint32_t hash);
+
+  void Resize();
+
+  // Number of hash bits (upper because lower bits used for sharding)
+  // used for table index. Length == 1 << length_bits_
+  int length_bits_;
+
+  // The table consists of an array of buckets where each bucket is
+  // a linked list of cache entries that hash into the bucket.
+  std::unique_ptr<LRUHandle*[]> list_;
+
+  // Number of elements currently in the table
+  uint32_t elems_;
+
+  // Set from max_upper_hash_bits (see constructor)
+  const int max_length_bits_;
+};
+
 // A single shard of sharded cache.
 class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
  public:
@@ -429,6 +479,11 @@ class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
   // ------------vvvvvvvvvvvvv-----------
   LRUHandleTable table_;
 
+  //CBH
+  CBHTable cbhtable_;
+  //rwlock for cbt
+  mutable port::RWMutex rwmutex_;
+
   // Memory size for entries residing in the cache
   size_t usage_;
 
@@ -439,8 +494,7 @@ class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
   // We don't count mutex_ as the cache's internal state so semantically we
   // don't mind mutex_ invoking the non-const actions.
   mutable port::Mutex mutex_;
-  //rwlock for speed
-  mutable port::RWMutex rwmutex_;
+
 
   std::shared_ptr<SecondaryCache> secondary_cache_;
 };
@@ -479,5 +533,7 @@ class LRUCache
   int num_shards_ = 0;
   std::shared_ptr<SecondaryCache> secondary_cache_;
 };
+
+
 
 }  // namespace ROCKSDB_NAMESPACE

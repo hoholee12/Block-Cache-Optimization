@@ -111,6 +111,98 @@ void LRUHandleTable::Resize() {
   length_bits_ = new_length_bits;
 }
 
+CBHTable::CBHTable(int max_upper_hash_bits)
+    : length_bits_(/* historical starting size*/ 4),
+      list_(new LRUHandle* [size_t{1} << length_bits_] {}),
+      elems_(0),
+      max_length_bits_(max_upper_hash_bits) {}
+
+CBHTable::~CBHTable() {
+  ApplyToEntriesRange(
+      [](LRUHandle* h) {
+        if (!h->HasRefs()) {
+          h->Free();
+        }
+      },
+      0, uint32_t{1} << length_bits_);
+}
+
+LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
+  return *FindPointer(key, hash);
+}
+
+//this replaces to new entry from old entry via same key, and returns old one?
+LRUHandle* CBHTable::Insert(LRUHandle* h) {
+  LRUHandle** ptr = FindPointer(h->key(), h->hash);
+  LRUHandle* old = *ptr;
+  h->next_hash = (old == nullptr ? nullptr : old->next_hash);
+  *ptr = h;
+  if (old == nullptr) {
+    ++elems_;
+    if ((elems_ >> length_bits_) > 0) {  // elems_ >= length
+      // Since each cache entry is fairly large, we aim for a small
+      // average linked list length (<= 1).
+      Resize();
+    }
+  }
+  return old;
+}
+
+LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
+  LRUHandle** ptr = FindPointer(key, hash);
+  LRUHandle* result = *ptr;
+  if (result != nullptr) {
+    *ptr = result->next_hash;
+    --elems_;
+  }
+  return result;
+}
+
+LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
+  //length_bits is lower, shard bits is higher. we already fixiated on one shard at this point. this is just finding block on list.
+  LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
+  //and this is done when collision
+  while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
+    ptr = &(*ptr)->next_hash;
+  }
+  return ptr;
+}
+
+void CBHTable::Resize() {
+  if (length_bits_ >= max_length_bits_) {
+    // Due to reaching limit of hash information, if we made the table
+    // bigger, we would allocate more addresses but only the same
+    // number would be used.
+    return;
+  }
+  if (length_bits_ >= 31) {
+    // Avoid undefined behavior shifting uint32_t by 32
+    return;
+  }
+
+  uint32_t old_length = uint32_t{1} << length_bits_;
+  int new_length_bits = length_bits_ + 1;
+  std::unique_ptr<LRUHandle* []> new_list {
+    new LRUHandle* [size_t{1} << new_length_bits] {}
+  };
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < old_length; i++) {
+    LRUHandle* h = list_[i];
+    while (h != nullptr) {
+      LRUHandle* next = h->next_hash;
+      uint32_t hash = h->hash;
+      LRUHandle** ptr = &new_list[hash >> (32 - new_length_bits)];
+      h->next_hash = *ptr;
+      *ptr = h;
+      h = next;
+      count++;
+    }
+  }
+  assert(elems_ == count);
+  list_ = std::move(new_list);
+  length_bits_ = new_length_bits;
+}
+
 LRUCacheShard::LRUCacheShard(
     size_t capacity, bool strict_capacity_limit, double high_pri_pool_ratio,
     bool use_adaptive_mutex, CacheMetadataChargePolicy metadata_charge_policy,
@@ -122,6 +214,7 @@ LRUCacheShard::LRUCacheShard(
       high_pri_pool_ratio_(high_pri_pool_ratio),
       high_pri_pool_capacity_(0),
       table_(max_upper_hash_bits),
+      cbhtable_(max_upper_hash_bits),
       usage_(0),
       lru_usage_(0),
       mutex_(use_adaptive_mutex),
