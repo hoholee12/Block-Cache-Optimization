@@ -517,6 +517,11 @@ uint32_t Shard(uint32_t hash) {
   return hash & shard_mask_;
 }
 
+uint32_t GetNumShards() {
+  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
+   return shard_mask_ + 1; 
+}
+
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
     const ShardedCache::CacheItemHelper* helper,
@@ -525,6 +530,17 @@ Cache::Handle* LRUCacheShard::Lookup(
   LRUHandle* e = nullptr;
   {
     
+    rwmutex_.ReadLock();
+    e = cbhtable_.Lookup(key, hash);
+    //hit!
+    if(e != nullptr){
+      return reinterpret_cast<Cache::Handle*>(e);
+    }
+    rwmutex_.ReadUnlock();
+    
+
+
+/*
     struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
 
@@ -541,8 +557,40 @@ Cache::Handle* LRUCacheShard::Lookup(
     shardtotaltime[hashshard] += telapsedtotal;
     shardaccesscount[hashshard] += 1;
    
-
+*/
     e = table_.Lookup(key, hash);
+
+  //miss
+    //1. mutex lock
+    MutexLock l(&mutex_);
+    uint32_t hashshard = Shard(hash);
+    shardaccesscount_internal[hashshard] += 1;
+    static int N = 0;
+    const int Nlimit = 10000;
+    uint32_t numshards = GetNumShards();
+    //count to N
+    if(N++ > Nlimit){
+      N = 0;
+      uint64_t i = 0;
+      //check which shard is the most accessed
+      for(; i < numshards; i++){
+        if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
+          break;
+        }
+      }
+      
+      //i am the most accessed
+      if(i == numshards){
+        //insert to cbhtable
+        cbhtable_.Insert(e);
+      }
+
+      //reset accesscounts
+      for(; i < numshards; i++){
+        shardaccesscount_internal[i] = 0;
+      }
+    }
+
     if (e != nullptr) {
       assert(e->InCache());
       if (!e->HasRefs()) {

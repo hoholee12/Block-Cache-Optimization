@@ -31,6 +31,7 @@
 time_t shardpeaktime[SHARDCOUNT];
 time_t shardtotaltime[SHARDCOUNT];
 uint64_t shardaccesscount[SHARDCOUNT];
+uint64_t shardaccesscount_internal[SHARDCOUNT];
 uint64_t numshardbits;
 uint64_t shardnumlimit;
 #define SHARDLIMIT 256
@@ -370,6 +371,7 @@ class CacheBench {
       shardtotaltime[i] = -1;
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
+      shardaccesscount_internal[i] = 0;
     }
     numshardbits = FLAGS_num_shard_bits;
     shardnumlimit = pow(2, numshardbits);
