@@ -237,6 +237,7 @@ void LRUCacheShard::EraseUnRefEntries() {
       assert(old->InCache() && !old->HasRefs());
       LRU_Remove(old);
       table_.Remove(old->key(), old->hash);
+      cbhtable_.Remove(old->key(), old->hash);
       old->SetInCache(false);
       size_t total_charge = old->CalcTotalCharge(metadata_charge_policy_);
       assert(usage_ >= total_charge);
@@ -446,6 +447,8 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
       LRUHandle* old = table_.Insert(e);
       usage_ += total_charge;
       if (old != nullptr) {
+        //remove the entry from cbhtable
+        cbhtable_.Remove(old->key(), old->hash);
         s = Status::OkOverwritten();
         assert(old->InCache());
         old->SetInCache(false);
@@ -572,7 +575,7 @@ Cache::Handle* LRUCacheShard::Lookup(
     uint32_t hashshard = Shard(hash);
     shardaccesscount_internal[hashshard] += 1;
     static int N = 0;
-    const int Nlimit = 10000;
+    const int Nlimit = 100;
     uint32_t numshards = GetNumShards();
     //count to N
     if(N++ > Nlimit){
@@ -695,6 +698,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
+        cbhtable_.Remove(e->key(), e->hash);
         e->SetInCache(false);
       } else {
         // Put the item back on the LRU list, and don't free it
@@ -761,6 +765,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   {
     MutexLock l(&mutex_);
     e = table_.Remove(key, hash);
+    cbhtable_.Remove(key, hash);
     if (e != nullptr) {
       assert(e->InCache());
       e->SetInCache(false);
