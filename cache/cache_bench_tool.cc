@@ -28,7 +28,6 @@
 #include "util/string_util.h"
 
 
-time_t shardpeaktime[SHARDCOUNT];
 time_t shardtotaltime[SHARDCOUNT];
 uint64_t shardaccesscount[SHARDCOUNT];
 uint64_t shardaccesscount_internal[SHARDCOUNT];
@@ -373,7 +372,6 @@ class CacheBench {
 
     //initialize shard counters
     for(int i = 0; i < SHARDCOUNT; i++){
-      shardpeaktime[i] = -1;
       shardtotaltime[i] = -1;
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
@@ -476,44 +474,8 @@ class CacheBench {
     //thread num shard
     printf("\n\nthreadnumshard:\n");
     for(uint64_t i = 0; i < shardlimit; i++) printf("%d\n", threadnumshard[i]);
-
-    //results - shardpeaktime
-    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
     int j = 0;
-    printf("\n\n");
-    int maxpeaki = -1;
-    time_t maxpeaktime = -1;
-    time_t peaktotal = 0;
     
-    for(uint64_t i = 0; i < shardnumlimit; i++){
-      if(shardpeaktime[i] != -1) {
-        peaktotal += shardpeaktime[i];
-        if(shardpeaktime[i] > maxpeaktime){
-          maxpeaki = i;
-          maxpeaktime = shardpeaktime[i];
-        }
-        //printf("%ld\n", shardpeaktime[i]);
-        
-      }
-      else{
-        //printf("0\n");
-      }
-
-      if(shardpeaktime[i] != -1){
-        displayarr[j] += (uint64_t)shardpeaktime[i];
-      }
-      if(i % repeat == repeat - 1){
-        //displayarr[j] /= repeat; //avg
-        j++;
-      }
-      
-    }
-
-    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-
-    printf("\n\nlargest peak time: shard=%d with %ld ns\n", maxpeaki, maxpeaktime);
-    printf("average peak time = %ld ns\n", peaktotal / (time_t)pow(2, numshardbits));
-
     //results - shardtotaltime
     memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
     j = 0;

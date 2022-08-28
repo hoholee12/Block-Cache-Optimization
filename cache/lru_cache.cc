@@ -550,14 +550,17 @@ Cache::Handle* LRUCacheShard::Lookup(
   LRUHandle* e = nullptr;
   {
     {
+      /*
       //check access time
       struct timespec telapsed = {0, 0};
       struct timespec tstart = {0, 0}, tend = {0, 0};
 
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+      */
       ReadLock rl(&rwmutex_);
       
       e = cbhtable_.Lookup(key, hash);
+      /*
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
       telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
       telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
@@ -565,6 +568,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       uint32_t hashshard = Shard(hash);
       readtotaltime[hashshard] += telapsedtotal;
       //hit!
+      */
       if(e != nullptr){
         return reinterpret_cast<Cache::Handle*>(e);
       }
@@ -584,9 +588,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
     uint32_t hashshard = Shard(hash);
-    if(shardpeaktime[hashshard] < telapsedtotal){
-      shardpeaktime[hashshard] = telapsedtotal;
-    }
     shardtotaltime[hashshard] += telapsedtotal;
     shardaccesscount[hashshard] += 1;
     e = table_.Lookup(key, hash);
