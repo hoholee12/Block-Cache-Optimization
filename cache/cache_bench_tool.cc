@@ -32,6 +32,7 @@ time_t shardpeaktime[SHARDCOUNT];
 time_t shardtotaltime[SHARDCOUNT];
 uint64_t shardaccesscount[SHARDCOUNT];
 uint64_t shardaccesscount_internal[SHARDCOUNT];
+time_t readtotaltime[SHARDCOUNT];
 uint64_t numshardbits;
 uint64_t shardnumlimit;
 #define SHARDLIMIT 256
@@ -44,6 +45,9 @@ uint32_t threadnumshard[SHARDCOUNT];
 
 bool enableshardfix;
 uint64_t shardsperthread;
+
+int N = 0;
+int called = 0;
 
 
 using GFLAGS_NAMESPACE::ParseCommandLineFlags;
@@ -220,7 +224,7 @@ struct KeyGen {
 
   Slice GetRand(Random64& rnd, uint64_t max_key, int max_log, bool count = false, int threadnum = -1) {
     uint64_t key = 0;
-    if (FLAGS_skewed) {
+    if (FLAGS_skewed && threadnum != -1) {
 
       /*
       uint64_t raw = rnd.Next();
@@ -359,6 +363,8 @@ class CacheBench {
     for (uint64_t i = 0; i < 2 * FLAGS_cache_size; i += FLAGS_value_bytes) {
       cache_->Insert(keygen.GetRand(rnd, max_key_, max_log_), createValue(rnd),
                      &helper1, FLAGS_value_bytes);
+      cache_->Insert(keygen.GetRand(rnd, max_key_, max_log_, false, 0), createValue(rnd),
+                     &helper1, FLAGS_value_bytes);
     }
   }
 
@@ -372,6 +378,7 @@ class CacheBench {
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
       shardaccesscount_internal[i] = 0;
+      readtotaltime[i] = -1;
     }
     numshardbits = FLAGS_num_shard_bits;
     shardnumlimit = pow(2, numshardbits);
@@ -451,7 +458,7 @@ class CacheBench {
 
     printf("\n%s", stats_report.c_str());
 
-    
+    printf("\n\n how much is CBHT update called: %d\n\n", called);
 
     printf("\n\neasy index:\n");
 
@@ -540,6 +547,40 @@ class CacheBench {
 
     printf("\n\nlargest total time: shard=%d with %ld ns\n", maxtotali, maxtotaltime);
     printf("average total time = %ld ns\n", totaltotal / (time_t)pow(2, numshardbits));
+
+    //results - readtotaltime
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int readtotali = -1;
+    time_t readmaxtotaltime = -1;
+    time_t readtotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      if(readtotaltime[i] != -1) {
+        readtotal += readtotaltime[i];
+        if(readtotaltime[i] > readmaxtotaltime){
+          readtotali = i;
+          readmaxtotaltime = readtotaltime[i];
+        }
+        //printf("%ld\n", readtotaltime[i]);
+      }
+      else{
+        //printf("0\n");
+      }
+
+      if(readtotaltime[i] != -1){
+        displayarr[j] += (uint64_t)readtotaltime[i];
+      }
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+
+    printf("\n\nlargest CBHT total time: shard=%d with %ld ns\n", readtotali, readmaxtotaltime);
+    printf("average CBHT total time = %ld ns\n", readtotal / (time_t)pow(2, numshardbits));
 
     //results - shardaccesscount
     memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);

@@ -17,8 +17,7 @@
 #include "monitoring/statistics.h"
 #include "util/mutexlock.h"
 
-int N = 0;
-int called = 0;
+
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -551,8 +550,20 @@ Cache::Handle* LRUCacheShard::Lookup(
   LRUHandle* e = nullptr;
   {
     {
+      //check access time
+      struct timespec telapsed = {0, 0};
+      struct timespec tstart = {0, 0}, tend = {0, 0};
+
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
       ReadLock rl(&rwmutex_);
+      
       e = cbhtable_.Lookup(key, hash);
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+      telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+      telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+      time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+      uint32_t hashshard = Shard(hash);
+      readtotaltime[hashshard] += telapsedtotal;
       //hit!
       if(e != nullptr){
         return reinterpret_cast<Cache::Handle*>(e);
@@ -563,7 +574,7 @@ Cache::Handle* LRUCacheShard::Lookup(
   
   //miss
     //1. mutex lock
-     struct timespec telapsed = {0, 0};
+    struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
@@ -595,6 +606,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       
       //i am the most accessed
       if(i == numshards){
+        ++called;
         //printf("called %d times\n", ++called);
         {
           WriteLock wl(&rwmutex_);
