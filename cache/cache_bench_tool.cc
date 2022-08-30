@@ -58,6 +58,8 @@ DEFINE_bool(populate_cache, true, "Populate cache before operations");
 
 DEFINE_bool(enableshardfix, false, "enableshardfix");
 
+DEFINE_uint32(nlimit, 10000, "CBHT N_LIMIT");
+
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
               "(expressed as a percentage)");
@@ -371,6 +373,8 @@ class CacheBench {
     else shardsperthread = shardnumlimit / FLAGS_threads;
 
     enableshardfix = FLAGS_enableshardfix;
+
+    NLIMIT = FLAGS_nlimit;
 
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);

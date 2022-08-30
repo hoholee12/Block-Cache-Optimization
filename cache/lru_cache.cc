@@ -28,13 +28,6 @@ LRUHandleTable::LRUHandleTable(int max_upper_hash_bits)
       max_length_bits_(max_upper_hash_bits) {}
 
 LRUHandleTable::~LRUHandleTable() {
-  ApplyToEntriesRange(
-      [](LRUHandle* h) {
-        if (!h->HasRefs()) {
-          h->Free();
-        }
-      },
-      0, uint32_t{1} << length_bits_);
 }
 
 LRUHandle* LRUHandleTable::Lookup(const Slice& key, uint32_t hash) {
@@ -120,13 +113,7 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       max_length_bits_(max_upper_hash_bits) {}
 
 CBHTable::~CBHTable() {
-  ApplyToEntriesRange(
-      [](LRUHandle* h) {
-        if (!h->HasRefs()) {
-          h->Free();
-        }
-      },
-      0, uint32_t{1} << length_bits_);
+  //CBHT entries are linked to HT. dont free them here.
 }
 
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
@@ -238,11 +225,12 @@ void LRUCacheShard::EraseUnRefEntries() {
       // LRU list contains only elements which can be evicted
       assert(old->InCache() && !old->HasRefs());
       LRU_Remove(old);
-      table_.Remove(old->key(), old->hash);
       {
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(old->key(), old->hash);
       }
+      table_.Remove(old->key(), old->hash);
+      
       old->SetInCache(false);
       size_t total_charge = old->CalcTotalCharge(metadata_charge_policy_);
       assert(usage_ >= total_charge);
@@ -378,12 +366,13 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     // LRU list contains only elements which can be evicted
     assert(old->InCache() && !old->HasRefs());
     LRU_Remove(old);
-    table_.Remove(old->key(), old->hash);
     //evict from cbhtable as well
     {
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(old->key(), old->hash);
     }
+    table_.Remove(old->key(), old->hash);
+
     old->SetInCache(false);
     size_t old_total_charge = old->CalcTotalCharge(metadata_charge_policy_);
     assert(usage_ >= old_total_charge);
@@ -498,7 +487,6 @@ uint32_t GetNumShards() {
 }
 
 
-#define NLIMIT 1000000
 // CBHT is allocated per shard, not as standalone
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
@@ -570,7 +558,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         
         //i am the most accessed
         if(i == numshards){
-          //++called;
+          ++called;
           //printf("called %d times\n", ++called);
           {
             WriteLock wl(&rwmutex_);
@@ -635,8 +623,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
-
-         {
+        {
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
         }

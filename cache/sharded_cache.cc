@@ -32,6 +32,7 @@ uint64_t shardsperthread;
 //////////////////////////////
 // internals counters for CBHT
 int N = 0;
+int NLIMIT = 10000;
 int called = 0;
 uint64_t shardaccesscount_internal[SHARDCOUNT];
 //////////////////////////////
