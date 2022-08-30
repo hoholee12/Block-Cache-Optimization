@@ -482,7 +482,8 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
 }
 
 void LRUCacheShard::Promote(LRUHandle* e) {
-  if(e){}
+  //unused
+  if(false){if(e){}}
   
 }
 
@@ -607,7 +608,7 @@ Cache::Handle* LRUCacheShard::Lookup(
   }
 
   //unused
-  if(helper){if(create_cb){if(wait){if(stats){}}}}
+  if(false){if(helper){if(create_cb){if(wait){if(stats){}}}}}
 
   return reinterpret_cast<Cache::Handle*>(e);
 }
@@ -865,6 +866,7 @@ double LRUCache::GetHighPriPoolRatio() {
 }
 
 void LRUCache::WaitAll(std::vector<Handle*>& handles) {
+  //unused
   if(false){handles.at(0);}
 }
 
