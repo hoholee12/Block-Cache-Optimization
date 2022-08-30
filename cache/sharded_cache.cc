@@ -27,13 +27,14 @@ uint64_t shardnumlimit;
 uint32_t threadnumshard[SHARDCOUNT];
 bool enableshardfix;
 uint64_t shardsperthread;
+int called = 0;
 //////////////////
 
 //////////////////////////////
 // internals counters for CBHT
-int N = 0;
+std::atomic<int> N(0);
 int NLIMIT = 10000;
-int called = 0;
+RWMutex_tmp sac_rwm_;
 uint64_t shardaccesscount_internal[SHARDCOUNT];
 //////////////////////////////
 

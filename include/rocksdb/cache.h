@@ -32,16 +32,55 @@
 #include "rocksdb/statistics.h"
 #include "rocksdb/status.h"
 
+class RWMutex_tmp {
+ public:
+  
+  // No copying allowed
+  RWMutex_tmp(const RWMutex_tmp&) = delete;
+  void operator=(const RWMutex_tmp&) = delete;
+
+  
+
+  RWMutex_tmp() { pthread_rwlock_init(&mu_, nullptr); }
+
+  ~RWMutex_tmp() { pthread_rwlock_destroy(&mu_); }
+
+  void ReadLock() { pthread_rwlock_rdlock(&mu_); }
+
+  void WriteLock() { pthread_rwlock_wrlock(&mu_); }
+
+  void ReadUnlock() { pthread_rwlock_unlock(&mu_); }
+
+  void WriteUnlock() { pthread_rwlock_unlock(&mu_); }
+
+  void AssertHeld() { }
+
+ private:
+  pthread_rwlock_t mu_; // the underlying platform mutex
+};
+
 #define SHARDCOUNT 1048576
-extern time_t shardpeaktime[SHARDCOUNT];
+
+//////////////////
+// benchmark stuff
 extern time_t shardtotaltime[SHARDCOUNT];
 extern uint64_t shardaccesscount[SHARDCOUNT];
+extern time_t readtotaltime[SHARDCOUNT];
 extern uint64_t numshardbits;
 extern uint64_t shardnumlimit;
-extern uint64_t shardsperthread;
-
 extern uint32_t threadnumshard[SHARDCOUNT];
 extern bool enableshardfix;
+extern uint64_t shardsperthread;
+extern int called;
+//////////////////
+
+//////////////////////////////
+// internals counters for CBHT
+extern std::atomic<int> N;
+extern int NLIMIT;
+extern RWMutex_tmp sac_rwm_;
+extern uint64_t shardaccesscount_internal[SHARDCOUNT];
+//////////////////////////////
 
 
 namespace ROCKSDB_NAMESPACE {

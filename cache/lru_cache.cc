@@ -541,8 +541,11 @@ Cache::Handle* LRUCacheShard::Lookup(
     //sanity check
     if (e != nullptr) {
       assert(e->InCache());
-      
-      shardaccesscount_internal[hashshard] += 1;
+      {
+        sac_rwm_.WriteLock();
+        shardaccesscount_internal[hashshard] += 1;
+        sac_rwm_.WriteUnlock();
+      }
       uint32_t numshards = GetNumShards();
       
       //count to N
@@ -550,12 +553,15 @@ Cache::Handle* LRUCacheShard::Lookup(
         N = 0;
         uint64_t i = 0;
         //check which shard is the most accessed
-        for(; i < numshards; i++){
-          if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
-            break;
+        {
+          sac_rwm_.ReadLock();
+          for(; i < numshards; i++){
+            if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
+              break;
+            }
           }
+          sac_rwm_.ReadUnlock();
         }
-        
         //i am the most accessed
         if(i == numshards){
           ++called;
