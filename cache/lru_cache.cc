@@ -446,13 +446,13 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
       LRUHandle* old = table_.Insert(e);
       usage_ += total_charge;
       if (old != nullptr) {
+        s = Status::OkOverwritten();
+        assert(old->InCache());
         //remove the entry from cbhtable
         {
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(old->key(), old->hash);
         }
-        s = Status::OkOverwritten();
-        assert(old->InCache());
         old->SetInCache(false);
         if (!old->HasRefs()) {
           // old is on LRU because it's in cache and its reference count is 0
@@ -499,7 +499,7 @@ uint32_t GetNumShards() {
 
 
 #define NLIMIT 1000000
-
+// CBHT is allocated per shard, not as standalone
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
     const ShardedCache::CacheItemHelper* helper,
@@ -516,8 +516,8 @@ Cache::Handle* LRUCacheShard::Lookup(
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
       */
       ReadLock rl(&rwmutex_);
-      
       e = cbhtable_.Lookup(key, hash);
+
       /*
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
       telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
@@ -550,54 +550,42 @@ Cache::Handle* LRUCacheShard::Lookup(
     shardaccesscount[hashshard] += 1;
     e = table_.Lookup(key, hash);
 
-    shardaccesscount_internal[hashshard] += 1;
-    uint32_t numshards = GetNumShards();
-    //count to N
-    if(N++ > NLIMIT){
-      N = 0;
-      uint64_t i = 0;
-      //check which shard is the most accessed
-      for(; i < numshards; i++){
-        if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
-          break;
-        }
-      }
-      
-      //i am the most accessed
-      if(i == numshards){
-        ++called;
-        //printf("called %d times\n", ++called);
-        {
-          WriteLock wl(&rwmutex_);
-          //copy and insert to cbhtable
-          LRUHandle* f = reinterpret_cast<LRUHandle*>(
-          new char[sizeof(LRUHandle) - 1 + e->key_length]);
-
-          f->flags = e->flags;
-          f->SetSecondaryCacheCompatible(true);
-          f->info_.helper = e->info_.helper;
-          f->key_length = e->key_length;
-          f->hash = e->hash;
-          f->refs = e->refs;
-          f->next = f->prev = nullptr;
-          f->SetPriority(priority);
-          memcpy(f->key_data, e->key_data, e->key_length);
-          f->value = e->value;
-          f->sec_handle = nullptr;
-          f->Ref();
-
-          cbhtable_.Insert(f);
-        }
-      }
-
-      //reset accesscounts
-      for(; i < numshards; i++){
-        shardaccesscount_internal[i] = 0;
-      }
-    }
-
+    //sanity check
     if (e != nullptr) {
       assert(e->InCache());
+      
+      shardaccesscount_internal[hashshard] += 1;
+      uint32_t numshards = GetNumShards();
+      
+      //count to N
+      if(N++ > NLIMIT){
+        N = 0;
+        uint64_t i = 0;
+        //check which shard is the most accessed
+        for(; i < numshards; i++){
+          if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
+            break;
+          }
+        }
+        
+        //i am the most accessed
+        if(i == numshards){
+          //++called;
+          //printf("called %d times\n", ++called);
+          {
+            WriteLock wl(&rwmutex_);
+            //insert ref to cbht
+            cbhtable_.Insert(e);
+          }
+        }
+
+        //reset accesscounts
+        for(; i < numshards; i++){
+          shardaccesscount_internal[i] = 0;
+        }
+      }
+
+
       if (!e->HasRefs()) {
         // The entry is in LRU since it's in hash and has no external references
         LRU_Remove(e);
@@ -608,7 +596,7 @@ Cache::Handle* LRUCacheShard::Lookup(
   }
 
   //unused
-  if(false){if(helper){if(create_cb){if(wait){if(stats){}}}}}
+  if(false){if(helper){if(create_cb){if(wait){if(stats){if(priority == Cache::Priority::LOW){}}}}}}
 
   return reinterpret_cast<Cache::Handle*>(e);
 }
@@ -643,24 +631,23 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
       // The item is still in cache, and nobody else holds a reference to it
 
       if (usage_ > capacity_ || force_erase) {
-              /*
+              
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
-        table_.Remove(e->key(), e->hash);
-        
-        {
+
+         {
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
         }
-        
+        table_.Remove(e->key(), e->hash);        
         e->SetInCache(false);
-        */
-      } //else {
+        
+      } else {
         // Put the item back on the LRU list, and don't free it
         LRU_Insert(e);
         last_reference = false;
-      //}
+      }
     }
     // If it was the last reference, and the entry is either not secondary
     // cache compatible (i.e a dummy entry for accounting), or is secondary
@@ -677,7 +664,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   // Free the entry here outside of mutex for performance reasons
   //crashes here
   if (last_reference) {
-    //e->Free();
+    e->Free();
   }
   return last_reference;
 }
