@@ -708,8 +708,13 @@ class CacheBench {
         *charge = size;
         return Status::OK();
       };
-
+      
+      
+      
       if (random_op < lookup_insert_threshold_) {
+        //this is update workload
+        //this is update workload
+        //this is update workload
         Slice key = gen.GetRand(thread->rnd, max_key_, max_log_);
         if (handle) {
           cache_->Release(handle);
