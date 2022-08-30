@@ -401,14 +401,8 @@ void LRUCacheShard::SetCapacity(size_t capacity) {
     EvictFromLRU(0, &last_reference_list);
   }
 
-  // Try to insert the evicted entries into tiered cache
   // Free the entries outside of mutex for performance reasons
   for (auto entry : last_reference_list) {
-    if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
-        !entry->IsPromoted()) {
-      secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
-          .PermitUncheckedError();
-    }
     entry->Free();
   }
 }
@@ -479,14 +473,8 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
     }
   }
 
-  // Try to insert the evicted entries into the secondary cache
   // Free the entries here outside of mutex for performance reasons
   for (auto entry : last_reference_list) {
-    if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
-        !entry->IsPromoted()) {
-      secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
-          .PermitUncheckedError();
-    }
     entry->Free();
   }
 
@@ -494,39 +482,8 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
 }
 
 void LRUCacheShard::Promote(LRUHandle* e) {
-  SecondaryCacheResultHandle* secondary_handle = e->sec_handle;
-
-  assert(secondary_handle->IsReady());
-  e->SetIncomplete(false);
-  e->SetInCache(true);
-  e->SetPromoted(true);
-  e->value = secondary_handle->Value();
-  e->charge = secondary_handle->Size();
-  delete secondary_handle;
-
-  // This call could fail if the cache is over capacity and
-  // strict_capacity_limit_ is true. In such a case, we don't want
-  // InsertItem() to free the handle, since the item is already in memory
-  // and the caller will most likely just read from disk if we erase it here.
-  if (e->value) {
-    Cache::Handle* handle = reinterpret_cast<Cache::Handle*>(e);
-    Status s = InsertItem(e, &handle, /*free_handle_on_fail=*/false);
-    if (s.ok()) {
-      // InsertItem would have taken a reference on the item, so decrement it
-      // here as we expect the caller to already hold a reference
-      e->Unref();
-    } else {
-      // Item is in memory, but not accounted against the cache capacity.
-      // When the handle is released, the item should get deleted
-      assert(!e->InCache());
-    }
-  } else {
-    // Since the secondary cache lookup failed, mark the item as not in cache
-    // Don't charge the cache as its only metadata that'll shortly be released
-    MutexLock l(&mutex_);
-    e->charge = 0;
-    e->SetInCache(false);
-  }
+  if(e){}
+  
 }
 
 uint32_t Shard(uint32_t hash) {
@@ -649,58 +606,9 @@ Cache::Handle* LRUCacheShard::Lookup(
     }
   }
 
-  // If handle table lookup failed, then allocate a handle outside the
-  // mutex if we're going to lookup in the secondary cache
-  // Only support synchronous for now
-  // TODO: Support asynchronous lookup in secondary cache
-  if (!e && secondary_cache_ && helper && helper->saveto_cb) {
-    // For objects from the secondary cache, we expect the caller to provide
-    // a way to create/delete the primary cache object. The only case where
-    // a deleter would not be required is for dummy entries inserted for
-    // accounting purposes, which we won't demote to the secondary cache
-    // anyway.
-    assert(create_cb && helper->del_cb);
-    std::unique_ptr<SecondaryCacheResultHandle> secondary_handle =
-        secondary_cache_->Lookup(key, create_cb, wait);
-    if (secondary_handle != nullptr) {
-      e = reinterpret_cast<LRUHandle*>(
-          new char[sizeof(LRUHandle) - 1 + key.size()]);
+  //unused
+  if(helper){if(create_cb){if(wait){if(stats){}}}}
 
-      e->flags = 0;
-      e->SetSecondaryCacheCompatible(true);
-      e->info_.helper = helper;
-      e->key_length = key.size();
-      e->hash = hash;
-      e->refs = 0;
-      e->next = e->prev = nullptr;
-      e->SetPriority(priority);
-      memcpy(e->key_data, key.data(), key.size());
-      e->value = nullptr;
-      e->sec_handle = secondary_handle.release();
-      e->Ref();
-
-      if (wait) {
-        Promote(e);
-        if (!e->value) {
-          // The secondary cache returned a handle, but the lookup failed
-          e->Unref();
-          e->Free();
-          e = nullptr;
-        } else {
-          PERF_COUNTER_ADD(secondary_cache_hit_count, 1);
-          RecordTick(stats, SECONDARY_CACHE_HITS);
-        }
-      } else {
-        // If wait is false, we always return a handle and let the caller
-        // release the handle after checking for success or failure
-        e->SetIncomplete(true);
-        // This may be slightly inaccurate, if the lookup eventually fails.
-        // But the probability is very low.
-        PERF_COUNTER_ADD(secondary_cache_hit_count, 1);
-        RecordTick(stats, SECONDARY_CACHE_HITS);
-      }
-    }
-  }
   return reinterpret_cast<Cache::Handle*>(e);
 }
 
@@ -957,33 +865,7 @@ double LRUCache::GetHighPriPoolRatio() {
 }
 
 void LRUCache::WaitAll(std::vector<Handle*>& handles) {
-  if (secondary_cache_) {
-    std::vector<SecondaryCacheResultHandle*> sec_handles;
-    sec_handles.reserve(handles.size());
-    for (Handle* handle : handles) {
-      if (!handle) {
-        continue;
-      }
-      LRUHandle* lru_handle = reinterpret_cast<LRUHandle*>(handle);
-      if (!lru_handle->IsPending()) {
-        continue;
-      }
-      sec_handles.emplace_back(lru_handle->sec_handle);
-    }
-    secondary_cache_->WaitAll(sec_handles);
-    for (Handle* handle : handles) {
-      if (!handle) {
-        continue;
-      }
-      LRUHandle* lru_handle = reinterpret_cast<LRUHandle*>(handle);
-      if (!lru_handle->IsPending()) {
-        continue;
-      }
-      uint32_t hash = GetHash(handle);
-      LRUCacheShard* shard = static_cast<LRUCacheShard*>(GetShard(Shard(hash)));
-      shard->Promote(lru_handle);
-    }
-  }
+  if(false){handles.at(0);}
 }
 
 std::shared_ptr<Cache> NewLRUCache(
