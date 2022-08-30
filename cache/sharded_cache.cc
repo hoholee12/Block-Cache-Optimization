@@ -17,6 +17,24 @@
 #include "util/math.h"
 #include "util/mutexlock.h"
 
+
+time_t shardtotaltime[SHARDCOUNT];
+uint64_t shardaccesscount[SHARDCOUNT];
+time_t readtotaltime[SHARDCOUNT];
+uint64_t numshardbits;
+uint64_t shardnumlimit;
+
+
+uint32_t threadnumshard[SHARDCOUNT];
+
+bool enableshardfix;
+uint64_t shardsperthread;
+
+int N = 0;
+int called = 0;
+uint64_t shardaccesscount_internal[SHARDCOUNT];
+
+
 namespace ROCKSDB_NAMESPACE {
 
 namespace {

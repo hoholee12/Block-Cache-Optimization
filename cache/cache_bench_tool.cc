@@ -28,25 +28,12 @@
 #include "util/string_util.h"
 
 
-time_t shardtotaltime[SHARDCOUNT];
-uint64_t shardaccesscount[SHARDCOUNT];
-uint64_t shardaccesscount_internal[SHARDCOUNT];
-time_t readtotaltime[SHARDCOUNT];
-uint64_t numshardbits;
-uint64_t shardnumlimit;
 #define SHARDLIMIT 256
 #define KEYRANGELIMIT 209
 
+
 uint64_t* keyrangecounter;
 uint64_t keyrangecounter_size;
-
-uint32_t threadnumshard[SHARDCOUNT];
-
-bool enableshardfix;
-uint64_t shardsperthread;
-
-int N = 0;
-int called = 0;
 
 
 using GFLAGS_NAMESPACE::ParseCommandLineFlags;
