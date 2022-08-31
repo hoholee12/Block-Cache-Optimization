@@ -36,6 +36,7 @@ std::atomic<int> N(0);
 int NLIMIT = 10000;
 RWMutex_tmp sac_rwm_;
 uint64_t shardaccesscount_internal[SHARDCOUNT];
+int CBHTbitlength = 5;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {

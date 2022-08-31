@@ -80,6 +80,7 @@ extern std::atomic<int> N;
 extern int NLIMIT;
 extern RWMutex_tmp sac_rwm_;
 extern uint64_t shardaccesscount_internal[SHARDCOUNT];
+extern int CBHTbitlength;
 //////////////////////////////
 
 

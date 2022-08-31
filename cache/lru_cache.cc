@@ -108,7 +108,7 @@ void LRUHandleTable::Resize() {
 }
 
 CBHTable::CBHTable(int max_upper_hash_bits)
-    : length_bits_(/* historical starting size*/ 4),
+    : length_bits_(CBHTbitlength),
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
       elems_(0),
       max_length_bits_(max_upper_hash_bits) {}
