@@ -10,6 +10,8 @@
 
 #include <memory>
 #include <string>
+#include <queue>
+#include <utility>
 
 #include "cache/sharded_cache.h"
 #include "port/lang.h"
@@ -113,6 +115,7 @@ struct LRUHandle {
     refs--;
     return refs == 0;
   }
+
 
   // Return true if there are external refs, false otherwise.
   bool HasRefs() const { return refs > 0; }
@@ -312,7 +315,7 @@ class CBHTable {
   // pointer to the trailing slot in the corresponding linked list.
   LRUHandle** FindPointer(const Slice& key, uint32_t hash);
 
-  void Resize();
+  void EvictFIFO();
 
   // Number of hash bits (upper because lower bits used for sharding)
   // used for table index. Length == 1 << length_bits_
@@ -327,6 +330,9 @@ class CBHTable {
 
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
+
+  //for EvictFIFO
+  std::queue<std::pair<Slice, uint32_t>> hashkeylist;
 };
 
 // A single shard of sharded cache.
