@@ -159,10 +159,16 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
 }
 
 void CBHTable::EvictFIFO(){
-  if(!hashkeylist.empty()){
-    std::pair<Slice, uint32_t> temp = hashkeylist.front();
-    Remove(temp.first, temp.second);  //does --elems_ internally
+  std::pair<Slice, uint32_t> temp;
+  LRUHandle* ptr;
+  while((!hashkeylist.empty())){
+    temp = hashkeylist.front();
+    ptr = Remove(temp.first, temp.second);  //does --elems_ internally
     hashkeylist.pop();
+    if(ptr != nullptr){
+      break;  //do only one eviction
+    }
+    //continue if the eviction was invalid(entry didnt exist)
   }
 }
 
