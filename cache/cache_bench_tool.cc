@@ -370,6 +370,11 @@ class CacheBench {
       threadnumshard[i] = -1;
       shardaccesscount_internal[i] = 0;
       readtotaltime[i] = -1;
+
+      //CBHT internals
+      N[i] = 0;
+      CBHTState[i] = true;
+      nohit[i] = 0;
     }
     numshardbits = FLAGS_num_shard_bits;
     shardnumlimit = pow(2, numshardbits);
@@ -379,7 +384,7 @@ class CacheBench {
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
-    best_diff = FLAGS_cbhtturnoffdiff;
+    CBHTturnoff = FLAGS_cbhtturnoffdiff;
 
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);

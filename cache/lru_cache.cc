@@ -518,8 +518,8 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
-    
-    if(CBHTState)
+    uint32_t hashshard = Shard(hash);
+    if(CBHTState[hashshard])
     {
 
       ReadLock rl(&rwmutex_);
@@ -527,6 +527,15 @@ Cache::Handle* LRUCacheShard::Lookup(
 
       if(e != nullptr){
         return reinterpret_cast<Cache::Handle*>(e);
+      }
+      else{
+        //no hit counter
+        //if there is too much miss, its most likely a very uniform workload.
+        //turn it off.
+        if(nohit[hashshard]++ > CBHTturnoff){
+          CBHTState[hashshard] = false;
+          nohit[hashshard] = 0;
+        }
       }
     }
 
@@ -543,7 +552,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
-    uint32_t hashshard = Shard(hash);
     shardtotaltime[hashshard] += telapsedtotal;
     shardaccesscount[hashshard] += 1;
     e = table_.Lookup(key, hash);
@@ -551,58 +559,22 @@ Cache::Handle* LRUCacheShard::Lookup(
     //sanity check
     if (e != nullptr) {
       assert(e->InCache());
-      {
-        sac_rwm_.WriteLock();
-        shardaccesscount_internal[hashshard] += 1;
-        sac_rwm_.WriteUnlock();
-      }
-      uint32_t numshards = GetNumShards();
+
+      shardaccesscount_internal[hashshard] += 1;  //access count update
       
       //count to N
-      if(N++ > NLIMIT){
-        N = 0;
-        int64_t i = 0;
-        int64_t diff = 0;
-        int64_t most_diff = 0;
-        //check which shard is the most accessed
+      if(N[hashshard]++ > NLIMIT){
+        N[hashshard] = 0;
+        ++called;
         {
-          sac_rwm_.ReadLock();
-          
-          for(; i < numshards; i++){
-            diff = shardaccesscount_internal[hashshard] - shardaccesscount_internal[i];
-            if(diff >= 0){
-              if(diff > most_diff){
-                most_diff = diff;
-              }
-            }else{  //diff < 0
-              break;  // im not the most accessed
-            }
-          }
-          sac_rwm_.ReadUnlock();
-        }
-        //if mostdiff is less than bestdiff, CBHT is useless. turn it off
-        if(most_diff < best_diff){
-          CBHTState = false;
-        }
-        else{
-          CBHTState = true;
+          WriteLock wl(&rwmutex_);
+          //insert ref to cbht
+          cbhtable_.Insert(e);
         }
 
-        //if reached end, i am the most accessed
-        if(i == numshards){
-          ++called;
-          //printf("called %d times\n", ++called);
-          {
-            WriteLock wl(&rwmutex_);
-            //insert ref to cbht
-            cbhtable_.Insert(e);
-          }
-        }
-
-        //reset accesscounts
-        for(; i < numshards; i++){
-          shardaccesscount_internal[i] = 0;
-        }
+        //turn it back on every nlimit
+        //therefore, if CBHTturnoff is bigger than nlimit, it becomes useless.
+        CBHTState[hashshard] = true;
       }
 
 
