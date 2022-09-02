@@ -77,9 +77,11 @@ extern int called;
 //////////////////////////////
 // internals counters for CBHT
 extern std::atomic<int> N;
+extern bool CBHTState;
+extern int best_diff;
 extern int NLIMIT;
 extern RWMutex_tmp sac_rwm_;
-extern uint64_t shardaccesscount_internal[SHARDCOUNT];
+extern int64_t shardaccesscount_internal[SHARDCOUNT];
 extern int CBHTbitlength;
 //////////////////////////////
 

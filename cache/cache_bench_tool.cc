@@ -62,6 +62,8 @@ DEFINE_uint32(nlimit, 10000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 5, "CBHT BIT LENGTH");
 
+DEFINE_uint32(cbhtturnoffdiff, 1000, "CBHT TURN OFF DIFF");
+
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
               "(expressed as a percentage)");
@@ -377,6 +379,7 @@ class CacheBench {
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
+    best_diff = FLAGS_cbhtturnoffdiff;
 
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);

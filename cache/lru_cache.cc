@@ -517,27 +517,14 @@ Cache::Handle* LRUCacheShard::Lookup(
     const ShardedCache::CreateCallback& create_cb, Cache::Priority priority,
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
-  {
+  { 
+    
+    if(CBHTState)
     {
-      /*
-      //check access time
-      struct timespec telapsed = {0, 0};
-      struct timespec tstart = {0, 0}, tend = {0, 0};
 
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
-      */
       ReadLock rl(&rwmutex_);
       e = cbhtable_.Lookup(key, hash);
 
-      /*
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
-      telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
-      telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
-      time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
-      uint32_t hashshard = Shard(hash);
-      readtotaltime[hashshard] += telapsedtotal;
-      //hit!
-      */
       if(e != nullptr){
         return reinterpret_cast<Cache::Handle*>(e);
       }
@@ -574,18 +561,34 @@ Cache::Handle* LRUCacheShard::Lookup(
       //count to N
       if(N++ > NLIMIT){
         N = 0;
-        uint64_t i = 0;
+        int64_t i = 0;
+        int64_t diff = 0;
+        int64_t most_diff = 0;
         //check which shard is the most accessed
         {
           sac_rwm_.ReadLock();
+          
           for(; i < numshards; i++){
-            if(shardaccesscount_internal[hashshard] < shardaccesscount_internal[i]){
-              break;
+            diff = shardaccesscount_internal[hashshard] - shardaccesscount_internal[i];
+            if(diff >= 0){
+              if(diff > most_diff){
+                most_diff = diff;
+              }
+            }else{  //diff < 0
+              break;  // im not the most accessed
             }
           }
           sac_rwm_.ReadUnlock();
         }
-        //i am the most accessed
+        //if mostdiff is less than bestdiff, CBHT is useless. turn it off
+        if(most_diff < best_diff){
+          CBHTState = false;
+        }
+        else{
+          CBHTState = true;
+        }
+
+        //if reached end, i am the most accessed
         if(i == numshards){
           ++called;
           //printf("called %d times\n", ++called);

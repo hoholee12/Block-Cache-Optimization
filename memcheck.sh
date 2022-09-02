@@ -11,7 +11,7 @@ while true; do
 		echo maxmemsize $maxmemsize
 		exit;
 	fi
-	memsize=$(top -n1 | grep $pname | tail -1 | awk '{print $6}')
+	memsize=$(ps aux | grep $pname | tail -1 | awk '{print $6}')
 	if [[ $memsize -gt $maxmemsize ]]; then
 		maxmemsize=$memsize
 	fi
