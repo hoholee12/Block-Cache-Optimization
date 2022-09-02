@@ -36,8 +36,8 @@ int N[SHARDCOUNT];  // all 0s
 int64_t shardaccesscount_internal[SHARDCOUNT];  // all 0s
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
-int CBHTturnoff = 100;
-int NLIMIT = 10000;
+int NLIMIT = 20000;
+int CBHTturnoff = NLIMIT * 5 / 100;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 5;
 //////////////////////////////
