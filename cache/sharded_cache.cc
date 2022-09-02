@@ -31,10 +31,10 @@ int called = 0;
 //////////////////
 
 //////////////////////////////
-// internals counters for CBHT
+// counters for CBHT internals
 std::atomic<int> N(0);
-bool CBHTState = true;
-int best_diff = 1000;
+std::atomic<bool> CBHTState(true);
+int best_diff = 100;
 int NLIMIT = 10000;
 RWMutex_tmp sac_rwm_;
 int64_t shardaccesscount_internal[SHARDCOUNT];

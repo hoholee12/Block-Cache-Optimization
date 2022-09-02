@@ -75,9 +75,9 @@ extern int called;
 //////////////////
 
 //////////////////////////////
-// internals counters for CBHT
+// counters for CBHT internals
 extern std::atomic<int> N;
-extern bool CBHTState;
+extern std::atomic<bool> CBHTState;
 extern int best_diff;
 extern int NLIMIT;
 extern RWMutex_tmp sac_rwm_;
