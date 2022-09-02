@@ -62,7 +62,7 @@ DEFINE_uint32(nlimit, 10000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 5, "CBHT BIT LENGTH");
 
-DEFINE_uint32(cbhtturnoffdiff, 100, "CBHT TURN OFF DIFF");
+DEFINE_uint32(cbhtturnoffmisscount, 100, "CBHT TURN OFF misscount");
 
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
@@ -384,7 +384,7 @@ class CacheBench {
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
-    CBHTturnoff = FLAGS_cbhtturnoffdiff;
+    CBHTturnoff = FLAGS_cbhtturnoffmisscount;
 
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);
@@ -789,9 +789,10 @@ class CacheBench {
     printf("Max key             : %" PRIu64 "\n", max_key_);
     printf("Resident ratio      : %g\n", FLAGS_resident_ratio);
     printf("Skew degree         : %u\n", FLAGS_skew);
-    printf("zipf constant         : %lf\n", FLAGS_zipf_const);
+    printf("zipf constant       : %lf\n", FLAGS_zipf_const);
     printf("cbht nlimit         : %d\n", FLAGS_nlimit);
     printf("cbht bit length     : %d\n", FLAGS_cbhtbitlength);
+    printf("cbht turnoff miss c : %d\n", FLAGS_cbhtturnoffmisscount);
     printf("Populate cache      : %d\n", int{FLAGS_populate_cache});
     printf("Lookup+Insert pct   : %u%%\n", FLAGS_lookup_insert_percent);
     printf("Insert percentage   : %u%%\n", FLAGS_insert_percent);

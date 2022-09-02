@@ -573,10 +573,9 @@ Cache::Handle* LRUCacheShard::Lookup(
         }
 
         //turn it back on every nlimit
-        //therefore, if CBHTturnoff is bigger than nlimit, it becomes useless.
+        //if CBHTturnoff is bigger than nlimit, it becomes useless.
         CBHTState[hashshard] = true;
       }
-
 
       if (!e->HasRefs()) {
         // The entry is in LRU since it's in hash and has no external references
