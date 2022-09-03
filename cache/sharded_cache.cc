@@ -33,7 +33,6 @@ int called = 0;
 //////////////////////////////
 // counters for CBHT internals
 int N[SHARDCOUNT];  // all 0s
-int64_t shardaccesscount_internal[SHARDCOUNT];  // all 0s
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
 int NLIMIT = 20000;

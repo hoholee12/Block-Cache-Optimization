@@ -77,7 +77,6 @@ extern int called;
 //////////////////////////////
 // counters for CBHT internals
 extern int N[SHARDCOUNT];
-extern int64_t shardaccesscount_internal[SHARDCOUNT];
 extern bool CBHTState[SHARDCOUNT];
 extern int nohit[SHARDCOUNT];
 extern int NLIMIT;

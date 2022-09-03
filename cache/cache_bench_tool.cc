@@ -368,7 +368,6 @@ class CacheBench {
       shardtotaltime[i] = -1;
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
-      shardaccesscount_internal[i] = 0;
       readtotaltime[i] = -1;
 
       //CBHT internals

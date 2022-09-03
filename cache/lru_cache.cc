@@ -560,8 +560,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     if (e != nullptr) {
       assert(e->InCache());
 
-      shardaccesscount_internal[hashshard] += 1;  //access count update
-      
       //count to N
       if(N[hashshard]++ > NLIMIT){
         N[hashshard] = 0;
