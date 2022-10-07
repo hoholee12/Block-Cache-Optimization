@@ -132,6 +132,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   if (old == nullptr) {
     ++elems_;
     if ((elems_ >> length_bits_) > 0) {  // elems_ >= length
+      evictedcount++;
       EvictFIFO();
     }
   }
@@ -428,6 +429,7 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
         {
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(old->key(), old->hash);
+          invalidatedcount++;
         }
         old->SetInCache(false);
         if (!old->HasRefs()) {
@@ -539,6 +541,9 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
     }
 
+    //cbht missed(doesnt exist or skipped)
+    misscount++;
+
    
   
   //miss
@@ -548,12 +553,7 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
     MutexLock l(&mutex_);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
-    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
-    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
-    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
-    shardtotaltime[hashshard] += telapsedtotal;
-    shardaccesscount[hashshard] += 1;
+    
     e = table_.Lookup(key, hash);
 
     //sanity check
@@ -582,6 +582,13 @@ Cache::Handle* LRUCacheShard::Lookup(
       e->Ref();
       e->SetHit();
     }
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+    shardtotaltime[hashshard] += telapsedtotal;
+    shardaccesscount[hashshard] += 1;
   }
 
   // If handle table lookup failed, then allocate a handle outside the

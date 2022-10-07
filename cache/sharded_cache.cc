@@ -28,6 +28,9 @@ uint32_t threadnumshard[SHARDCOUNT];
 bool enableshardfix;
 uint64_t shardsperthread;
 int called = 0;
+int misscount = 0;
+int invalidatedcount = 0;
+int evictedcount = 0;
 //////////////////
 
 //////////////////////////////

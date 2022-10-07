@@ -3,6 +3,7 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 
+//#define GFLAGS
 #ifdef GFLAGS
 #include <cinttypes>
 #include <cstdio>
@@ -35,6 +36,10 @@
 uint64_t* keyrangecounter;
 uint64_t keyrangecounter_size;
 
+uint32_t countme = 0;
+uint32_t nam = 0;
+
+
 
 using GFLAGS_NAMESPACE::ParseCommandLineFlags;
 
@@ -57,6 +62,9 @@ DEFINE_double(zipf_const, 0.99, "zipfian constant");
 DEFINE_bool(populate_cache, true, "Populate cache before operations");
 
 DEFINE_bool(enableshardfix, false, "enableshardfix");
+
+DEFINE_bool(dynaswitch, false, "dynaswitch");
+DEFINE_uint32(dynaswitch_num, 10000, "dynaswitch_num");
 
 DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
@@ -233,12 +241,26 @@ struct KeyGen {
         key = zipf(rnd, hello) - 1 + hello*threadnum;
       }
       else{
-        key = zipf(rnd, max_key) - 1;
+        if(FLAGS_dynaswitch)
+        {
+          countme++;
+          if(countme > FLAGS_cbhtturnoff / 2)
+          {
+            countme = 0;
+            nam = (nam + 1) % FLAGS_threads;
+          }
+          uint64_t hello = max_key / FLAGS_threads;
+  
+          key = zipf(rnd, hello) - 1 + hello*nam;
+        }
+        else
+        {
+          key = zipf(rnd, max_key) - 1;
+        }
       }
     } else {
       key = max_log;  //because im too lazy to remove this
       key = rnd.Uniform(max_key);
-
     }
 
     if(count){
@@ -385,6 +407,12 @@ class CacheBench {
     NLIMIT = FLAGS_nlimit;
     CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
 
+    called = 0;
+    misscount = 0;
+    invalidatedcount = 0;
+    evictedcount = 0;
+
+
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);
     memset(keyrangecounter, 0, sizeof(uint64_t)*keyrangecounter_size);
@@ -457,6 +485,14 @@ class CacheBench {
     printf("\n%s", stats_report.c_str());
 
     printf("\n\n how much is CBHT update called: %d\n\n", called);
+
+    printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
+
+    printf("\n\n how much CBHT miss happened(missed + turned off): %d\n\n", misscount);
+
+    printf("\n\n how much CBHT invalidation happened: %d\n\n", invalidatedcount);
+
+    printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
 
     printf("\n\neasy index:\n");
 
