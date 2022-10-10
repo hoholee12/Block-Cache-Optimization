@@ -251,7 +251,7 @@ struct KeyGen {
           }
           uint64_t hello = max_key / FLAGS_threads;
   
-          key = zipf(rnd, hello) - 1 + hello*nam;
+          key = (zipf(rnd, max_key) - 1 + hello*nam) % max_key;
         }
         else
         {
@@ -493,6 +493,8 @@ class CacheBench {
     printf("\n\n how much CBHT invalidation happened: %d\n\n", invalidatedcount);
 
     printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
+
+    printf("\n\n no DCA at all / total measure: %d / %d\n\n", noDCAcount, totalDCAcount);
 
     printf("\n\neasy index:\n");
 

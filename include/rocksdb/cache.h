@@ -70,8 +70,14 @@ extern uint64_t numshardbits;
 extern uint64_t shardnumlimit;
 extern uint32_t threadnumshard[SHARDCOUNT];
 extern bool enableshardfix;
+extern bool dynaswitch;
+extern int totalDCAcount;
+extern int noDCAcount;
 extern uint64_t shardsperthread;
 extern int called;
+extern int misscount;
+extern int invalidatedcount;
+extern int evictedcount;
 //////////////////
 
 //////////////////////////////

@@ -570,6 +570,23 @@ Cache::Handle* LRUCacheShard::Lookup(
           cbhtable_.Insert(e);
         }
 
+        //before turning back on, print it out
+        /*
+        int a = 0;
+        for(uint32_t i = 0; i < shardnumlimit; i++){
+          a = (CBHTState[i]) ? a+1:a;
+        }
+        totalDCAcount++;
+        if(a > 0) noDCAcount++;
+        */
+        /*
+        printf("shard status: ");
+        for(uint32_t i = 0; i < shardnumlimit; i++){
+          (CBHTState[i]) ? printf("DCA "):printf("xxx ");
+        }
+        printf("\n");
+        */
+        
         //turn it back on every nlimit
         //if CBHTturnoff is bigger than nlimit, it becomes useless.
         CBHTState[hashshard] = true;
