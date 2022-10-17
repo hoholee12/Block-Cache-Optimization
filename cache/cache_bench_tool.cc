@@ -235,28 +235,66 @@ struct KeyGen {
       */
 
      //zipf starts from 1
-      if(FLAGS_enableshardfix){
+      if(FLAGS_enableshardfix)
+      {
         uint64_t hello = max_key / FLAGS_threads;
 
         key = zipf(rnd, hello) - 1 + hello*threadnum;
       }
-      else{
-        if(FLAGS_dynaswitch)
+      else if(FLAGS_dynaswitch)
+      {
+        countme++;
+        if(countme > FLAGS_cbhtturnoff / 2)
         {
-          countme++;
-          if(countme > FLAGS_cbhtturnoff / 2)
+          countme = 0;
+          nam = (nam + 1) % FLAGS_threads;
+          
+          if(count)
           {
-            countme = 0;
-            nam = (nam + 1) % FLAGS_threads;
+            //before turning back on, print it out
+            uint32_t a = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              a = (CBHTState[i]) ? a+1:a;
+            }
+            totalDCAcount++;
+            if(a == shardnumlimit) fullDCAcount++;
+            if(a > 0) noDCAcount++;
+            /*
+            printf("shard status: ");
+            uint32_t a = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              (CBHTState[i]) ? printf("DCA "):printf("xxx ");
+              a = (CBHTState[i]) ? a+1:a;
+            }
+            totalDCAcount++;
+            if(a > 0) noDCAcount++;
+            printf("\n");
+            */
           }
-          uint64_t hello = max_key / FLAGS_threads;
-  
-          key = (zipf(rnd, max_key) - 1 + hello*nam) % max_key;
         }
-        else
+        uint64_t hello = max_key / FLAGS_threads;
+
+        key = (zipf(rnd, max_key) - 1 + hello*nam) % max_key;
+      }
+      else
+      {
+        countme++;
+        if(countme > FLAGS_cbhtturnoff / 2)
         {
-          key = zipf(rnd, max_key) - 1;
+          countme = 0;
+          if(count)
+          {
+            //before turning back on, print it out
+            uint32_t a = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              a = (CBHTState[i]) ? a+1:a;
+            }
+            totalDCAcount++;
+            if(a == shardnumlimit) fullDCAcount++;
+            if(a > 0) noDCAcount++;
+          }
         }
+        key = zipf(rnd, max_key) - 1;
       }
     } else {
       key = max_log;  //because im too lazy to remove this
@@ -494,7 +532,7 @@ class CacheBench {
 
     printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
 
-    printf("\n\n no DCA at all / total measure: %d / %d\n\n", noDCAcount, totalDCAcount);
+    printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
 
     printf("\n\neasy index:\n");
 

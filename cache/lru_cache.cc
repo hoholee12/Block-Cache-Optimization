@@ -581,9 +581,13 @@ Cache::Handle* LRUCacheShard::Lookup(
         */
         /*
         printf("shard status: ");
+        int a = 0;
         for(uint32_t i = 0; i < shardnumlimit; i++){
           (CBHTState[i]) ? printf("DCA "):printf("xxx ");
+          a = (CBHTState[i]) ? a+1:a;
         }
+        totalDCAcount++;
+        if(a > 0) noDCAcount++;
         printf("\n");
         */
         

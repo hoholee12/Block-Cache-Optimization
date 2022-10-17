@@ -29,6 +29,7 @@ bool enableshardfix;
 bool dynaswitch;
 int totalDCAcount = 0;
 int noDCAcount = 0;
+int fullDCAcount = 0;
 uint64_t shardsperthread;
 int called = 0;
 int misscount = 0;

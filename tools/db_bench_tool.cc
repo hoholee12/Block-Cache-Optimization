@@ -7,7 +7,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-
+//#define GFLAGS
 #ifdef GFLAGS
 #ifdef NUMA
 #include <numa.h>
@@ -93,22 +93,12 @@
 #include "memory/memkind_kmem_allocator.h"
 #endif
 
-
-time_t shardpeaktime[SHARDCOUNT];
-time_t shardtotaltime[SHARDCOUNT];
-uint64_t shardaccesscount[SHARDCOUNT];
-uint64_t numshardbits;
-uint64_t shardnumlimit;
 #define SHARDLIMIT 256
 #define KEYRANGELIMIT 209
 
 uint64_t* keyrangecounter;
 uint64_t keyrangecounter_size;
 
-uint32_t threadnumshard[SHARDCOUNT];
-
-bool enableshardfix;
-uint64_t shardsperthread;
 
 ///
 /// from SILK-USENIXATC2019/zipf.cc
@@ -398,6 +388,15 @@ IF_ROCKSDB_LITE("",
     "by doing a Get followed by binary searching in the large sorted list vs "
     "doing a GetMergeOperands and binary searching in the operands which are"
     "sorted sub-lists. The MergeOperator used is sortlist.h\n");
+
+DEFINE_bool(enableshardfix, false, "enableshardfix");
+
+DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
+
+DEFINE_uint32(cbhtbitlength, 5, "CBHT BIT LENGTH");
+
+DEFINE_uint32(cbhtturnoff, 5, "CBHT TURN OFF Percentage");
+
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -2745,6 +2744,7 @@ class Benchmark {
   std::vector<DBWithColumnFamilies> multi_dbs_;
   int64_t num_;
   int key_size_;
+  int value_size_;
   int user_timestamp_size_;
   int prefix_size_;
   int64_t keys_per_prefix_;
@@ -3138,6 +3138,7 @@ class Benchmark {
         prefix_extractor_(NewFixedPrefixTransform(FLAGS_prefix_size)),
         num_(FLAGS_num),
         key_size_(FLAGS_key_size),
+        value_size_(FLAGS_value_size),
         user_timestamp_size_(FLAGS_user_timestamp_size),
         prefix_size_(FLAGS_prefix_size),
         keys_per_prefix_(FLAGS_keys_per_prefix),
@@ -3375,6 +3376,35 @@ class Benchmark {
     std::stringstream benchmark_stream(FLAGS_benchmarks);
     std::string name;
     std::unique_ptr<ExpiredTimeFilter> filter;
+
+    //initialize shard counters
+    for(int i = 0; i < SHARDCOUNT; i++){
+      shardtotaltime[i] = -1;
+      shardaccesscount[i] = 0;
+      threadnumshard[i] = -1;
+      readtotaltime[i] = -1;
+
+      //CBHT internals
+      N[i] = 0;
+      CBHTState[i] = true;
+      nohit[i] = 0;
+    }
+    numshardbits = FLAGS_cache_numshardbits;
+    shardnumlimit = pow(2, numshardbits);
+    if(shardnumlimit < (uint32_t)FLAGS_threads) shardsperthread = shardnumlimit;
+    else shardsperthread = shardnumlimit / (uint32_t)FLAGS_threads;
+
+    enableshardfix = FLAGS_enableshardfix;
+    CBHTbitlength = FLAGS_cbhtbitlength;
+    NLIMIT = FLAGS_nlimit;
+    CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
+
+    called = 0;
+    misscount = 0;
+    invalidatedcount = 0;
+    evictedcount = 0;
+
+
     while (std::getline(benchmark_stream, name, ',')) {
       // Sanitize parameters
       num_ = FLAGS_num;
@@ -7891,42 +7921,81 @@ class Benchmark {
   }
 
   void YCSBFillDB(ThreadState* thread) {
-    //fprintf(stderr, "YCSBFILLDB@@@@@@@@@@@@@\n");
-    ReadOptions options(FLAGS_verify_checksum, true);
-    RandomGenerator gen;
-    std::string value;
-    int64_t found = 0;
+    
+		ReadOptions options(FLAGS_verify_checksum, true);
+		RandomGenerator gen;
+		//init_latestgen(FLAGS_num);
+		init_zipf_generator(0, FLAGS_num);
 
-    int64_t reads_done = 0;
-    int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, 0);
+		std::string value;
+		int64_t found = 0;
+		int64_t reads_done = 0;
+		int64_t writes_done = 0;
+		Duration duration(FLAGS_duration, FLAGS_num);
 
-    std::unique_ptr<const char[]> key_guard;
-    Slice key = AllocateKey(&key_guard);
+		std::unique_ptr<const char[]> key_guard;
+		Slice key = AllocateKey(&key_guard);
 
-    // the number of iterations is the larger of read_ or write_
+		if (FLAGS_benchmark_write_rate_limit > 0) {
+		    printf(">>>> FLAGS_benchmark_write_rate_limit YCSBA \n");
+		    thread->shared->write_rate_limiter.reset(
+			    NewGenericRateLimiter(FLAGS_benchmark_write_rate_limit));
+		}
 
-    //write in order
-    for (long k = 1; k <= FLAGS_num; k++){
+		// the number of iterations is the larger of read_ or write_
+		while (!duration.Done(1)) {
       DB* db = SelectDB(thread);
+
+      long k;
+      if (FLAGS_YCSB_uniform_distribution){
+        //Generate number from uniform distribution            
+        k = thread->rand.Next() % FLAGS_num;
+      } else { //default
+        //Generate number from zipf distribution
+        k = nextValue() % FLAGS_num;            
+      }
       GenerateKeyFromInt(k, FLAGS_num, &key);
+      int next_op = thread->rand.Next() % 100;
+      if (next_op < 0){
+        //read
+			  Status s = db->Get(options, key, &value);
+			  if (!s.ok() && !s.IsNotFound()) {
+			    fprintf(stderr, "k=%ld; get error: %s\n", k, s.ToString().c_str());
+			    //exit(1);
+			    // we continue after error rather than exiting so that we can
+			    // find more errors if any
+			  } else if (!s.IsNotFound()) {
+			    found++;
+			    //thread->stats.FinishedOps(nullptr, db, 1, kRead);
+			  }
+			  thread->stats.FinishedOps(nullptr, db, 1, kRead);  //not found is normal operation
+			  reads_done++;
 
+      } else{
         //write
-        Status s = db->Put(write_options_, key, gen.Generate(value_size));
-        if (!s.ok()) {
-          //fprintf(stderr, "put error: %s\n", s.ToString().c_str());
-          //exit(1);
-        }
-        writes_done++;
-        //printf("K= %d\n", k);
-        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
-    }
+        if (FLAGS_benchmark_write_rate_limit > 0) {
 
-    char msg[100];
-    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
-             " total:%" PRIu64 " found:%" PRIu64 ")",
-             reads_done, writes_done, readwrites_, found);
-    thread->stats.AddMessage(msg);
+            thread->shared->write_rate_limiter->Request(
+              value_size_ + key_size_, Env::IO_HIGH,
+              nullptr /* stats */, RateLimiter::OpType::kWrite);
+            thread->stats.ResetLastOpTime();
+        }
+
+  			Status s = db->Put(write_options_, key, gen.Generate(value_size_));
+        if (!s.ok()) {
+            fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+            //exit(1);
+        } else{
+            writes_done++;
+            thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+        }
+      }
+		} 
+		char msg[100];
+		snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
+			" total:%" PRIu64 " found:%" PRIu64 ")",
+			reads_done, writes_done, FLAGS_num, found);
+		thread->stats.AddMessage(msg);
   }
 
    // Workload A: Update heavy workload
@@ -7946,7 +8015,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
@@ -8035,7 +8104,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
@@ -8107,7 +8176,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
@@ -8173,7 +8242,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
@@ -8259,7 +8328,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
@@ -8343,7 +8412,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, readwrites_);
+    Duration duration(FLAGS_duration, FLAGS_num);
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
