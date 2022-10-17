@@ -73,6 +73,7 @@ extern bool enableshardfix;
 extern bool dynaswitch;
 extern int totalDCAcount;
 extern int noDCAcount;
+extern int fullDCAcount;
 extern uint64_t shardsperthread;
 extern int called;
 extern int misscount;
