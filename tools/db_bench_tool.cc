@@ -393,7 +393,7 @@ DEFINE_bool(enableshardfix, false, "enableshardfix");
 
 DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
-DEFINE_uint32(cbhtbitlength, 5, "CBHT BIT LENGTH");
+DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
 DEFINE_uint32(cbhtturnoff, 5, "CBHT TURN OFF Percentage");
 

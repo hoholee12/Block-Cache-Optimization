@@ -205,7 +205,7 @@ void LRUCacheShard::EraseUnRefEntries() {
       LRUHandle* old = lru_.next;
       // LRU list contains only elements which can be evicted
       assert(old->InCache() && !old->HasRefs());
-      {
+      if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(old->key(), old->hash);
       }
@@ -347,7 +347,7 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     // LRU list contains only elements which can be evicted
     assert(old->InCache() && !old->HasRefs());
     //evict from cbhtable as well
-    {
+    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(old->key(), old->hash);
     }
@@ -426,7 +426,7 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
         s = Status::OkOverwritten();
         assert(old->InCache());
         //remove the entry from cbhtable
-        {
+        if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(old->key(), old->hash);
           invalidatedcount++;
@@ -520,30 +520,32 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
+    
     uint32_t hashshard = Shard(hash);
-    if(CBHTState[hashshard])
-    {
+    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+      if(CBHTState[hashshard])
+      {
 
-      ReadLock rl(&rwmutex_);
-      e = cbhtable_.Lookup(key, hash);
+        ReadLock rl(&rwmutex_);
+        e = cbhtable_.Lookup(key, hash);
 
-      if(e != nullptr){
-        return reinterpret_cast<Cache::Handle*>(e);
-      }
-      else{
-        //no hit counter
-        //if there is too much miss, its most likely a very uniform workload.
-        //turn it off.
-        if(nohit[hashshard]++ > CBHTturnoff){
-          CBHTState[hashshard] = false;
-          nohit[hashshard] = 0;
+        if(e != nullptr){
+          return reinterpret_cast<Cache::Handle*>(e);
+        }
+        else{
+          //no hit counter
+          //if there is too much miss, its most likely a very uniform workload.
+          //turn it off.
+          if(nohit[hashshard]++ > CBHTturnoff){
+            CBHTState[hashshard] = false;
+            nohit[hashshard] = 0;
+          }
         }
       }
+
+      //cbht missed(doesnt exist or skipped)
+      misscount++;
     }
-
-    //cbht missed(doesnt exist or skipped)
-    misscount++;
-
    
   
   //miss
@@ -560,40 +562,43 @@ Cache::Handle* LRUCacheShard::Lookup(
     if (e != nullptr) {
       assert(e->InCache());
 
-      //count to N
-      if(N[hashshard]++ > NLIMIT){
-        N[hashshard] = 0;
-        ++called;
-        {
-          WriteLock wl(&rwmutex_);
-          //insert ref to cbht
-          cbhtable_.Insert(e);
-        }
+      if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+      
+        //count to N
+        if(N[hashshard]++ > NLIMIT){
+          N[hashshard] = 0;
+          ++called;
+          {
+            WriteLock wl(&rwmutex_);
+            //insert ref to cbht
+            cbhtable_.Insert(e);
+          }
 
-        //before turning back on, print it out
-        /*
-        int a = 0;
-        for(uint32_t i = 0; i < shardnumlimit; i++){
-          a = (CBHTState[i]) ? a+1:a;
+          //before turning back on, print it out
+          /*
+          int a = 0;
+          for(uint32_t i = 0; i < shardnumlimit; i++){
+            a = (CBHTState[i]) ? a+1:a;
+          }
+          totalDCAcount++;
+          if(a > 0) noDCAcount++;
+          */
+          /*
+          printf("shard status: ");
+          int a = 0;
+          for(uint32_t i = 0; i < shardnumlimit; i++){
+            (CBHTState[i]) ? printf("DCA "):printf("xxx ");
+            a = (CBHTState[i]) ? a+1:a;
+          }
+          totalDCAcount++;
+          if(a > 0) noDCAcount++;
+          printf("\n");
+          */
+          
+          //turn it back on every nlimit
+          //if CBHTturnoff is bigger than nlimit, it becomes useless.
+          CBHTState[hashshard] = true;
         }
-        totalDCAcount++;
-        if(a > 0) noDCAcount++;
-        */
-        /*
-        printf("shard status: ");
-        int a = 0;
-        for(uint32_t i = 0; i < shardnumlimit; i++){
-          (CBHTState[i]) ? printf("DCA "):printf("xxx ");
-          a = (CBHTState[i]) ? a+1:a;
-        }
-        totalDCAcount++;
-        if(a > 0) noDCAcount++;
-        printf("\n");
-        */
-        
-        //turn it back on every nlimit
-        //if CBHTturnoff is bigger than nlimit, it becomes useless.
-        CBHTState[hashshard] = true;
       }
 
       if (!e->HasRefs()) {
@@ -701,7 +706,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
-        {
+        if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
         }
@@ -773,7 +778,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
-    {
+    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(key, hash);
     }

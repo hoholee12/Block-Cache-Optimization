@@ -45,7 +45,7 @@ int nohit[SHARDCOUNT]; // all 0s
 int NLIMIT = 20000;
 int CBHTturnoff = NLIMIT * 5 / 100;
 RWMutex_tmp sac_rwm_;
-int CBHTbitlength = 5;
+int CBHTbitlength = 6;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {

@@ -7,12 +7,16 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($dataset/1024))GB"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
     if [[ $2 == "seekrandom" ]]; then
         dataset=$(($dataset/50))
+    fi
+
+    if [[ $3 == "nocbht" ]]; then
+        cbhtturnoff="-cbhtturnoff=0"
     fi
 
     #run
@@ -27,7 +31,8 @@ runbench(){
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
-    &> results/"$2"_on_"$(($dataset/1024))GB".txt \
+    $cbhtturnoff \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3".txt \
     
     echo after run...
     df -T | grep mnt
@@ -81,7 +86,35 @@ fi
 
 
 initbench
-runbench 10240 ycsbwklda
+runbench 1024 ycsbwkldb nocbht
 
 initbench
-runbench 10240 ycsbwkldb
+runbench 1024 ycsbwkldb
+
+
+initbench
+runbench 1024 ycsbwkldc nocbht
+
+initbench
+runbench 1024 ycsbwkldc
+
+
+initbench
+runbench 1024 ycsbwkldd nocbht
+
+initbench
+runbench 1024 ycsbwkldd
+
+
+initbench
+runbench 1024 ycsbwklde nocbht
+
+initbench
+runbench 1024 ycsbwklde
+
+
+initbench
+runbench 1024 ycsbwkldf nocbht
+
+initbench
+runbench 1024 ycsbwkldf
