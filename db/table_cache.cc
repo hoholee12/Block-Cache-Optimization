@@ -424,45 +424,19 @@ Status TableCache::Get(const ReadOptions& options,
   }
 #endif  // ROCKSDB_LITE
 
-  static struct timespec telapsed_table = {0, 0};
-  struct timespec tstart_table = {0, 0}, tend_table = {0, 0};
-  static struct timespec telapsed_table_waste = {0, 0};
-
-  static int wastecount_table = 0;
-
-  static int counttt_table = 0;
-  static int countt_table = 0;
-  if(++countt_table >= 10000){
-    counttt_table += countt_table;
-    countt_table = 0;
-    printf("table cache access after %d times, %ld milliseconds elapsed.\n", counttt_table - wastecount_table, telapsed_table.tv_sec * 1000 + telapsed_table.tv_nsec / 1000000);
-    printf("table cache wasted %d times, %ld milliseconds elapsed.\n", wastecount_table, telapsed_table_waste.tv_sec * 1000 + telapsed_table_waste.tv_nsec / 1000000);
-  }
-
   Status s;
   TableReader* t = fd.table_reader;
   Cache::Handle* handle = nullptr;
   if (!done) {
     assert(s.ok());
     if (t == nullptr) {
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_table);
       s = FindTable(options, file_options_, internal_comparator, fd, &handle,
                     prefix_extractor,
                     options.read_tier == kBlockCacheTier /* no_io */,
                     true /* record_read_stats */, file_read_hist, skip_filters,
                     level, true /* prefetch_index_and_filter_in_cache */,
                     max_file_size_for_l0_meta_pin);
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_table);
-      if(waste == true){
-        telapsed_table_waste.tv_sec += (tend_table.tv_sec - tstart_table.tv_sec);
-        telapsed_table_waste.tv_nsec += (tend_table.tv_nsec - tstart_table.tv_nsec);
-        wastecount_table++;
-      }
-      else{
-        telapsed_table.tv_sec += (tend_table.tv_sec - tstart_table.tv_sec);
-        telapsed_table.tv_nsec += (tend_table.tv_nsec - tstart_table.tv_nsec);
-      }
-
+      
       if (s.ok()) {
         t = GetTableReaderFromHandle(handle);
       }

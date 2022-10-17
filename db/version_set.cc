@@ -1917,18 +1917,6 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
 
   int countme = 0;
   
-  static int wastecount = 0;
-
-
-  static int counttt = 0;
-  static int countt = 0;
-  if(++countt >= 10000){
-    counttt += countt;
-    countt = 0;
-    printf("file search access after %d times, %ld milliseconds elapsed.\n", counttt, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
-    printf("file search wasted %d times, %ld milliseconds elapsed.\n", wastecount, telapsed_waste.tv_sec * 1000 + telapsed_waste.tv_nsec / 1000000);
-  }
-
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
 
 
@@ -1941,6 +1929,8 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
   telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
   telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+  RecordTick(db_statistics_, FILESEARCH_COUNT);
+  SetTickerCount(db_statistics_, FILESEARCH_MS, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
 
   while (f != nullptr) {
     countme++;
@@ -2043,7 +2033,10 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_waste);
     telapsed_waste.tv_sec += (tend_waste.tv_sec - tstart_waste.tv_sec);
     telapsed_waste.tv_nsec += (tend_waste.tv_nsec - tstart_waste.tv_nsec);
-    if(f != nullptr) wastecount++;
+    if(f != nullptr){
+      RecordTick(db_statistics_, FILESEARCH_MISS_COUNT);
+      SetTickerCount(db_statistics_, FILESEARCH_MISS_MS, telapsed_waste.tv_sec * 1000 + telapsed_waste.tv_nsec / 1000000);
+    }
 
   }
 

@@ -2303,32 +2303,27 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   static struct timespec telapsed_filter_waste = {0, 0};
   static struct timespec telapsed_filter = {0, 0};
   struct timespec tstart_filter = {0, 0}, tend_filter = {0, 0};
+
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_filter);
   const bool may_match =
       FullFilterKeyMayMatch(read_options, filter, key, no_io, prefix_extractor,
                             get_context, &lookup_context);
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_filter);
 
-  static int wastecount_filter = 0;
   if(waste == true){
     telapsed_filter_waste.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
     telapsed_filter_waste.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
-    wastecount_filter++;
+    RecordTick(rep_->ioptions.statistics.get(), FILTER_MISS_COUNT);
+    SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MISS_MS, telapsed_filter_waste.tv_sec * 1000 + telapsed_filter_waste.tv_nsec / 1000000);
+
   }
   else{
     telapsed_filter.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
     telapsed_filter.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
+    RecordTick(rep_->ioptions.statistics.get(), FILTER_COUNT);
+    SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MS, telapsed_filter.tv_sec * 1000 + telapsed_filter.tv_nsec / 1000000);
   }
 
-  static int counttt_filter = 0;
-  static int countt_filter = 0;
-  if(++countt_filter >= 10000){
-    counttt_filter += countt_filter;
-    countt_filter = 0;
-    printf("filter block access after %d times, %ld milliseconds elapsed.\n", counttt_filter - wastecount_filter, telapsed_filter.tv_sec * 1000 + telapsed_filter.tv_nsec / 1000000);
-    printf("filter block wasted %d times, %ld milliseconds elapsed.\n", wastecount_filter, telapsed_filter_waste.tv_sec * 1000 + telapsed_filter_waste.tv_nsec / 1000000);
-
-  }
   TEST_SYNC_POINT("BlockBasedTable::Get:AfterFilterMatch");
 
   if (!may_match) {
@@ -2366,27 +2361,18 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     iiter->Seek(key);
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_index);
-    static int wastecount_index = 0;
     if(waste == true){
       telapsed_index_waste.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
       telapsed_index_waste.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
-      wastecount_index++;
+      RecordTick(rep_->ioptions.statistics.get(), INDEX_MISS_COUNT);
+      SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MISS_MS, telapsed_index_waste.tv_sec * 1000 + telapsed_index_waste.tv_nsec / 1000000);
     }
     else{
       telapsed_index.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
       telapsed_index.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
+      RecordTick(rep_->ioptions.statistics.get(), INDEX_COUNT);
+      SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MS, telapsed_index.tv_sec * 1000 + telapsed_index.tv_nsec / 1000000);
     }
-
-    static int counttt_index = 0;
-    static int countt_index = 0;
-    if(++countt_index >= 10000){
-      counttt_index += countt_index;
-      countt_index = 0;
-      printf("index block access after %d times, %ld milliseconds elapsed.\n", counttt_index - wastecount_index, telapsed_index.tv_sec * 1000 + telapsed_index.tv_nsec / 1000000);
-      printf("index block wasted %d times, %ld milliseconds elapsed.\n", wastecount_index, telapsed_index_waste.tv_sec * 1000 + telapsed_index_waste.tv_nsec / 1000000);
-    }
-
-
 
     static struct timespec telapsed_data_waste = {0, 0};
     static struct timespec telapsed_data = {0, 0};
@@ -2525,24 +2511,17 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_data);
 
-    static int wastecount_data = 0;
     if(waste == true){
       telapsed_data_waste.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
       telapsed_data_waste.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
-      wastecount_data++;
+      RecordTick(rep_->ioptions.statistics.get(), BLOCK_MISS_COUNT);
+      SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MISS_MS, telapsed_data_waste.tv_sec * 1000 + telapsed_data_waste.tv_nsec / 1000000);
     }
     else{
       telapsed_data.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
       telapsed_data.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
-    }
-
-    static int counttt_data = 0;
-    static int countt_data = 0;
-    if(++countt_data >= 10000){
-      counttt_data += countt_data;
-      countt_data = 0;
-      printf("data block access after %d times, %ld milliseconds elapsed.\n", counttt_data - wastecount_data, telapsed_data.tv_sec * 1000 + telapsed_data.tv_nsec / 1000000);
-      printf("data block wasted %d times, %ld milliseconds elapsed.\n", wastecount_data, telapsed_data_waste.tv_sec * 1000 + telapsed_data_waste.tv_nsec / 1000000);
+      RecordTick(rep_->ioptions.statistics.get(), BLOCK_COUNT);
+      SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MS, telapsed_data.tv_sec * 1000 + telapsed_data.tv_nsec / 1000000);
     }
 
     if (matched && filter != nullptr && !filter->IsBlockBased()) {
