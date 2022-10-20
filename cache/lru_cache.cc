@@ -543,11 +543,11 @@ Cache::Handle* LRUCacheShard::Lookup(
         */
         ReadLock rl(&rwmutex_);
         
-        limitaccess[hashshard]++;
+        //limitaccess[hashshard]++;
 
         e = cbhtable_.Lookup(key, hash);
 
-        limitaccess[hashshard] = 0;
+        //limitaccess[hashshard] = 0;
 
         if(e != nullptr){
           return reinterpret_cast<Cache::Handle*>(e);
