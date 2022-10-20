@@ -46,6 +46,8 @@ int NLIMIT = 20000;
 int CBHTturnoff = NLIMIT * 5 / 100;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
+uint32_t limitaccess[SHARDCOUNT];
+uint32_t threadcount = 0;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {

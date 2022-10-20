@@ -169,15 +169,16 @@ double zetastatic(long st, long n, double initialsum){
 
 long nextLong(long itemcount){
 	//from "Quickly Generating Billion-Record Synthetic Databases", Jim Gray et al, SIGMOD 1994
-	if (itemcount!=countforzeta){
+	
+  if (itemcount!=countforzeta){
 		if (itemcount>countforzeta){
+      return -1;
 			printf("WARNING: Incrementally recomputing Zipfian distribtion. (itemcount= %ld; countforzeta= %ld)", itemcount, countforzeta);
 			//we have added more items. can compute zetan incrementally, which is cheaper
 			zetan = zeta(countforzeta,itemcount,zetan);
 			eta = ( 1 - pow(2.0/items,1-theta) ) / (1-zeta2theta/zetan);
 		}
 	}
-
 	double u = (double)rand() / ((double)RAND_MAX);
 	double uz=u*zetan;
 	if (uz < 1.0){
@@ -3383,12 +3384,14 @@ class Benchmark {
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
       readtotaltime[i] = -1;
+      limitaccess[i] = 0;
 
       //CBHT internals
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
     }
+    threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;
     shardnumlimit = pow(2, numshardbits);
     if(shardnumlimit < (uint32_t)FLAGS_threads) shardsperthread = shardnumlimit;
@@ -8030,52 +8033,49 @@ class Benchmark {
     while (!duration.Done(1)) {
       DB* db = SelectDB(thread);
 
-          long k;
-          if (FLAGS_YCSB_uniform_distribution){
-            //Generate number from uniform distribution
-            k = thread->rand.Next() % FLAGS_num;
-          } else { //default
-            //Generate number from zipf distribution
-            k = nextValue() % FLAGS_num;
-          }
-          GenerateKeyFromInt(k, FLAGS_num, &key);
-
-          int next_op = thread->rand.Next() % 100;
-          if (next_op < 50){
-            //read
-            Status s = db->Get(options, key, &value);
-            if (!s.ok() && !s.IsNotFound()) {
-              //fprintf(stderr, "k=%d; get error: %s\n", k, s.ToString().c_str());
-              //exit(1);
-              // we continue after error rather than exiting so that we can
-              // find more errors if any
-            } else if (!s.IsNotFound()) {
-              found++;
-              thread->stats.FinishedOps(nullptr, db, 1, kRead);
-            }
-            reads_done++;
-
-          } else{
-            //write
-            if (FLAGS_benchmark_write_rate_limit > 0) {
-
-                thread->shared->write_rate_limiter->Request(
-                    value_size + key_size_, Env::IO_HIGH,
-                    nullptr /* stats */, RateLimiter::OpType::kWrite);
-                thread->stats.ResetLastOpTime();
-            }
-            Status s = db->Put(write_options_, key, gen.Generate(value_size));
-            if (!s.ok()) {
-              //fprintf(stderr, "put error: %s\n", s.ToString().c_str());
-              //exit(1);
-            } else{
-             writes_done++;
-             thread->stats.FinishedOps(nullptr, db, 1, kWrite);
-            }
+      long k;
+      if (FLAGS_YCSB_uniform_distribution){
+        //Generate number from uniform distribution
+        k = thread->rand.Next() % FLAGS_num;
+      } else { //default
+        //Generate number from zipf distribution
+        k = nextValue() % FLAGS_num;
       }
+      GenerateKeyFromInt(k, FLAGS_num, &key);
 
+      int next_op = thread->rand.Next() % 100;
+      if (next_op < 50){
+        //read
+        Status s = db->Get(options, key, &value);
+        if (!s.ok() && !s.IsNotFound()) {
+          //fprintf(stderr, "k=%d; get error: %s\n", k, s.ToString().c_str());
+          //exit(1);
+          // we continue after error rather than exiting so that we can
+          // find more errors if any
+        } else if (!s.IsNotFound()) {
+          found++;
+          thread->stats.FinishedOps(nullptr, db, 1, kRead);
+        }
+        reads_done++;
 
+      } else{
+        //write
+        if (FLAGS_benchmark_write_rate_limit > 0) {
 
+            thread->shared->write_rate_limiter->Request(
+                value_size + key_size_, Env::IO_HIGH,
+                nullptr /* stats */, RateLimiter::OpType::kWrite);
+            thread->stats.ResetLastOpTime();
+        }
+        Status s = db->Put(write_options_, key, gen.Generate(value_size));
+        if (!s.ok()) {
+          //fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          //exit(1);
+        } else{
+          writes_done++;
+          thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+        }
+      }
     }
     char msg[100];
     snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \

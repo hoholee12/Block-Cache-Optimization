@@ -21,6 +21,18 @@
 
 namespace ROCKSDB_NAMESPACE {
 
+  
+uint32_t Shard(uint32_t hash) {
+  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
+  return hash & shard_mask_;
+}
+
+uint32_t GetNumShards() {
+  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
+   return shard_mask_ + 1; 
+}
+
+
 LRUHandleTable::LRUHandleTable(int max_upper_hash_bits)
     : length_bits_(/* historical starting size*/ 4),
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
@@ -125,7 +137,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 LRUHandle* CBHTable::Insert(LRUHandle* h) {
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
-  h->next_hash = (old == nullptr ? nullptr : old->next_hash);
+  h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
   *ptr = h;
 
   hashkeylist.push(std::make_pair(h->key(), h->hash));
@@ -143,7 +155,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
   LRUHandle** ptr = FindPointer(key, hash);
   LRUHandle* result = *ptr;
   if (result != nullptr) {
-    *ptr = result->next_hash;
+    *ptr = result->next_hash_cbht;
     --elems_;
   }
   return result;
@@ -154,7 +166,7 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
   //and this is done when collision
   while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
-    ptr = &(*ptr)->next_hash;
+    ptr = &(*ptr)->next_hash_cbht;
   }
   return ptr;
 }
@@ -205,11 +217,14 @@ void LRUCacheShard::EraseUnRefEntries() {
       LRUHandle* old = lru_.next;
       // LRU list contains only elements which can be evicted
       assert(old->InCache() && !old->HasRefs());
+
+      LRU_Remove(old);
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(old->key(), old->hash);
+        //uint32_t hashshard = Shard(old->hash);
+        //limitaccess[hashshard] = 0;
       }
-      LRU_Remove(old);
       table_.Remove(old->key(), old->hash);
       
       old->SetInCache(false);
@@ -346,13 +361,15 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     LRUHandle* old = lru_.next;
     // LRU list contains only elements which can be evicted
     assert(old->InCache() && !old->HasRefs());
+
+    LRU_Remove(old);
     //evict from cbhtable as well
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(old->key(), old->hash);
+      //uint32_t hashshard = Shard(old->hash);
+      //limitaccess[hashshard] = 0;
     }
-    LRU_Remove(old);
-    
     table_.Remove(old->key(), old->hash);
 
     old->SetInCache(false);
@@ -425,14 +442,16 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
       if (old != nullptr) {
         s = Status::OkOverwritten();
         assert(old->InCache());
-        //remove the entry from cbhtable
-        if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-          WriteLock wl(&rwmutex_);
-          cbhtable_.Remove(old->key(), old->hash);
-          invalidatedcount++;
-        }
         old->SetInCache(false);
         if (!old->HasRefs()) {
+          //remove the entry from cbhtable
+          if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+            WriteLock wl(&rwmutex_);
+            cbhtable_.Remove(old->key(), old->hash);
+            invalidatedcount++;
+            //uint32_t hashshard = Shard(old->hash);
+            //limitaccess[hashshard] = 0;
+          }
           // old is on LRU because it's in cache and its reference count is 0
           LRU_Remove(old);
           size_t old_total_charge =
@@ -501,16 +520,6 @@ void LRUCacheShard::Promote(LRUHandle* e) {
   }
 }
 
-uint32_t Shard(uint32_t hash) {
-  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
-  return hash & shard_mask_;
-}
-
-uint32_t GetNumShards() {
-  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
-   return shard_mask_ + 1; 
-}
-
 
 // CBHT is allocated per shard, not as standalone
 Cache::Handle* LRUCacheShard::Lookup(
@@ -525,9 +534,20 @@ Cache::Handle* LRUCacheShard::Lookup(
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       if(CBHTState[hashshard])
       {
-
+        //limit access to cbht
+        /*
+        while(limitaccess[hashshard] > threadcount)
+        {
+          //std::this_thread::yield();
+        }
+        */
         ReadLock rl(&rwmutex_);
+        
+        limitaccess[hashshard]++;
+
         e = cbhtable_.Lookup(key, hash);
+
+        limitaccess[hashshard] = 0;
 
         if(e != nullptr){
           return reinterpret_cast<Cache::Handle*>(e);
@@ -541,6 +561,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             nohit[hashshard] = 0;
           }
         }
+
       }
 
       //cbht missed(doesnt exist or skipped)
@@ -572,6 +593,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             WriteLock wl(&rwmutex_);
             //insert ref to cbht
             cbhtable_.Insert(e);
+            //limitaccess[hashshard] = 0;
           }
 
           //before turning back on, print it out
@@ -709,8 +731,10 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
+          //uint32_t hashshard = Shard(e->hash);
+          //limitaccess[hashshard] = 0;
         }
-        table_.Remove(e->key(), e->hash);        
+        table_.Remove(e->key(), e->hash);
         e->SetInCache(false);
         
       } else {
@@ -781,6 +805,8 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(key, hash);
+      //uint32_t hashshard = Shard(hash);
+      //limitaccess[hashshard] = 0;
     }
     e = table_.Remove(key, hash);
     

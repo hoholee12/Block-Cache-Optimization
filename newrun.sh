@@ -17,6 +17,8 @@ runbench(){
 
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
+    else
+        cbhtturnoff="-cbhtturnoff=5"
     fi
 
     #run
@@ -74,16 +76,23 @@ fillbench(){
 
 initbench(){
     ./sata_ext4.sh
-    cp $baklocation/ycsbfilldb/* $mntlocation/
+    cp $baklocation/ycsbfilldb3/* $mntlocation/
 }
 
-if [[ ! -d $baklocation/ycsbfilldb ]]; then
+if [[ ! -d $baklocation/ycsbfilldb3 ]]; then
     ./sata_ext4.sh
-    fillbench 102400
-    mkdir $baklocation/ycsbfilldb/
-    cp $mntlocation/* $baklocation/ycsbfilldb/
+    fillbench 1024
+    mkdir $baklocation/ycsbfilldb3/
+    cp $mntlocation/* $baklocation/ycsbfilldb3/
 fi
 
+#initbench
+#runbench 1024 ycsbwklda nocbht
+
+initbench
+runbench 1024 ycsbwklda
+
+exit
 
 initbench
 runbench 1024 ycsbwkldb nocbht
@@ -99,6 +108,11 @@ initbench
 runbench 1024 ycsbwkldc
 
 
+
+
+
+
+
 initbench
 runbench 1024 ycsbwkldd nocbht
 
@@ -106,11 +120,11 @@ initbench
 runbench 1024 ycsbwkldd
 
 
-initbench
-runbench 1024 ycsbwklde nocbht
+#initbench
+#runbench 1024 ycsbwklde nocbht
 
-initbench
-runbench 1024 ycsbwklde
+#initbench
+#runbench 1024 ycsbwklde
 
 
 initbench

@@ -65,6 +65,9 @@ struct LRUHandle {
     LRUHandle* next_hash;
     SecondaryCacheResultHandle* sec_handle;
   };
+
+  LRUHandle* next_hash_cbht; //keep a different next_hash for cbht
+
   LRUHandle* next;
   LRUHandle* prev;
   size_t charge;  // TODO(opt): Only allow uint32_t?
