@@ -312,6 +312,8 @@ class CBHTable {
 
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
+  
+  void EvictFIFO(bool flushall = false);
 
  private:
   // Return a pointer to slot that points to a cache entry that
@@ -319,7 +321,6 @@ class CBHTable {
   // pointer to the trailing slot in the corresponding linked list.
   LRUHandle** FindPointer(const Slice& key, uint32_t hash);
 
-  void EvictFIFO();
 
   // Number of hash bits (upper because lower bits used for sharding)
   // used for table index. Length == 1 << length_bits_

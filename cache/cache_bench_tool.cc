@@ -70,7 +70,7 @@ DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
-DEFINE_uint32(cbhtturnoff, 5, "CBHT TURN OFF Percentage");
+DEFINE_uint32(cbhtturnoff, 20, "CBHT TURN OFF Percentage");
 
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "

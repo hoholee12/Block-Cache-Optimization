@@ -171,14 +171,14 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
-void CBHTable::EvictFIFO(){
+void CBHTable::EvictFIFO(bool flushall){
   std::pair<Slice, uint32_t> temp;
   LRUHandle* ptr;
   while((!hashkeylist.empty())){
     temp = hashkeylist.front();
     ptr = Remove(temp.first, temp.second);  //does --elems_ internally
     hashkeylist.pop();
-    if(ptr != nullptr){
+    if(ptr != nullptr && !flushall){
       break;  //do only one eviction
     }
     //continue if the eviction was invalid(entry didnt exist)
@@ -594,6 +594,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             //insert ref to cbht
             //fill half the cbht
             LRUHandle* temp = e;
+            cbhtable_.EvictFIFO(true);  //evict everything before prefetching
             cbhtable_.Insert(temp);
             for(int i = 0; i < cbhtable_.GetLength() / 2 && temp->next != nullptr; i++){
               temp = temp->next;
