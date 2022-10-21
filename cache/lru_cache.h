@@ -311,6 +311,7 @@ class CBHTable {
   }
 
   int GetLengthBits() const { return length_bits_; }
+  int GetLength() const { return size_t{1} << length_bits_; }
 
  private:
   // Return a pointer to slot that points to a cache entry that

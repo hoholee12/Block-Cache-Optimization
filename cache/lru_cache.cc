@@ -592,7 +592,13 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             //insert ref to cbht
-            cbhtable_.Insert(e);
+            //fill half the cbht
+            LRUHandle* temp = e;
+            cbhtable_.Insert(temp);
+            for(int i = 0; i < cbhtable_.GetLength() / 2 && temp->next != nullptr; i++){
+              temp = temp->next;
+              cbhtable_.Insert(temp);
+            }
             //limitaccess[hashshard] = 0;
           }
 
