@@ -33,6 +33,7 @@ runbench(){
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
+    -nlimit=2000 \
     $cbhtturnoff \
     &> results/"$2"_on_"$(($1/1024))GB"_"$3".txt \
     
@@ -86,29 +87,29 @@ if [[ ! -d $baklocation/ycsbfilldb ]]; then
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
 
-initbench
-runbench 10240 ycsbwklda nocbht
+#initbench
+#runbench 10240 ycsbwklda nocbht
 
-initbench
-runbench 10240 ycsbwklda
-
-
-initbench
-runbench 10240 ycsbwkldb nocbht
-
-initbench
-runbench 10240 ycsbwkldb
+#initbench
+#runbench 10240 ycsbwklda
 
 
-initbench
-runbench 10240 ycsbwkldc nocbht
+#initbench
+#runbench 10240 ycsbwkldb nocbht
 
-initbench
-runbench 10240 ycsbwkldc
+#initbench
+#runbench 10240 ycsbwkldb
 
 
-initbench
-runbench 10240 ycsbwkldd nocbht
+#initbench
+#runbench 10240 ycsbwkldc nocbht
+
+#initbench
+#runbench 10240 ycsbwkldc
+
+
+#initbench
+#runbench 10240 ycsbwkldd nocbht
 
 initbench
 runbench 10240 ycsbwkldd
@@ -121,8 +122,8 @@ runbench 10240 ycsbwkldd
 #runbench 1024 ycsbwklde
 
 
-initbench
-runbench 10240 ycsbwkldf nocbht
+#initbench
+#runbench 10240 ycsbwkldf nocbht
 
-initbench
-runbench 10240 ycsbwkldf
+#initbench
+#runbench 10240 ycsbwkldf

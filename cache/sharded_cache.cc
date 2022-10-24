@@ -46,7 +46,7 @@ int NLIMIT = 20000;
 int CBHTturnoff = NLIMIT * 20 / 100;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
-uint32_t limitaccess[SHARDCOUNT];
+int invalidationcnt[SHARDCOUNT];
 uint32_t threadcount = 0;
 //////////////////////////////
 

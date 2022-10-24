@@ -90,7 +90,7 @@ extern int NLIMIT;
 extern int CBHTturnoff;
 extern RWMutex_tmp sac_rwm_;
 extern int CBHTbitlength;
-extern uint32_t limitaccess[SHARDCOUNT];
+extern int invalidationcnt[SHARDCOUNT];
 extern uint32_t threadcount;
 //////////////////////////////
 

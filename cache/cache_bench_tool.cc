@@ -429,12 +429,12 @@ class CacheBench {
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
       readtotaltime[i] = -1;
-      limitaccess[i] = 0;
 
       //CBHT internals
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
+      invalidationcnt[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;

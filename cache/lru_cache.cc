@@ -222,8 +222,8 @@ void LRUCacheShard::EraseUnRefEntries() {
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(old->key(), old->hash);
-        //uint32_t hashshard = Shard(old->hash);
-        //limitaccess[hashshard] = 0;
+        uint32_t hashshard = Shard(old->hash);
+        invalidationcnt[hashshard]++;
       }
       table_.Remove(old->key(), old->hash);
       
@@ -367,8 +367,8 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(old->key(), old->hash);
-      //uint32_t hashshard = Shard(old->hash);
-      //limitaccess[hashshard] = 0;
+      uint32_t hashshard = Shard(old->hash);
+      invalidationcnt[hashshard]++;
     }
     table_.Remove(old->key(), old->hash);
 
@@ -449,8 +449,8 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
             WriteLock wl(&rwmutex_);
             cbhtable_.Remove(old->key(), old->hash);
             invalidatedcount++;
-            //uint32_t hashshard = Shard(old->hash);
-            //limitaccess[hashshard] = 0;
+            uint32_t hashshard = Shard(old->hash);
+            invalidationcnt[hashshard]++;
           }
           // old is on LRU because it's in cache and its reference count is 0
           LRU_Remove(old);
@@ -556,9 +556,9 @@ Cache::Handle* LRUCacheShard::Lookup(
           //no hit counter
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
+          invalidationcnt[hashshard]++;
           if(nohit[hashshard]++ > CBHTturnoff){
             CBHTState[hashshard] = false;
-            nohit[hashshard] = 0;
           }
         }
 
@@ -589,20 +589,27 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
           ++called;
+          int cbhthalflen = cbhtable_.GetLength() >> 1;
+
           {
             WriteLock wl(&rwmutex_);
-            //insert ref to cbht
-            //fill half the cbht
-            LRUHandle* temp = e;
-            cbhtable_.EvictFIFO(true);  //evict everything before prefetching
-            cbhtable_.Insert(temp);
-            for(int i = 0; i < cbhtable_.GetLength() / 2 && temp->next != nullptr; i++){
-              temp = temp->next;
-              cbhtable_.Insert(temp);
+            if(invalidationcnt[hashshard] < cbhthalflen){
+              cbhtable_.Insert(e);
             }
-            //limitaccess[hashshard] = 0;
+            else{
+              
+              //fill with new entries if there is enough miss
+              LRUHandle* temp = e;
+              cbhtable_.EvictFIFO(true);  //evict everything before prefetching
+              cbhtable_.Insert(temp);
+              //fill half the cbht to reduce collision
+              for(int i = 0; i < cbhthalflen && temp->next != nullptr; i++){
+                temp = temp->next;
+                cbhtable_.Insert(temp);
+              }
+              
+            }
           }
-
           //before turning back on, print it out
           /*
           int a = 0;
@@ -627,6 +634,8 @@ Cache::Handle* LRUCacheShard::Lookup(
           //turn it back on every nlimit
           //if CBHTturnoff is bigger than nlimit, it becomes useless.
           CBHTState[hashshard] = true;
+          nohit[hashshard] = 0;
+          invalidationcnt[hashshard] = 0;
         }
       }
 
@@ -738,8 +747,8 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
-          //uint32_t hashshard = Shard(e->hash);
-          //limitaccess[hashshard] = 0;
+          uint32_t hashshard = Shard(e->hash);
+          invalidationcnt[hashshard]++;
         }
         table_.Remove(e->key(), e->hash);
         e->SetInCache(false);
@@ -812,8 +821,8 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       WriteLock wl(&rwmutex_);
       cbhtable_.Remove(key, hash);
-      //uint32_t hashshard = Shard(hash);
-      //limitaccess[hashshard] = 0;
+      uint32_t hashshard = Shard(hash);
+      invalidationcnt[hashshard]++;
     }
     e = table_.Remove(key, hash);
     
