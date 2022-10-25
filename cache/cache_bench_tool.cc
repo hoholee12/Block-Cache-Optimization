@@ -435,6 +435,7 @@ class CacheBench {
       CBHTState[i] = true;
       nohit[i] = 0;
       invalidationcnt[i] = 0;
+      prefetchflag[i] = false;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;

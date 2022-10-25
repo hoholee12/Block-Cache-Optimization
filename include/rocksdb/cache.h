@@ -91,6 +91,7 @@ extern int CBHTturnoff;
 extern RWMutex_tmp sac_rwm_;
 extern int CBHTbitlength;
 extern int invalidationcnt[SHARDCOUNT];
+extern bool prefetchflag[SHARDCOUNT];
 extern uint32_t threadcount;
 //////////////////////////////
 

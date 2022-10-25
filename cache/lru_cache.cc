@@ -593,7 +593,6 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
           ++called;
-          int cbhthalflen = cbhtable_.GetLength() >> 1;
           {
             WriteLock wl(&rwmutex_);
 
@@ -601,20 +600,13 @@ Cache::Handle* LRUCacheShard::Lookup(
             // 2. lots of entries are being invalidated -> evict and refill cbht
             // 3. too many misses -> dont bother doing expensive refill. insert one new entry only.
             if(CBHTState[hashshard]){
-              if(invalidationcnt[hashshard] < cbhthalflen){
+              if(invalidationcnt[hashshard] < (cbhtable_.GetLength() >> 1)){
                 cbhtable_.Insert(e);  //1
               }
               else{
                 //2
-                //fill with new entries if there is enough miss
-                LRUHandle* temp = e;
-                cbhtable_.EvictFIFO(true);  //evict everything before prefetching
-                cbhtable_.Insert(temp);
-                //fill half the cbht to reduce collision
-                for(int i = 0; i < cbhthalflen && temp->next != nullptr; i++){
-                  temp = temp->next;
-                  cbhtable_.Insert(temp);
-                }
+                //fill with new entries if there is enough invalidation
+                prefetchflag[hashshard] = true;
               }
             }
             else{
@@ -768,6 +760,21 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
       } else {
         // Put the item back on the LRU list, and don't free it
         LRU_Insert(e);
+        if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+          uint32_t hashshard = Shard(e->hash);
+          if(prefetchflag[hashshard]){
+            WriteLock wl(&rwmutex_);
+            LRUHandle* temp = e;
+            cbhtable_.EvictFIFO(true);  //evict everything before prefetching
+            cbhtable_.Insert(temp);
+            //fill half the cbht to reduce collision
+            for(int i = 0; i < (cbhtable_.GetLength() >> 1) && lru_.next != &lru_; i++){ //dont fill if LRU empty
+              temp = temp->prev;
+              cbhtable_.Insert(temp);
+            }
+            prefetchflag[hashshard] = false;
+          }
+        }
         last_reference = false;
       }
     }

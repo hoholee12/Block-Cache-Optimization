@@ -18,7 +18,7 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=100"
+        cbhtturnoff="-cbhtturnoff=20"
     fi
 
     #run
@@ -87,32 +87,32 @@ if [[ ! -d $baklocation/ycsbfilldb ]]; then
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
 
-#initbench
-#runbench 10240 ycsbwklda nocbht
-
-#initbench
-#runbench 10240 ycsbwklda
-
-
-#initbench
-#runbench 10240 ycsbwkldb nocbht
-
-#initbench
-#runbench 10240 ycsbwkldb
-
-
-#initbench
-#runbench 10240 ycsbwkldc nocbht
+initbench
+runbench 1024 ycsbwklda nocbht
 
 initbench
-runbench 10240 ycsbwkldc
+runbench 1024 ycsbwklda
 
-
-#initbench
-#runbench 10240 ycsbwkldd nocbht
 
 initbench
-runbench 10240 ycsbwkldd
+runbench 1024 ycsbwkldb nocbht
+
+initbench
+runbench 1024 ycsbwkldb
+
+
+initbench
+runbench 1024 ycsbwkldc nocbht
+
+initbench
+runbench 1024 ycsbwkldc
+
+
+initbench
+runbench 1024 ycsbwkldd nocbht
+
+initbench
+runbench 1024 ycsbwkldd
 
 
 #initbench
