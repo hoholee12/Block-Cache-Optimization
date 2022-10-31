@@ -1459,6 +1459,11 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
     }
 
     if (!contents) {
+      static struct timespec telapsed_data = {0, 0};
+      struct timespec tstart_data = {0, 0}, tend_data = {0, 0};
+
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_data);
+
       s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
                                 ro, block_entry, uncompression_dict, block_type,
                                 wait, get_context);
@@ -1476,6 +1481,14 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
                                              block_size(handle));
         }
       }
+      
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_data);
+
+      telapsed_data.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
+      telapsed_data.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
+      RecordTick(rep_->ioptions.statistics.get(), BLOCK_COUNT);
+      SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MS, telapsed_data.tv_sec * 1000 + telapsed_data.tv_nsec / 1000000);
+
     }
 
     // Can't find the block from the cache. If I/O is allowed, read from the
@@ -2282,6 +2295,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   Status s;
   const bool no_io = read_options.read_tier == kBlockCacheTier;
 
+  if(waste){}
 
   FilterBlockReader* const filter =
       !skip_filters ? rep_->filter.get() : nullptr;
@@ -2300,7 +2314,6 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   }
   TEST_SYNC_POINT("BlockBasedTable::Get:BeforeFilterMatch");
   
-  static struct timespec telapsed_filter_waste = {0, 0};
   static struct timespec telapsed_filter = {0, 0};
   struct timespec tstart_filter = {0, 0}, tend_filter = {0, 0};
 
@@ -2310,19 +2323,10 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
                             get_context, &lookup_context);
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_filter);
 
-  if(waste == true){
-    telapsed_filter_waste.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
-    telapsed_filter_waste.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
-    RecordTick(rep_->ioptions.statistics.get(), FILTER_MISS_COUNT);
-    SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MISS_MS, telapsed_filter_waste.tv_sec * 1000 + telapsed_filter_waste.tv_nsec / 1000000);
-
-  }
-  else{
-    telapsed_filter.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
-    telapsed_filter.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
-    RecordTick(rep_->ioptions.statistics.get(), FILTER_COUNT);
-    SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MS, telapsed_filter.tv_sec * 1000 + telapsed_filter.tv_nsec / 1000000);
-  }
+  telapsed_filter.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
+  telapsed_filter.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
+  RecordTick(rep_->ioptions.statistics.get(), FILTER_COUNT);
+  SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MS, telapsed_filter.tv_sec * 1000 + telapsed_filter.tv_nsec / 1000000);
 
   TEST_SYNC_POINT("BlockBasedTable::Get:AfterFilterMatch");
 
@@ -2354,32 +2358,17 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     bool done = false;
 
     static struct timespec telapsed_index = {0, 0};
-    static struct timespec telapsed_index_waste = {0, 0};
     struct timespec tstart_index = {0, 0}, tend_index = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_index);
     iiter->Seek(key);
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_index);
-    if(waste == true){
-      telapsed_index_waste.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
-      telapsed_index_waste.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
-      RecordTick(rep_->ioptions.statistics.get(), INDEX_MISS_COUNT);
-      SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MISS_MS, telapsed_index_waste.tv_sec * 1000 + telapsed_index_waste.tv_nsec / 1000000);
-    }
-    else{
-      telapsed_index.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
-      telapsed_index.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
-      RecordTick(rep_->ioptions.statistics.get(), INDEX_COUNT);
-      SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MS, telapsed_index.tv_sec * 1000 + telapsed_index.tv_nsec / 1000000);
-    }
-
-    static struct timespec telapsed_data_waste = {0, 0};
-    static struct timespec telapsed_data = {0, 0};
-    struct timespec tstart_data = {0, 0}, tend_data = {0, 0};
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_data);
-
+    telapsed_index.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
+    telapsed_index.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
+    RecordTick(rep_->ioptions.statistics.get(), INDEX_COUNT);
+    SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MS, telapsed_index.tv_sec * 1000 + telapsed_index.tv_nsec / 1000000);
+    
     for (; iiter->Valid() && !done; iiter->Next()) {
       IndexValue v = iiter->value();
 
@@ -2509,21 +2498,6 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     }
 
     
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_data);
-
-    if(waste == true){
-      telapsed_data_waste.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
-      telapsed_data_waste.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
-      RecordTick(rep_->ioptions.statistics.get(), BLOCK_MISS_COUNT);
-      SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MISS_MS, telapsed_data_waste.tv_sec * 1000 + telapsed_data_waste.tv_nsec / 1000000);
-    }
-    else{
-      telapsed_data.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
-      telapsed_data.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
-      RecordTick(rep_->ioptions.statistics.get(), BLOCK_COUNT);
-      SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MS, telapsed_data.tv_sec * 1000 + telapsed_data.tv_nsec / 1000000);
-    }
-
     if (matched && filter != nullptr && !filter->IsBlockBased()) {
       RecordTick(rep_->ioptions.stats, BLOOM_FILTER_FULL_TRUE_POSITIVE);
       PERF_COUNTER_BY_LEVEL_ADD(bloom_filter_full_true_positive, 1,

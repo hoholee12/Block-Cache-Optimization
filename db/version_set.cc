@@ -1907,18 +1907,10 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
   if (merge_operator_) {
     pinned_iters_mgr.StartPinning();
   }
-
-
-
+  
   static struct timespec telapsed = {0, 0};
   struct timespec tstart = {0, 0}, tend = {0, 0};
-  static struct timespec telapsed_waste = {0, 0};
-  struct timespec tstart_waste = {0, 0}, tend_waste = {0, 0};
-
-  int countme = 0;
-  
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
-
 
   FilePicker fp(
       storage_info_.files_, user_key, ikey, &storage_info_.level_files_brief_,
@@ -1933,8 +1925,6 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
   SetTickerCount(db_statistics_, FILESEARCH_MS, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
 
   while (f != nullptr) {
-    countme++;
-    
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
       // stop here.
@@ -1956,7 +1946,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         IsFilterSkipped(static_cast<int>(fp.GetHitFileLevel()),
                         fp.IsHitFileLastInLevel()),
         fp.GetHitFileLevel(), max_file_size_for_l0_meta_pin_,
-        (countme>1)?true:false);
+        false);
 
     // TODO: examine the behavior for corrupted key
     if (timer_enabled) {
@@ -2026,21 +2016,16 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         return;
     }
 
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_waste);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
     f = fp.GetNextFile();
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_waste);
-    telapsed_waste.tv_sec += (tend_waste.tv_sec - tstart_waste.tv_sec);
-    telapsed_waste.tv_nsec += (tend_waste.tv_nsec - tstart_waste.tv_nsec);
-    if(f != nullptr){
-      RecordTick(db_statistics_, FILESEARCH_MISS_COUNT);
-      SetTickerCount(db_statistics_, FILESEARCH_MISS_MS, telapsed_waste.tv_sec * 1000 + telapsed_waste.tv_nsec / 1000000);
-    }
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+    RecordTick(db_statistics_, FILESEARCH_COUNT);
+    SetTickerCount(db_statistics_, FILESEARCH_MS, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
 
   }
-
-  
 
   if (db_statistics_ != nullptr) {
     get_context.ReportCounters();

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [[ $1 == "init" ]]; then
-	rm -rf /tmp/rocksdbtest-*
-	./db_bench -benchmarks=fillrandom -write_buffer_size=1000 -target_file_size_base=1000 -num=100000
-	uftrace ./db_bench -benchmarks=readrandom -write_buffer_size=1000 -target_file_size_base=1000 -num=1000 -use_existing_db=true > test.txt
+	./sata_ext4.sh
+    cp /home/jeongho/mntbackup2/ycsbfilldb/* /home/jeongho/mnt/
+	uftrace ./db_bench -benchmarks=ycsbwkldc -write_buffer_size=1000 -target_file_size_base=1000 -num=100 -db=/home/jeongho/mnt/ -use_existing_db=true > test.txt
 elif [[ $1 == "withlinenum" ]]; then
 	rm -rf thread*.c
 	x=-1

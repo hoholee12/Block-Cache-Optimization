@@ -96,8 +96,10 @@
 #define SHARDLIMIT 256
 #define KEYRANGELIMIT 209
 
-uint64_t* keyrangecounter;
-uint64_t keyrangecounter_size;
+long* keyrangecounter;
+long keyrangecounter_size;
+
+
 
 
 ///
@@ -172,7 +174,6 @@ long nextLong(long itemcount){
 	
   if (itemcount!=countforzeta){
 		if (itemcount>countforzeta){
-      return -1;
 			printf("WARNING: Incrementally recomputing Zipfian distribtion. (itemcount= %ld; countforzeta= %ld)", itemcount, countforzeta);
 			//we have added more items. can compute zetan incrementally, which is cheaper
 			zetan = zeta(countforzeta,itemcount,zetan);
@@ -182,14 +183,20 @@ long nextLong(long itemcount){
 	double u = (double)rand() / ((double)RAND_MAX);
 	double uz=u*zetan;
 	if (uz < 1.0){
+    //lol
+    keyrangecounter[base]++;
 		return base;
 	}
 
 	if (uz<1.0 + pow(0.5,theta)) {
+    //lol
+    keyrangecounter[base + 1]++;
 		return base + 1;
 	}
 	long ret = base + (long)((itemcount) * pow(eta*u - eta + 1, alpha));
 	setLastValue(ret);
+  //lol
+  keyrangecounter[ret]++;
 	return ret;
 }
 
@@ -2505,6 +2512,135 @@ class Stats {
   }
 
   void Report(const Slice& name) {
+    printf("\n\n how much is CBHT update called: %d\n\n", called);
+
+    printf("\n\n how much CBHT miss happened(missed + turned off): %d\n\n", misscount);
+
+    printf("\n\n how much CBHT invalidation happened: %d\n\n", invalidatedcount);
+
+    printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
+
+    printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
+
+    printf("\n\neasy index:\n");
+
+    uint64_t shardlimit = SHARDLIMIT;
+    uint64_t repeat = shardnumlimit / shardlimit;
+    if(shardnumlimit < shardlimit){
+      shardlimit = shardnumlimit;
+      repeat = 1;
+    }
+    uint64_t displayarr[SHARDLIMIT];
+
+    //print the index first for convenience
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", i*repeat);
+    
+    //thread num shard
+    printf("\n\nthreadnumshard:\n");
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%d\n", threadnumshard[i]);
+    int j = 0;
+    
+    //results - shardtotaltime
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int maxtotali = -1;
+    time_t maxtotaltime = -1;
+    time_t totaltotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      if(shardtotaltime[i] != -1) {
+        totaltotal += shardtotaltime[i];
+        if(shardtotaltime[i] > maxtotaltime){
+          maxtotali = i;
+          maxtotaltime = shardtotaltime[i];
+        }
+        //printf("%ld\n", shardtotaltime[i]);
+      }
+      else{
+        //printf("0\n");
+      }
+
+      if(shardtotaltime[i] != -1){
+        displayarr[j] += (uint64_t)shardtotaltime[i];
+      }
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+
+    printf("\n\nlargest total time: shard=%d with %ld ns\n", maxtotali, maxtotaltime);
+    printf("average total time = %ld ns\n", totaltotal / (time_t)pow(2, numshardbits));
+
+    //results - readtotaltime
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int readtotali = -1;
+    time_t readmaxtotaltime = -1;
+    time_t readtotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      if(readtotaltime[i] != -1) {
+        readtotal += readtotaltime[i];
+        if(readtotaltime[i] > readmaxtotaltime){
+          readtotali = i;
+          readmaxtotaltime = readtotaltime[i];
+        }
+        //printf("%ld\n", readtotaltime[i]);
+      }
+      else{
+        //printf("0\n");
+      }
+
+      if(readtotaltime[i] != -1){
+        displayarr[j] += (uint64_t)readtotaltime[i];
+      }
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+
+    printf("\n\nlargest CBHT total time: shard=%d with %ld ns\n", readtotali, readmaxtotaltime);
+    printf("average CBHT total time = %ld ns\n", readtotal / (time_t)pow(2, numshardbits));
+
+    //results - shardaccesscount
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int maxaccessi = -1;
+    uint64_t maxaccesscount = 0;
+    uint64_t accesstotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      accesstotal += shardaccesscount[i];
+      if(shardaccesscount[i] > maxaccesscount){
+        maxaccessi = i;
+        maxaccesscount = shardaccesscount[i];
+      }
+      //printf("%ld\n", shardaccesscount[i]);
+
+      displayarr[j] += (uint64_t)shardaccesscount[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+
+    printf("\n\nlargest access count: shard=%d with %ld times\n", maxaccessi, maxaccesscount);
+    printf("average access count = %ld times\n", accesstotal / (uint64_t)pow(2, numshardbits));
+    
+    printf("\n\nkey space usage\n\n");
+    for(long i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
+      printf("%ld\n", keyrangecounter[i]);
+    }
+
+
     // Pretend at least one op was done in case we are running a benchmark
     // that does not call FinishedOps().
     if (done_ < 1) done_ = 1;
@@ -3384,12 +3520,13 @@ class Benchmark {
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
       readtotaltime[i] = -1;
-      limitaccess[i] = 0;
 
       //CBHT internals
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
+      invalidationcnt[i] = 0;
+      prefetchflag[i] = false;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;
@@ -3407,6 +3544,14 @@ class Benchmark {
     invalidatedcount = 0;
     evictedcount = 0;
 
+    
+    keyrangecounter_size = FLAGS_num;
+    keyrangecounter = (long*)malloc(sizeof(long)*keyrangecounter_size);
+    memset(keyrangecounter, 0, sizeof(long)*keyrangecounter_size);
+
+    //and then we init zipf
+    init_zipf_generator(0, FLAGS_num);
+    init_latestgen(FLAGS_num);
 
     while (std::getline(benchmark_stream, name, ',')) {
       // Sanitize parameters
@@ -5891,6 +6036,8 @@ class Benchmark {
       // Overflow is like %(2^64). Will have little impact of results.
       key_rand = static_cast<int64_t>((rand_num * kBigPrime) % FLAGS_num);
     }
+    //lol
+    keyrangecounter[key_rand]++;
     return key_rand;
   }
 
@@ -8934,8 +9081,6 @@ int db_bench_tool(int argc, char** argv) {
   }
 
   ROCKSDB_NAMESPACE::Benchmark benchmark;
-  init_zipf_generator(0, FLAGS_num);
-  init_latestgen(FLAGS_num);
   benchmark.Run();
 
 #ifndef ROCKSDB_LITE

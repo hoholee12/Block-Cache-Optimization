@@ -87,29 +87,34 @@ if [[ ! -d $baklocation/ycsbfilldb ]]; then
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
 
-initbench
-runbench 1024 ycsbwklda nocbht
-
-initbench
-runbench 1024 ycsbwklda
 
 
 initbench
-runbench 1024 ycsbwkldb nocbht
+runbench 100 ycsbwkldc
+
+exit
+
+initbench
+runbench 100 ycsbwkldc nocbht
+
+exit
+
+#initbench
+#runbench 1024 ycsbwkldb nocbht
 
 initbench
 runbench 1024 ycsbwkldb
 
 
-initbench
-runbench 1024 ycsbwkldc nocbht
+#initbench
+#runbench 1024 ycsbwkldc nocbht
 
 initbench
 runbench 1024 ycsbwkldc
 
 
-initbench
-runbench 1024 ycsbwkldd nocbht
+#initbench
+#runbench 1024 ycsbwkldd nocbht
 
 initbench
 runbench 1024 ycsbwkldd
