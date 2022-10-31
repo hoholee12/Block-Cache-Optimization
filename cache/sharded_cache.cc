@@ -21,7 +21,6 @@
 // benchmark stuff
 time_t shardtotaltime[SHARDCOUNT];
 uint64_t shardaccesscount[SHARDCOUNT];
-time_t readtotaltime[SHARDCOUNT];
 uint64_t numshardbits;
 uint64_t shardnumlimit;
 uint32_t threadnumshard[SHARDCOUNT];

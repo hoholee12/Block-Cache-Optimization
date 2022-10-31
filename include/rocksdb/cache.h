@@ -65,7 +65,6 @@ class RWMutex_tmp {
 // benchmark stuff
 extern time_t shardtotaltime[SHARDCOUNT];
 extern uint64_t shardaccesscount[SHARDCOUNT];
-extern time_t readtotaltime[SHARDCOUNT];
 extern uint64_t numshardbits;
 extern uint64_t shardnumlimit;
 extern uint32_t threadnumshard[SHARDCOUNT];
