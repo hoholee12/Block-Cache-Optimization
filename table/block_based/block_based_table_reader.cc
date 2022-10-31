@@ -1459,11 +1459,12 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
     }
 
     if (!contents) {
+      /*
       static struct timespec telapsed_data = {0, 0};
       struct timespec tstart_data = {0, 0}, tend_data = {0, 0};
 
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_data);
-
+*/
       s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
                                 ro, block_entry, uncompression_dict, block_type,
                                 wait, get_context);
@@ -1481,14 +1482,14 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
                                              block_size(handle));
         }
       }
-      
+  /*    
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_data);
 
       telapsed_data.tv_sec += (tend_data.tv_sec - tstart_data.tv_sec);
       telapsed_data.tv_nsec += (tend_data.tv_nsec - tstart_data.tv_nsec);
       RecordTick(rep_->ioptions.statistics.get(), BLOCK_COUNT);
       SetTickerCount(rep_->ioptions.statistics.get(), BLOCK_MS, telapsed_data.tv_sec * 1000 + telapsed_data.tv_nsec / 1000000);
-
+*/
     }
 
     // Can't find the block from the cache. If I/O is allowed, read from the
@@ -2313,21 +2314,23 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         read_options.snapshot != nullptr;
   }
   TEST_SYNC_POINT("BlockBasedTable::Get:BeforeFilterMatch");
-  
+  /*
   static struct timespec telapsed_filter = {0, 0};
   struct timespec tstart_filter = {0, 0}, tend_filter = {0, 0};
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_filter);
+*/
   const bool may_match =
       FullFilterKeyMayMatch(read_options, filter, key, no_io, prefix_extractor,
                             get_context, &lookup_context);
+  /*
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_filter);
 
   telapsed_filter.tv_sec += (tend_filter.tv_sec - tstart_filter.tv_sec);
   telapsed_filter.tv_nsec += (tend_filter.tv_nsec - tstart_filter.tv_nsec);
   RecordTick(rep_->ioptions.statistics.get(), FILTER_COUNT);
   SetTickerCount(rep_->ioptions.statistics.get(), FILTER_MS, telapsed_filter.tv_sec * 1000 + telapsed_filter.tv_nsec / 1000000);
-
+*/
   TEST_SYNC_POINT("BlockBasedTable::Get:AfterFilterMatch");
 
   if (!may_match) {
@@ -2356,19 +2359,20 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         rep_->internal_comparator.user_comparator()->timestamp_size();
     bool matched = false;  // if such user key matched a key in SST
     bool done = false;
-
+/*
     static struct timespec telapsed_index = {0, 0};
     struct timespec tstart_index = {0, 0}, tend_index = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_index);
+    */
     iiter->Seek(key);
-
+/*
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_index);
     telapsed_index.tv_sec += (tend_index.tv_sec - tstart_index.tv_sec);
     telapsed_index.tv_nsec += (tend_index.tv_nsec - tstart_index.tv_nsec);
     RecordTick(rep_->ioptions.statistics.get(), INDEX_COUNT);
     SetTickerCount(rep_->ioptions.statistics.get(), INDEX_MS, telapsed_index.tv_sec * 1000 + telapsed_index.tv_nsec / 1000000);
-    
+  */  
     for (; iiter->Valid() && !done; iiter->Next()) {
       IndexValue v = iiter->value();
 

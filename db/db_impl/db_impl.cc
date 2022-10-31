@@ -1825,11 +1825,13 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   bool done = false;
   std::string* timestamp = ts_sz > 0 ? get_impl_options.timestamp : nullptr;
   if (!skip_memtable) {
+    /*
     static struct timespec telapsed_mem = {0, 0};
     struct timespec tstart_mem = {0, 0}, tend_mem = {0, 0};
 
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart_mem);
+    */
     // Get value associated with key
     if (get_impl_options.get_value) {
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
@@ -1865,12 +1867,13 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         RecordTick(stats_, MEMTABLE_HIT);
       }
     }
+    /*
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend_mem);
     telapsed_mem.tv_sec += (tend_mem.tv_sec - tstart_mem.tv_sec);
     telapsed_mem.tv_nsec += (tend_mem.tv_nsec - tstart_mem.tv_nsec);
     RecordTick(stats_, MEMTABLE_COUNT);
     SetTickerCount(stats_, MEMTABLE_MS, telapsed_mem.tv_sec * 1000 + telapsed_mem.tv_nsec / 1000000);
-
+*/
 
     if (!done && !s.ok() && !s.IsMergeInProgress()) {
       ReturnAndCleanupSuperVersion(cfd, sv);

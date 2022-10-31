@@ -90,31 +90,28 @@ fi
 
 
 initbench
-runbench 100 ycsbwkldc
-
-exit
+runbench 1024 ycsbwklda
 
 initbench
-runbench 100 ycsbwkldc nocbht
+runbench 1024 ycsbwklda nocbht
 
-exit
 
-#initbench
-#runbench 1024 ycsbwkldb nocbht
+initbench
+runbench 1024 ycsbwkldb nocbht
 
 initbench
 runbench 1024 ycsbwkldb
 
 
-#initbench
-#runbench 1024 ycsbwkldc nocbht
+initbench
+runbench 1024 ycsbwkldc nocbht
 
 initbench
 runbench 1024 ycsbwkldc
 
 
-#initbench
-#runbench 1024 ycsbwkldd nocbht
+initbench
+runbench 1024 ycsbwkldd nocbht
 
 initbench
 runbench 1024 ycsbwkldd
@@ -127,8 +124,8 @@ runbench 1024 ycsbwkldd
 #runbench 1024 ycsbwklde
 
 
-#initbench
-#runbench 10240 ycsbwkldf nocbht
+initbench
+runbench 1024 ycsbwkldf nocbht
 
-#initbench
-#runbench 10240 ycsbwkldf
+initbench
+runbench 1024 ycsbwkldf

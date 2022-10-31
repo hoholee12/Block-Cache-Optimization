@@ -1908,22 +1908,23 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     pinned_iters_mgr.StartPinning();
   }
   
+  /*
   static struct timespec telapsed = {0, 0};
   struct timespec tstart = {0, 0}, tend = {0, 0};
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
-
+*/
   FilePicker fp(
       storage_info_.files_, user_key, ikey, &storage_info_.level_files_brief_,
       storage_info_.num_non_empty_levels_, &storage_info_.file_indexer_,
       user_comparator(), internal_comparator());
   FdWithKeyRange* f = fp.GetNextFile();
-
+/*
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
   telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
   telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
   RecordTick(db_statistics_, FILESEARCH_COUNT);
   SetTickerCount(db_statistics_, FILESEARCH_MS, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
-
+*/
   while (f != nullptr) {
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
@@ -2015,16 +2016,17 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
             "ROCKSDB_NAMESPACE::blob_db::BlobDB instead.");
         return;
     }
-
+/*
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+    */
     f = fp.GetNextFile();
-
+/*
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     RecordTick(db_statistics_, FILESEARCH_COUNT);
     SetTickerCount(db_statistics_, FILESEARCH_MS, telapsed.tv_sec * 1000 + telapsed.tv_nsec / 1000000);
-
+*/
   }
 
   if (db_statistics_ != nullptr) {
