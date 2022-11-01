@@ -560,7 +560,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //no hit counter
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
-          invalidationcnt[hashshard]++;
+          //invalidationcnt[hashshard]++;
           if(nohit[hashshard]++ > CBHTturnoff){
             CBHTState[hashshard] = false;
           }
@@ -588,30 +588,35 @@ Cache::Handle* LRUCacheShard::Lookup(
       assert(e->InCache());
 
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-      
         //count to N
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
-          ++called;
           {
-            WriteLock wl(&rwmutex_);
-
             // 1. only few entries are updated -> insert one new entry
             // 2. lots of entries are being invalidated -> evict and refill cbht
             // 3. too many misses -> dont bother doing expensive refill. insert one new entry only.
             if(CBHTState[hashshard]){
               if(invalidationcnt[hashshard] < (cbhtable_.GetLength() >> 1)){
+                WriteLock wl(&rwmutex_);
                 cbhtable_.Insert(e);  //1
+                called++;
               }
               else{
                 //2
                 //fill with new entries if there is enough invalidation
                 prefetchflag[hashshard] = true;
+                called_refill++;
               }
             }
             else{
+              WriteLock wl(&rwmutex_);
               cbhtable_.Insert(e);  //3
+              called++;
             }
+            /*
+            WriteLock wl(&rwmutex_);
+            cbhtable_.Insert(e);
+           */
           }
           //before turning back on, print it out
           /*
@@ -639,6 +644,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           CBHTState[hashshard] = true;
           nohit[hashshard] = 0;
           invalidationcnt[hashshard] = 0;
+          
         }
       }
 

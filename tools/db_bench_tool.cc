@@ -94,7 +94,7 @@
 #endif
 
 #define SHARDLIMIT 256
-#define KEYRANGELIMIT 209
+#define KEYRANGELIMIT 64
 
 long* keyrangecounter;
 long keyrangecounter_size;
@@ -399,7 +399,7 @@ IF_ROCKSDB_LITE("",
 
 DEFINE_bool(enableshardfix, false, "enableshardfix");
 
-DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
+DEFINE_uint32(nlimit, 1000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
@@ -2512,7 +2512,10 @@ class Stats {
   }
 
   void Report(const Slice& name) {
-    printf("\n\n how much is CBHT update called: %d\n\n", called);
+    
+    printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
+
+    printf("\n\n count CBHT update once/refill: %d/%d\n\n", called, called_refill);
 
     printf("\n\n how much CBHT miss happened(missed + turned off): %d\n\n", misscount);
 
@@ -2600,7 +2603,7 @@ class Stats {
 
     printf("\n\nlargest access count: shard=%d with %ld times\n", maxaccessi, maxaccesscount);
     printf("average access count = %ld times\n", accesstotal / (uint64_t)pow(2, numshardbits));
-    
+
     printf("\n\nkey space usage\n\n");
     for(long i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
       printf("%ld\n", keyrangecounter[i]);
@@ -3505,6 +3508,7 @@ class Benchmark {
     CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
 
     called = 0;
+    called_refill = 0;
     misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;

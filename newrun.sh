@@ -33,7 +33,6 @@ runbench(){
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
-    -nlimit=2000 \
     $cbhtturnoff \
     &> results/"$2"_on_"$(($1/1024))GB"_"$3".txt \
     
@@ -41,6 +40,7 @@ runbench(){
     df -T | grep mnt
 
     #-bloom_bits=10 \
+    #-cache_numshardbits=4 \
     #    -level0_slowdown_writes_trigger=1000 \
     #-level0_stop_writes_trigger=1000 \
     #-level0_file_num_compaction_trigger=1000 \
@@ -90,10 +90,10 @@ fi
 
 
 initbench
-runbench 1024 ycsbwklda
+runbench 1024 ycsbwklda nocbht
 
 initbench
-runbench 1024 ycsbwklda nocbht
+runbench 1024 ycsbwklda
 
 
 initbench

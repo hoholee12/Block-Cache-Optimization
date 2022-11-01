@@ -30,7 +30,7 @@
 
 
 #define SHARDLIMIT 256
-#define KEYRANGELIMIT 209
+#define KEYRANGELIMIT 64
 
 
 uint64_t* keyrangecounter;
@@ -66,7 +66,7 @@ DEFINE_bool(enableshardfix, false, "enableshardfix");
 DEFINE_bool(dynaswitch, false, "dynaswitch");
 DEFINE_uint32(dynaswitch_num, 10000, "dynaswitch_num");
 
-DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
+DEFINE_uint32(nlimit, 1000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
@@ -248,7 +248,7 @@ struct KeyGen {
         {
           countme = 0;
           nam = (nam + 1) % FLAGS_threads;
-          
+          /*
           if(count)
           {
             //before turning back on, print it out
@@ -259,7 +259,7 @@ struct KeyGen {
             totalDCAcount++;
             if(a == shardnumlimit) fullDCAcount++;
             if(a > 0) noDCAcount++;
-            /*
+            
             printf("shard status: ");
             uint32_t a = 0;
             for(uint32_t i = 0; i < shardnumlimit; i++){
@@ -269,8 +269,9 @@ struct KeyGen {
             totalDCAcount++;
             if(a > 0) noDCAcount++;
             printf("\n");
-            */
+            
           }
+          */
         }
         uint64_t hello = max_key / FLAGS_threads;
 
@@ -282,6 +283,7 @@ struct KeyGen {
         if(countme > FLAGS_cbhtturnoff / 2)
         {
           countme = 0;
+          /*
           if(count)
           {
             //before turning back on, print it out
@@ -293,6 +295,7 @@ struct KeyGen {
             if(a == shardnumlimit) fullDCAcount++;
             if(a > 0) noDCAcount++;
           }
+          */
         }
         key = zipf(rnd, max_key) - 1;
       }
@@ -448,6 +451,7 @@ class CacheBench {
     CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
 
     called = 0;
+    called_refill = 0;
     misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;
@@ -524,7 +528,9 @@ class CacheBench {
 
     printf("\n%s", stats_report.c_str());
 
-    printf("\n\n how much is CBHT update called: %d\n\n", called);
+    printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
+
+    printf("\n\n count CBHT update once/refill: %d/%d\n\n", called, called_refill);
 
     printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
 
@@ -614,8 +620,7 @@ class CacheBench {
     
     printf("\n\nlargest access count: shard=%d with %ld times\n", maxaccessi, maxaccesscount);
     printf("average access count = %ld times\n", accesstotal / (uint64_t)pow(2, numshardbits));
-    
-    
+
     printf("\n\nkey space usage\n\n");
     for(uint64_t i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
       printf("%ld\n", keyrangecounter[i]);

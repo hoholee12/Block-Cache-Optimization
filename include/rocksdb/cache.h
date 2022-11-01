@@ -75,6 +75,7 @@ extern int noDCAcount;
 extern int fullDCAcount;
 extern uint64_t shardsperthread;
 extern int called;
+extern int called_refill;
 extern int misscount;
 extern int invalidatedcount;
 extern int evictedcount;
