@@ -232,6 +232,7 @@ void LRUCacheShard::EraseUnRefEntries() {
           cbhtable_.Remove(old->key(), old->hash);
           uint32_t hashshard = Shard(old->hash);
           invalidationcnt[hashshard]++;
+          invalidatedcount++;
         }
       }
       table_.Remove(old->key(), old->hash);
@@ -386,6 +387,7 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
         cbhtable_.Remove(old->key(), old->hash);
         uint32_t hashshard = Shard(old->hash);
         invalidationcnt[hashshard]++;
+        invalidatedcount++;
       }
     }
     table_.Remove(old->key(), old->hash);
@@ -473,8 +475,10 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
             }
             if(confirminvalid){
               WriteLock wl(&rwmutex_);
-              cbhtable_.Remove(old->key(), old->hash);
-              
+              //cbhtable_.Remove(old->key(), old->hash);
+              cbhtable_.Insert(e);  //update entry
+              uint32_t hashshard = Shard(old->hash);
+              invalidationcnt[hashshard]++;
               invalidatedcount++;
             }
           }
@@ -795,6 +799,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
             cbhtable_.Remove(e->key(), e->hash);
             uint32_t hashshard = Shard(e->hash);
             invalidationcnt[hashshard]++;
+            invalidatedcount++;
           }
         }
         table_.Remove(e->key(), e->hash);
@@ -893,6 +898,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
         cbhtable_.Remove(key, hash);
         uint32_t hashshard = Shard(hash);
         invalidationcnt[hashshard]++;
+        invalidatedcount++;
       }
     }
     e = table_.Remove(key, hash);
