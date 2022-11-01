@@ -220,8 +220,16 @@ void LRUCacheShard::EraseUnRefEntries() {
 
       LRU_Remove(old);
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-        WriteLock wl(&rwmutex_);
-        if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+        bool confirminvalid = false;
+        {
+          ReadLock rl(&rwmutex_);
+          if(cbhtable_.Lookup(old->key(), old->hash) != nullptr){
+            confirminvalid = true;
+          }
+        }
+        if(confirminvalid){
+          WriteLock wl(&rwmutex_);
+          cbhtable_.Remove(old->key(), old->hash);
           uint32_t hashshard = Shard(old->hash);
           invalidationcnt[hashshard]++;
         }
@@ -366,8 +374,16 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     LRU_Remove(old);
     //evict from cbhtable as well
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-      WriteLock wl(&rwmutex_);
-      if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+      bool confirminvalid = false;
+      {
+        ReadLock rl(&rwmutex_);
+        if(cbhtable_.Lookup(old->key(), old->hash) != nullptr){
+          confirminvalid = true;
+        }
+      }
+      if(confirminvalid){
+        WriteLock wl(&rwmutex_);
+        cbhtable_.Remove(old->key(), old->hash);
         uint32_t hashshard = Shard(old->hash);
         invalidationcnt[hashshard]++;
       }
@@ -448,14 +464,21 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
         if (!old->HasRefs()) {
           //remove the entry from cbhtable
           if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-            WriteLock wl(&rwmutex_);
-            //if the outdated entry existed in cbht...
-            if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
-              //update the entry in cbht as well
-              cbhtable_.Insert(e);
+            bool confirminvalid = false;
+            {
+              ReadLock rl(&rwmutex_);
+              if(cbhtable_.Lookup(old->key(), old->hash) != nullptr){
+                confirminvalid = true;
+              }
+            }
+            if(confirminvalid){
+              WriteLock wl(&rwmutex_);
+              cbhtable_.Remove(old->key(), old->hash);
+              
               invalidatedcount++;
             }
           }
+          
           // old is on LRU because it's in cache and its reference count is 0
           LRU_Remove(old);
           size_t old_total_charge =
@@ -592,6 +615,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
           {
+            /*
             // 1. only few entries are updated -> insert one new entry
             // 2. lots of entries are being invalidated -> evict and refill cbht
             // 3. too many misses -> dont bother doing expensive refill. insert one new entry only.
@@ -612,11 +636,16 @@ Cache::Handle* LRUCacheShard::Lookup(
               WriteLock wl(&rwmutex_);
               cbhtable_.Insert(e);  //3
               called++;
-            }
+            }*/
             /*
             WriteLock wl(&rwmutex_);
             cbhtable_.Insert(e);
            */
+            WriteLock wl(&rwmutex_);
+            cbhtable_.Insert(e);
+            called++;
+            //prefetchflag[hashshard] = true;
+            //called_refill++;
           }
           //before turning back on, print it out
           /*
@@ -754,8 +783,16 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         assert(lru_.next == &lru_ || force_erase);
         // Take this opportunity and remove the item
         if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-          WriteLock wl(&rwmutex_);
-          if(cbhtable_.Remove(e->key(), e->hash) != nullptr){
+          bool confirminvalid = false;
+          {
+            ReadLock rl(&rwmutex_);
+            if(cbhtable_.Lookup(e->key(), e->hash) != nullptr){
+              confirminvalid = true;
+            }
+          }
+          if(confirminvalid){
+            WriteLock wl(&rwmutex_);
+            cbhtable_.Remove(e->key(), e->hash);
             uint32_t hashshard = Shard(e->hash);
             invalidationcnt[hashshard]++;
           }
@@ -844,8 +881,16 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   {
     MutexLock l(&mutex_);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-      WriteLock wl(&rwmutex_);
-      if(cbhtable_.Remove(key, hash) != nullptr){
+      bool confirminvalid = false;
+      {
+        ReadLock rl(&rwmutex_);
+        if(cbhtable_.Lookup(key, hash) != nullptr){
+          confirminvalid = true;
+        }
+      }
+      if(confirminvalid){
+        WriteLock wl(&rwmutex_);
+        cbhtable_.Remove(key, hash);
         uint32_t hashshard = Shard(hash);
         invalidationcnt[hashshard]++;
       }
