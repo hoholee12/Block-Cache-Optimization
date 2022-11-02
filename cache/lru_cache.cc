@@ -475,8 +475,9 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
             }
             if(confirminvalid){
               WriteLock wl(&rwmutex_);
-              //cbhtable_.Remove(old->key(), old->hash);
-              cbhtable_.Insert(e);  //update entry
+              cbhtable_.Remove(old->key(), old->hash);
+              //update the entry in cbht as well
+              cbhtable_.Insert(e);
               uint32_t hashshard = Shard(old->hash);
               invalidationcnt[hashshard]++;
               invalidatedcount++;
@@ -648,8 +649,12 @@ Cache::Handle* LRUCacheShard::Lookup(
             WriteLock wl(&rwmutex_);
             cbhtable_.Insert(e);
             called++;
-            //prefetchflag[hashshard] = true;
-            //called_refill++;
+            if(invalidationcnt[hashshard] >= (cbhtable_.GetLength() >> 1)){
+              prefetchflag[hashshard] = true;
+              called_refill++;
+              invalidationcnt[hashshard] = 0;
+            }
+            
           }
           //before turning back on, print it out
           /*
@@ -675,9 +680,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //turn it back on every nlimit
           //if CBHTturnoff is bigger than nlimit, it becomes useless.
           CBHTState[hashshard] = true;
-          nohit[hashshard] = 0;
-          invalidationcnt[hashshard] = 0;
-          
+          nohit[hashshard] = 0;          
         }
       }
 
