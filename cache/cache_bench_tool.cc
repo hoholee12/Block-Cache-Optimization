@@ -436,8 +436,6 @@ class CacheBench {
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
-      invalidationcnt[i] = 0;
-      prefetchflag[i] = false;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;
@@ -530,7 +528,7 @@ class CacheBench {
 
     printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
 
-    printf("\n\n count CBHT update once/refill: %d/%d\n\n", called, called_refill);
+    printf("\n\n count CBHT update self/from lru: %d/%d\n\n", called, called_refill);
 
     printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
 

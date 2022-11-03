@@ -2515,7 +2515,7 @@ class Stats {
     
     printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
 
-    printf("\n\n count CBHT update once/refill: %d/%d\n\n", called, called_refill);
+    printf("\n\n count CBHT update self/from lru: %d/%d\n\n", called, called_refill);
 
     printf("\n\n how much CBHT miss happened(missed + turned off): %d\n\n", misscount);
 
@@ -3493,8 +3493,6 @@ class Benchmark {
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
-      invalidationcnt[i] = 0;
-      prefetchflag[i] = false;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;

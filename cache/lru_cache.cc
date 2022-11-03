@@ -144,7 +144,8 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   if (old == nullptr) {
     ++elems_;
     //start eviction if table is half full
-    if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
+    //evict 1 at 33, not 32.
+    if (((elems_ - 1) >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
       evictedcount++;
       EvictFIFO();
     }
@@ -184,6 +185,13 @@ void CBHTable::EvictFIFO(bool flushall){
     }
     //continue if the eviction was invalid(entry didnt exist)
   }
+}
+
+bool CBHTable::IsTableFull(){
+  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
+    return true;
+  }
+  else return false;
 }
 
 LRUCacheShard::LRUCacheShard(
@@ -231,8 +239,6 @@ void LRUCacheShard::EraseUnRefEntries() {
         if(confirminvalid){
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(old->key(), old->hash);
-          uint32_t hashshard = Shard(old->hash);
-          invalidationcnt[hashshard]++;
           invalidatedcount++;
         }
       }
@@ -386,8 +392,6 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
       if(confirminvalid){
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(old->key(), old->hash);
-        uint32_t hashshard = Shard(old->hash);
-        invalidationcnt[hashshard]++;
         invalidatedcount++;
       }
     }
@@ -476,11 +480,9 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
             }
             if(confirminvalid){
               WriteLock wl(&rwmutex_);
-              cbhtable_.Remove(old->key(), old->hash);
+              //cbhtable_.Remove(old->key(), old->hash);
               //update the entry in cbht as well
               cbhtable_.Insert(e);
-              uint32_t hashshard = Shard(old->hash);
-              invalidationcnt[hashshard]++;
               invalidatedcount++;
             }
           }
@@ -567,21 +569,8 @@ Cache::Handle* LRUCacheShard::Lookup(
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       if(CBHTState[hashshard])
       {
-        //limit access to cbht
-        /*
-        while(limitaccess[hashshard] > threadcount)
-        {
-          //std::this_thread::yield();
-        }
-        */
         ReadLock rl(&rwmutex_);
-        
-        //limitaccess[hashshard]++;
-
         e = cbhtable_.Lookup(key, hash);
-
-        //limitaccess[hashshard] = 0;
-
         if(e != nullptr){
           return reinterpret_cast<Cache::Handle*>(e);
         }
@@ -589,14 +578,12 @@ Cache::Handle* LRUCacheShard::Lookup(
           //no hit counter
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
-          //invalidationcnt[hashshard]++;
           if(nohit[hashshard]++ > CBHTturnoff){
             CBHTState[hashshard] = false;
           }
         }
 
       }
-
       //cbht missed(doesnt exist or skipped)
       misscount++;
     }
@@ -621,74 +608,18 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
           {
-            /*
-            // 1. only few entries are updated -> insert one new entry
-            // 2. lots of entries are being invalidated -> evict and refill cbht
-            // 3. too many misses -> dont bother doing expensive refill. insert one new entry only.
-            if(CBHTState[hashshard]){
-              if(invalidationcnt[hashshard] < (cbhtable_.GetLength() >> 1)){
-                WriteLock wl(&rwmutex_);
-                cbhtable_.Insert(e);  //1
-                called++;
-              }
-              else{
-                //2
-                //fill with new entries if there is enough invalidation
-                prefetchflag[hashshard] = true;
-                called_refill++;
-              }
-            }
-            else{
-              WriteLock wl(&rwmutex_);
-              cbhtable_.Insert(e);  //3
-              called++;
-            }*/
-            /*
             WriteLock wl(&rwmutex_);
-            cbhtable_.Insert(e);
-           */
-            if(invalidationcnt[hashshard] < (cbhtable_.GetLength() >> 1)){
-              WriteLock wl(&rwmutex_);
-              cbhtable_.Insert(e);
-              called++;
-            }
-            else{
-              WriteLock wl(&rwmutex_);
-              LRUHandle* temp = e;
-              cbhtable_.EvictFIFO(true);  //evict everything before prefetching
+            LRUHandle* temp = e;
+            cbhtable_.Insert(temp);
+            called++;
+            temp = lru_.prev;
+            //fill the rest of the table that is emptied by invalidated entries
+            while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
               cbhtable_.Insert(temp);
-              temp = lru_.prev;
-              //fill half the cbht to reduce collision
-              for(int i = 0; i < (cbhtable_.GetLength() >> 1) && lru_.next != &lru_; i++){ //dont fill if LRU empty
-                cbhtable_.Insert(temp);
-                temp = temp->prev;
-              }
+              temp = temp->prev;
               called_refill++;
-              invalidationcnt[hashshard] = 0;
             }
-            
           }
-          //before turning back on, print it out
-          /*
-          int a = 0;
-          for(uint32_t i = 0; i < shardnumlimit; i++){
-            a = (CBHTState[i]) ? a+1:a;
-          }
-          totalDCAcount++;
-          if(a > 0) noDCAcount++;
-          */
-          /*
-          printf("shard status: ");
-          int a = 0;
-          for(uint32_t i = 0; i < shardnumlimit; i++){
-            (CBHTState[i]) ? printf("DCA "):printf("xxx ");
-            a = (CBHTState[i]) ? a+1:a;
-          }
-          totalDCAcount++;
-          if(a > 0) noDCAcount++;
-          printf("\n");
-          */
-          
           //turn it back on every nlimit
           //if CBHTturnoff is bigger than nlimit, it becomes useless.
           CBHTState[hashshard] = true;
@@ -812,8 +743,6 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
           if(confirminvalid){
             WriteLock wl(&rwmutex_);
             cbhtable_.Remove(e->key(), e->hash);
-            uint32_t hashshard = Shard(e->hash);
-            invalidationcnt[hashshard]++;
             invalidatedcount++;
           }
         }
@@ -896,8 +825,6 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
       if(confirminvalid){
         WriteLock wl(&rwmutex_);
         cbhtable_.Remove(key, hash);
-        uint32_t hashshard = Shard(hash);
-        invalidationcnt[hashshard]++;
         invalidatedcount++;
       }
     }

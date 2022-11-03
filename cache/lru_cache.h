@@ -314,6 +314,7 @@ class CBHTable {
   int GetLength() const { return size_t{1} << length_bits_; }
   
   void EvictFIFO(bool flushall = false);
+  bool IsTableFull();
 
  private:
   // Return a pointer to slot that points to a cache entry that

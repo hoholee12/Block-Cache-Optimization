@@ -93,9 +93,8 @@ fi
 #runbench 1024 ycsbwklda nocbht
 
 initbench
-runbench 1024 ycsbwkldc
+runbench 1024 ycsbwklda
 
-exit
 
 #initbench
 #runbench 1024 ycsbwkldb nocbht

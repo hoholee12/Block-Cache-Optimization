@@ -46,8 +46,6 @@ int NLIMIT = 1000;
 int CBHTturnoff = NLIMIT * 20 / 100;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
-int invalidationcnt[SHARDCOUNT];
-bool prefetchflag[SHARDCOUNT];
 uint32_t threadcount = 0;
 //////////////////////////////
 
