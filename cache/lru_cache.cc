@@ -143,7 +143,8 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   hashkeylist.push(std::make_pair(h->key(), h->hash));
   if (old == nullptr) {
     ++elems_;
-    if ((elems_ >> length_bits_) > 0) {  // elems_ >= length
+    //start eviction if table is half full
+    if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
       evictedcount++;
       EvictFIFO();
     }

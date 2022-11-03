@@ -33,10 +33,6 @@ runbench(){
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
-    -level0_slowdown_writes_trigger=1000 \
-    -level0_stop_writes_trigger=1000 \
-    -level0_file_num_compaction_trigger=1000 \
-    -max_bytes_for_level_base=10485760000 \
     $cbhtturnoff \
     &> results/"$2"_on_"$(($1/1024))GB"_"$3".txt \
     
@@ -93,32 +89,33 @@ fi
 
 
 
-initbench
-runbench 100 ycsbwklda nocbht
+#initbench
+#runbench 1024 ycsbwklda nocbht
 
 initbench
-runbench 100 ycsbwklda
+runbench 1024 ycsbwkldc
 
+exit
 
-initbench
-runbench 100 ycsbwkldb nocbht
-
-initbench
-runbench 100 ycsbwkldb
-
+#initbench
+#runbench 1024 ycsbwkldb nocbht
 
 initbench
-runbench 100 ycsbwkldc nocbht
+runbench 1024 ycsbwkldb
+
+
+#initbench
+#runbench 1024 ycsbwkldc nocbht
 
 initbench
-runbench 100 ycsbwkldc
+runbench 1024 ycsbwkldc
 
+
+#initbench
+#runbench 1024 ycsbwkldd nocbht
 
 initbench
-runbench 100 ycsbwkldd nocbht
-
-initbench
-runbench 100 ycsbwkldd
+runbench 1024 ycsbwkldd
 
 
 #initbench
@@ -128,8 +125,8 @@ runbench 100 ycsbwkldd
 #runbench 1024 ycsbwklde
 
 
-initbench
-runbench 100 ycsbwkldf nocbht
+#initbench
+#runbench 1024 ycsbwkldf nocbht
 
 initbench
-runbench 100 ycsbwkldf
+runbench 1024 ycsbwkldf
