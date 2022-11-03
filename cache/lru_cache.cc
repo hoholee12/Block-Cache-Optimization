@@ -480,7 +480,7 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
             }
             if(confirminvalid){
               WriteLock wl(&rwmutex_);
-              //cbhtable_.Remove(old->key(), old->hash);
+              cbhtable_.Remove(old->key(), old->hash);
               //update the entry in cbht as well
               cbhtable_.Insert(e);
               invalidatedcount++;
