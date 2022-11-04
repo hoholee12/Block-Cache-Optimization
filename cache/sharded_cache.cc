@@ -24,6 +24,8 @@ uint64_t shardaccesscount[SHARDCOUNT];
 uint64_t numshardbits;
 uint64_t shardnumlimit;
 uint32_t threadnumshard[SHARDCOUNT];
+uint32_t lookupblockcount[SHARDCOUNT];
+bool lockheld[SHARDCOUNT];
 bool enableshardfix;
 bool dynaswitch;
 int totalDCAcount = 0;

@@ -68,6 +68,8 @@ extern uint64_t shardaccesscount[SHARDCOUNT];
 extern uint64_t numshardbits;
 extern uint64_t shardnumlimit;
 extern uint32_t threadnumshard[SHARDCOUNT];
+extern uint32_t lookupblockcount[SHARDCOUNT];
+extern bool lockheld[SHARDCOUNT];
 extern bool enableshardfix;
 extern bool dynaswitch;
 extern int totalDCAcount;

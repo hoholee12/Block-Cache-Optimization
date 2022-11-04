@@ -2604,6 +2604,31 @@ class Stats {
     printf("\n\nlargest access count: shard=%d with %ld times\n", maxaccessi, maxaccesscount);
     printf("average access count = %ld times\n", accesstotal / (uint64_t)pow(2, numshardbits));
 
+    //results - lookupblockcount
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int maxblocki = -1;
+    uint64_t maxblockcount = 0;
+    uint64_t blocktotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      blocktotal += lookupblockcount[i];
+      if(lookupblockcount[i] > maxblockcount){
+        maxblocki = i;
+        maxblockcount = lookupblockcount[i];
+      }
+      displayarr[j] += (uint64_t)lookupblockcount[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+    
+    printf("\n\nlargest lookup block count: shard=%d with %ld times\n", maxblocki, maxblockcount);
+    printf("average lookup block count = %ld times\n", blocktotal / (uint64_t)pow(2, numshardbits));
+    
     printf("\n\nkey space usage\n\n");
     for(long i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
       printf("%ld\n", keyrangecounter[i]);
@@ -3488,6 +3513,8 @@ class Benchmark {
       shardtotaltime[i] = -1;
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
+      lookupblockcount[i] = 0;
+      lockheld[i] = false;
 
       //CBHT internals
       N[i] = 0;
