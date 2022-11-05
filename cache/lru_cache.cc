@@ -163,7 +163,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
     //evict 1 at 33, not 32.
     if (((elems_ - 1) >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
       evictedcount++;
-      EvictFIFO();
+      old = EvictFIFO();
     }
   }
   return old;
@@ -189,18 +189,19 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
-void CBHTable::EvictFIFO(bool flushall){
+LRUHandle* CBHTable::EvictFIFO(bool flushall){
   std::pair<Slice, uint32_t> temp;
-  LRUHandle* ptr;
+  LRUHandle* result = nullptr;
   while((!hashkeylist.empty())){
     temp = hashkeylist.front();
-    ptr = Remove(temp.first, temp.second);  //does --elems_ internally
+    result = Remove(temp.first, temp.second);  //does --elems_ internally
     hashkeylist.pop();
-    if(ptr != nullptr && !flushall){
+    if(result != nullptr && !flushall){
       break;  //do only one eviction
     }
     //continue if the eviction was invalid(entry didnt exist)
   }
+  return result;
 }
 
 bool CBHTable::IsTableFull(){

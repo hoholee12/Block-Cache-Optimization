@@ -114,7 +114,7 @@ struct LRUHandle {
 
   // Just reduce the reference count by 1. Return true if it was last reference.
   bool Unref() {
-    assert(refs > 0);
+    //assert(refs > 0);
     refs--;
     return refs == 0;
   }
@@ -313,7 +313,7 @@ class CBHTable {
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
   
-  void EvictFIFO(bool flushall = false);
+  LRUHandle* EvictFIFO(bool flushall = false);
   bool IsTableFull();
 
  private:

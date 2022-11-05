@@ -2538,9 +2538,6 @@ class Stats {
     //print the index first for convenience
     for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", i*repeat);
     
-    //thread num shard
-    printf("\n\nthreadnumshard:\n");
-    for(uint64_t i = 0; i < shardlimit; i++) printf("%d\n", threadnumshard[i]);
     int j = 0;
     
     //results - shardtotaltime
@@ -2628,7 +2625,7 @@ class Stats {
     
     printf("\n\nlargest lookup block count: shard=%d with %ld times\n", maxblocki, maxblockcount);
     printf("average lookup block count = %ld times\n", blocktotal / (uint64_t)pow(2, numshardbits));
-    
+
     printf("\n\nkey space usage\n\n");
     for(long i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
       printf("%ld\n", keyrangecounter[i]);
