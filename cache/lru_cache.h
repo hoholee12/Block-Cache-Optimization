@@ -118,7 +118,7 @@ struct LRUHandle {
 
   // Just reduce the reference count by 1. Return true if it was last reference.
   bool Unref() {
-    //assert(refs > 0);
+    assert(refs > 0);
     refs--;
     return refs == 0;
   }

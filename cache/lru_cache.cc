@@ -812,14 +812,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
     Holdvalue hv(Shard(lru_.prev->hash));
     
     e = table_.Remove(key, hash);
-    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-      if(e->indca){
-        WriteLock wl(&rwmutex_);
-        cbhtable_.Remove(e->key(), e->hash);
-        e->Free();  //free the dca entry here
-        invalidatedcount++;
-      }
-    }
+    
     
     if (e != nullptr) {
       assert(e->InCache());
@@ -831,6 +824,14 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
         assert(usage_ >= total_charge);
         usage_ -= total_charge;
         last_reference = true;
+      }
+      if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+        if(e->indca){
+          WriteLock wl(&rwmutex_);
+          cbhtable_.Remove(e->key(), e->hash);
+          e->Free();  //free the dca entry here
+          invalidatedcount++;
+        }
       }
     }
   }

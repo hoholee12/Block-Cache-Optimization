@@ -10,17 +10,21 @@ i=4
 #20+ is hard limited and leads to segfault
 
 #valgrind --tool=helgrind ./cache_bench --skewed=true --skew=500 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=8 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$i --ops_per_thread=$(($ops/8)) > results_cache/csv.txt
-./cache_bench --nlimit=1000 --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=0.25 --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=8 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$i --ops_per_thread=$(($ops/8)) > results_cache/csv.txt
+./cache_bench --nlimit=1000 --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=0.25 --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=8 --lookup_percent=80 --insert_percent=10 --erase_percent=10 --lookup_insert_percent=0 --num_shard_bits=$i --ops_per_thread=$(($ops/8)) > results_cache/csv.txt
 
 exit
-
 
 
 i=4
 for percent in 100 90 80 70 60 50; do
     ./cache_bench --nlimit=1000 --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=8 --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$i --ops_per_thread=$(($ops/8)) > results_cache/resultpercentasdf$percent.txt
-    sleep 5 #cooldown
 done
+
+exit
+
+
+
+
 
 exit
 
