@@ -644,19 +644,16 @@ Cache::Handle* LRUCacheShard::Lookup(
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
             LRUHandle* temp2 = nullptr;
+            temp->indca = true;
             cbhtable_.Insert(temp);
-            //LRUHandle* old = 
-            //if(old != nullptr){
-            //  old->refs = 1;
-            //  Release(old);
-            //}
             called++;
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
             while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
+              temp->indca = true;
               cbhtable_.Insert(temp);
               temp2 = temp->prev;
-              if(!temp->HasRefs()) LRU_Remove(temp);
+              LRU_Remove(temp); //keep all dca entries out of lru
               temp->Ref();
               temp->SetHit();
               temp = temp2;
@@ -757,6 +754,8 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
     return false;
   }
   LRUHandle* e = reinterpret_cast<LRUHandle*>(handle);
+
+  if(e->indca) return false;  //never release dca items
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
@@ -844,6 +843,7 @@ Status LRUCacheShard::Insert(const Slice& key, uint32_t hash, void* value,
   e->SetInCache(true);
   e->SetPriority(priority);
   memcpy(e->key_data, key.data(), key.size());
+  e->indca = false;
 
   return InsertItem(e, handle, /* free_handle_on_fail */ true);
 }

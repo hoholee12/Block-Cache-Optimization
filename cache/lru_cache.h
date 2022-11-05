@@ -77,6 +77,8 @@ struct LRUHandle {
   // The number of external refs to this entry. The cache itself is not counted.
   uint32_t refs;
 
+  bool indca;
+
   enum Flags : uint8_t {
     // Whether this entry is referenced by the hash table.
     IN_CACHE = (1 << 0),
