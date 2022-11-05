@@ -630,7 +630,12 @@ Cache::Handle* LRUCacheShard::Lookup(
     //sanity check
     if (e != nullptr) {
       assert(e->InCache());
-
+      if (!e->HasRefs()) {
+        // The entry is in LRU since it's in hash and has no external references
+        LRU_Remove(e);
+      }
+      e->Ref();
+      e->SetHit();
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         //count to N
         if(N[hashshard]++ > NLIMIT){
@@ -638,13 +643,23 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
+            LRUHandle* temp2 = nullptr;
             cbhtable_.Insert(temp);
+            //LRUHandle* old = 
+            //if(old != nullptr){
+            //  old->refs = 1;
+            //  Release(old);
+            //}
             called++;
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
             while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
               cbhtable_.Insert(temp);
-              temp = temp->prev;
+              temp2 = temp->prev;
+              if(!temp->HasRefs()) LRU_Remove(temp);
+              temp->Ref();
+              temp->SetHit();
+              temp = temp2;
               called_refill++;
             }
           }
@@ -654,13 +669,6 @@ Cache::Handle* LRUCacheShard::Lookup(
           nohit[hashshard] = 0;
         }
       }
-
-      if (!e->HasRefs()) {
-        // The entry is in LRU since it's in hash and has no external references
-        LRU_Remove(e);
-      }
-      e->Ref();
-      e->SetHit();
     }
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
