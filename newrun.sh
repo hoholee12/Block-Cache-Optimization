@@ -18,7 +18,7 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=20"
+        cbhtturnoff="-cbhtturnoff=50"
     fi
 
     #run
@@ -92,17 +92,15 @@ fi
 #initbench
 #runbench 1024 ycsbwklda nocbht
 
-initbench
-runbench 1024 ycsbwklda
-
-exit
+#initbench
+#runbench 1024 ycsbwklda
 
 
 #initbench
 #runbench 1024 ycsbwkldb nocbht
 
-initbench
-runbench 1024 ycsbwkldb
+#initbench
+#runbench 1024 ycsbwkldb
 
 
 #initbench
@@ -115,8 +113,8 @@ runbench 1024 ycsbwkldc
 #initbench
 #runbench 1024 ycsbwkldd nocbht
 
-initbench
-runbench 1024 ycsbwkldd
+#initbench
+#runbench 1024 ycsbwkldd
 
 
 #initbench
@@ -129,5 +127,5 @@ runbench 1024 ycsbwkldd
 #initbench
 #runbench 1024 ycsbwkldf nocbht
 
-initbench
-runbench 1024 ycsbwkldf
+#initbench
+#runbench 1024 ycsbwkldf

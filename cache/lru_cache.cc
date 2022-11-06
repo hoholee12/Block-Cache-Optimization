@@ -725,7 +725,9 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   }
   LRUHandle* e = reinterpret_cast<LRUHandle*>(handle);
 
-  if(e->indca) return false;  //never release dca items
+  if(CBHTturnoff) {
+    if(e->indca) return false;  //never release dca items
+  }
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
@@ -739,12 +741,26 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
               
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
+        if(CBHTturnoff) {
+          //check one more time just in case
+          if(e->indca) {
+            e->refs = 1;
+            return false;  //never release dca items
+          }
+        }
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
         e->SetInCache(false);
         
       } else {
         // Put the item back on the LRU list, and don't free it
+        if(CBHTturnoff) {
+          //check one more time just in case
+          if(e->indca) {
+            e->refs = 1;
+            return false;  //never release dca items
+          }
+        }
         LRU_Insert(e);
         last_reference = false;
       }
