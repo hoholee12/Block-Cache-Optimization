@@ -588,10 +588,12 @@ Cache::Handle* LRUCacheShard::Lookup(
   
   //miss
     //1. mutex lock
+    /*
     struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+    */
     if(lockheld[hashshard]) lookupblockcount[hashshard]++;
     MutexLock l(&mutex_);
     Holdvalue hv(Shard(lru_.prev->hash));
@@ -641,13 +643,14 @@ Cache::Handle* LRUCacheShard::Lookup(
         }
       }
     }
-
+    shardaccesscount[hashshard] += 1;
+    /*
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
     shardtotaltime[hashshard] += telapsedtotal;
-    shardaccesscount[hashshard] += 1;
+    */
   }
 
   // If handle table lookup failed, then allocate a handle outside the

@@ -561,6 +561,7 @@ class CacheBench {
     int j = 0;
     
     //results - shardtotaltime
+    /*
     memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
     j = 0;
     printf("\n\n");
@@ -593,7 +594,7 @@ class CacheBench {
 
     printf("\n\nlargest total time: shard=%d with %ld ns\n", maxtotali, maxtotaltime);
     printf("average total time = %ld ns\n", totaltotal / (time_t)pow(2, numshardbits));
-
+*/
     //results - shardaccesscount
     memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
     j = 0;
