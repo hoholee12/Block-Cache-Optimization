@@ -730,7 +730,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   LRUHandle* e = reinterpret_cast<LRUHandle*>(handle);
 
   if(CBHTturnoff) {
-    if(e->indca) return false;  //never release dca items
+    if(e->indca) return true;  //never release dca items
   }
   bool last_reference = false;
   {
@@ -738,7 +738,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
     Holdvalue hv(Shard(lru_.prev->hash));
     if(CBHTturnoff) {
       //check one more time after the mutex just in case
-      if(e->indca) return false;  //never release dca items
+      if(e->indca) return true;  //never release dca items
     }
 
     last_reference = e->Unref();
