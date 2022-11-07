@@ -324,8 +324,10 @@ double LRUCacheShard::GetHighPriPoolRatio() {
 }
 
 void LRUCacheShard::LRU_Remove(LRUHandle* e) {
-  assert(e->next != nullptr);
-  assert(e->prev != nullptr);
+  //return if its already been removed from lru
+  if(e->next == nullptr || e->prev == nullptr) return;
+  //assert(e->next != nullptr);
+  //assert(e->prev != nullptr);
   if (lru_low_pri_ == e) {
     lru_low_pri_ = e->prev;
   }
@@ -342,8 +344,10 @@ void LRUCacheShard::LRU_Remove(LRUHandle* e) {
 }
 
 void LRUCacheShard::LRU_Insert(LRUHandle* e) {
-  assert(e->next == nullptr);
-  assert(e->prev == nullptr);
+  //return if its already inside lru
+  if(e->next != nullptr || e->prev != nullptr) return;
+  //assert(e->next == nullptr);
+  //assert(e->prev == nullptr);
   size_t total_charge = e->CalcTotalCharge(metadata_charge_policy_);
   if (high_pri_pool_ratio_ > 0 && (e->IsHighPri() || e->HasHit())) {
     // Inset "e" to head of LRU list.
@@ -732,6 +736,10 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   {
     MutexLock l(&mutex_);
     Holdvalue hv(Shard(lru_.prev->hash));
+    if(CBHTturnoff) {
+      //check one more time after the mutex just in case
+      if(e->indca) return false;  //never release dca items
+    }
 
     last_reference = e->Unref();
     if (last_reference && e->InCache()) {
@@ -741,26 +749,14 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
               
         // The LRU list must be empty since the cache is full
         assert(lru_.next == &lru_ || force_erase);
-        if(CBHTturnoff) {
-          //check one more time just in case
-          if(e->indca) {
-            e->refs = 1;
-            return false;  //never release dca items
-          }
-        }
+        
         // Take this opportunity and remove the item
         table_.Remove(e->key(), e->hash);
         e->SetInCache(false);
         
       } else {
         // Put the item back on the LRU list, and don't free it
-        if(CBHTturnoff) {
-          //check one more time just in case
-          if(e->indca) {
-            e->refs = 1;
-            return false;  //never release dca items
-          }
-        }
+        
         LRU_Insert(e);
         last_reference = false;
       }
