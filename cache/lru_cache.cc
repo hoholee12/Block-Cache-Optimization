@@ -617,6 +617,12 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
+            if(!CBHTState[hashshard]){
+              //evict everything if dca has too many misses.
+              //is safe because i made sure that lru operation wont crash the entire thing
+              cbhtable_.EvictFIFO(true);
+              fullevictcount++;
+            }
             cbhtable_.Insert(temp);
             temp->indca = true;
             temp->refs = 1; //all dca entries should have 1 ref

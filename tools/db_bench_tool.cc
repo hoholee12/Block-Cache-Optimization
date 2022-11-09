@@ -399,7 +399,7 @@ IF_ROCKSDB_LITE("",
 
 DEFINE_bool(enableshardfix, false, "enableshardfix");
 
-DEFINE_uint32(nlimit, 1000, "CBHT N_LIMIT");
+DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
@@ -2523,6 +2523,8 @@ class Stats {
 
     printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
 
+    printf("\n\n how much CBHT full eviction happened: %d\n\n", fullevictcount);
+
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
 
     printf("\n\neasy index:\n");
@@ -3535,6 +3537,7 @@ class Benchmark {
     misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;
+    fullevictcount = 0;
 
     
     keyrangecounter_size = FLAGS_num;

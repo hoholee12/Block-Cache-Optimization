@@ -66,7 +66,7 @@ DEFINE_bool(enableshardfix, false, "enableshardfix");
 DEFINE_bool(dynaswitch, false, "dynaswitch");
 DEFINE_uint32(dynaswitch_num, 10000, "dynaswitch_num");
 
-DEFINE_uint32(nlimit, 1000, "CBHT N_LIMIT");
+DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
@@ -455,6 +455,7 @@ class CacheBench {
     misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;
+    fullevictcount = 0;
 
 
     keyrangecounter_size = max_key_;
@@ -539,6 +540,8 @@ class CacheBench {
     printf("\n\n how much CBHT invalidation happened: %d\n\n", invalidatedcount);
 
     printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
+
+    printf("\n\n how much CBHT full eviction happened: %d\n\n", fullevictcount);
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
 

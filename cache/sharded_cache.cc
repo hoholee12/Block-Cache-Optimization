@@ -37,6 +37,7 @@ int called_refill = 0;
 int misscount = 0;
 int invalidatedcount = 0;
 int evictedcount = 0;
+int fullevictcount = 0;
 //////////////////
 
 //////////////////////////////
@@ -44,7 +45,7 @@ int evictedcount = 0;
 int N[SHARDCOUNT];  // all 0s
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
-int NLIMIT = 1000;
+int NLIMIT = 20000;
 int CBHTturnoff = NLIMIT * 20 / 100;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
