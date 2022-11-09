@@ -150,13 +150,14 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 }
 
 //this replaces to new entry from old entry via same key, and returns old one?
-LRUHandle* CBHTable::Insert(LRUHandle* h) {
+LRUHandle* CBHTable::Insert(LRUHandle* h, bool opposite) {
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
   *ptr = h;
 
-  hashkeylist.push(std::make_pair(h->key(), h->hash));
+  if(opposite) hashkeylist.push_front(std::make_pair(h->key(), h->hash));
+  else hashkeylist.push_back(std::make_pair(h->key(), h->hash));
   if (old == nullptr) {
     ++elems_;
     //start eviction if table is half full
@@ -195,7 +196,7 @@ LRUHandle* CBHTable::EvictFIFO(bool flushall){
   while((!hashkeylist.empty())){
     temp = hashkeylist.front();
     result = Remove(temp.first, temp.second);  //does --elems_ internally
-    hashkeylist.pop();
+    hashkeylist.pop_front();
     if(result != nullptr && !flushall){
       break;  //do only one eviction
     }
@@ -588,12 +589,12 @@ Cache::Handle* LRUCacheShard::Lookup(
   
   //miss
     //1. mutex lock
-    /*
+    
     struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0}, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
-    */
+    
     if(lockheld[hashshard]) lookupblockcount[hashshard]++;
     MutexLock l(&mutex_);
     Holdvalue hv(Shard(lru_.prev->hash));
@@ -616,15 +617,15 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
-            LRUHandle* temp2 = nullptr;
             cbhtable_.Insert(temp);
             temp->indca = true;
             temp->refs = 1; //all dca entries should have 1 ref
             called++;
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
+            LRUHandle* temp2 = nullptr;
             while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
-              cbhtable_.Insert(temp);
+              cbhtable_.Insert(temp, true); //entries added from lru are first to be evicted
               temp2 = temp->prev;
               temp->indca = true;
               //most likely 0 refs
@@ -644,13 +645,13 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
     }
     shardaccesscount[hashshard] += 1;
-    /*
+    
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
     shardtotaltime[hashshard] += telapsedtotal;
-    */
+    
   }
 
   // If handle table lookup failed, then allocate a handle outside the

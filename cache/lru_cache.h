@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <queue>
+#include <deque>
 #include <utility>
 
 #include "cache/sharded_cache.h"
@@ -298,7 +299,7 @@ class CBHTable {
   ~CBHTable();
 
   LRUHandle* Lookup(const Slice& key, uint32_t hash);
-  LRUHandle* Insert(LRUHandle* h);
+  LRUHandle* Insert(LRUHandle* h, bool opposite = false);
   LRUHandle* Remove(const Slice& key, uint32_t hash);
 
   template <typename T>
@@ -342,7 +343,7 @@ class CBHTable {
   const int max_length_bits_;
 
   //for EvictFIFO
-  std::queue<std::pair<Slice, uint32_t>> hashkeylist;
+  std::deque<std::pair<Slice, uint32_t>> hashkeylist;
 };
 
 // A single shard of sharded cache.

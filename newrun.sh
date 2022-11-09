@@ -30,6 +30,7 @@ runbench(){
     -statistics \
     -use_existing_db=true \
     -db=$mntlocation \
+    -nlimit=20000 \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
@@ -87,20 +88,18 @@ if [[ ! -d $baklocation/ycsbfilldb ]]; then
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
 
+initbench
+runbench 1024 ycsbwklda nocbht
+
+initbench
+runbench 1024 ycsbwklda
 
 
-#initbench
-#runbench 1024 ycsbwklda nocbht
+initbench
+runbench 1024 ycsbwkldb nocbht
 
-#initbench
-#runbench 1024 ycsbwklda
-
-
-#initbench
-#runbench 1024 ycsbwkldb nocbht
-
-#initbench
-#runbench 1024 ycsbwkldb
+initbench
+runbench 1024 ycsbwkldb
 
 
 initbench
@@ -117,15 +116,17 @@ initbench
 runbench 1024 ycsbwkldd
 
 
-#initbench
-#runbench 1024 ycsbwklde nocbht
+initbench
+runbench 1024 ycsbwkldf nocbht
 
-#initbench
-#runbench 1024 ycsbwklde
+initbench
+runbench 1024 ycsbwkldf
 
+exit
+#slowest bench
+initbench
+runbench 1024 ycsbwklde nocbht
 
-#initbench
-#runbench 1024 ycsbwkldf nocbht
+initbench
+runbench 1024 ycsbwklde
 
-#initbench
-#runbench 1024 ycsbwkldf
