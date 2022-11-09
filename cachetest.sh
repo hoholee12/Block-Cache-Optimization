@@ -4,6 +4,11 @@ sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
 ops=$(($1*1024))
 
+
+# dont throttle
+#i7-6700 base speed is 3.4ghz
+for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i; done
+
 mkdir results_cache 2>/dev/null
 
 

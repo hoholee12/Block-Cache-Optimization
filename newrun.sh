@@ -30,7 +30,7 @@ runbench(){
     -statistics \
     -use_existing_db=true \
     -db=$mntlocation \
-    -nlimit=20000 \
+    -nlimit=1000 \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
@@ -87,6 +87,10 @@ if [[ ! -d $baklocation/ycsbfilldb ]]; then
     mkdir $baklocation/ycsbfilldb/
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
+
+# dont throttle
+#i7-6700 base speed is 3.4ghz
+for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i; done
 
 initbench
 runbench 1024 ycsbwklda nocbht
