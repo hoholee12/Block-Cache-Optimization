@@ -8470,7 +8470,7 @@ class Benchmark {
 
     int64_t reads_done = 0;
     int64_t writes_done = 0;
-    Duration duration(FLAGS_duration, FLAGS_num);
+    Duration duration(FLAGS_duration, FLAGS_num / 100); //next is 100 keys
 
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);

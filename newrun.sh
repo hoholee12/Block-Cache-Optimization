@@ -30,7 +30,7 @@ runbench(){
     -statistics \
     -use_existing_db=true \
     -db=$mntlocation \
-    -nlimit=1000 \
+    -nlimit=20000 \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
@@ -91,6 +91,16 @@ fi
 # dont throttle
 #i7-6700 base speed is 3.4ghz
 for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i; done
+
+#slowest bench
+initbench
+runbench 1024 ycsbwklde nocbht
+
+initbench
+runbench 1024 ycsbwklde
+
+exit
+
 
 initbench
 runbench 1024 ycsbwklda nocbht
