@@ -569,6 +569,8 @@ Cache::Handle* LRUCacheShard::Lookup(
       {
         ReadLock rl(&rwmutex_);
         e = cbhtable_.Lookup(key, hash);
+        
+        totalhit[hashshard]++;
         if(e != nullptr){
           return reinterpret_cast<Cache::Handle*>(e);
         }
@@ -576,14 +578,15 @@ Cache::Handle* LRUCacheShard::Lookup(
           //no hit counter
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
-          if(nohit[hashshard]++ > CBHTturnoff){
+          nohit[hashshard]++;
+          if(nohit[hashshard] > CBHTturnoff){
             CBHTState[hashshard] = false;
           }
+          //cbht missed(doesnt exist or skipped)
+          misscount++;
         }
 
       }
-      //cbht missed(doesnt exist or skipped)
-      misscount++;
     }
    
   
@@ -617,7 +620,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
-            if(!CBHTState[hashshard]){
+            if(nohit[hashshard] > totalhit[hashshard] * DCAflush / 100){
               //evict everything if dca has too many misses.
               //is safe because i made sure that lru operation wont crash the entire thing
               cbhtable_.EvictFIFO(true);
@@ -647,6 +650,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //if CBHTturnoff is bigger than nlimit, it becomes useless.
           CBHTState[hashshard] = true;
           nohit[hashshard] = 0;
+          totalhit[hashshard] = 0;
         }
       }
     }

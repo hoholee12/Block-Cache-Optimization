@@ -25,12 +25,14 @@ runbench(){
     sudo time ./db_bench \
     -benchmarks="$2,stats" \
     -num=$dataset \
-    -threads=8 \
+    -threads=4 \
     -histogram \
     -statistics \
     -use_existing_db=true \
+    -seed=1000 \
     -db=$mntlocation \
     -nlimit=20000 \
+    -dcaflush=90 \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
@@ -90,15 +92,14 @@ fi
 
 # dont throttle
 #i7-6700 base speed is 3.4ghz
-for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i; done
-
-#slowest bench
-initbench
-runbench 1024 ycsbwklde nocbht
+for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i &>/dev/null; done
+echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 initbench
-runbench 1024 ycsbwklde
+runbench 1024 ycsbwkldc nocbht
 
+initbench
+runbench 1024 ycsbwkldc
 exit
 
 
@@ -136,7 +137,7 @@ runbench 1024 ycsbwkldf nocbht
 initbench
 runbench 1024 ycsbwkldf
 
-exit
+
 #slowest bench
 initbench
 runbench 1024 ycsbwklde nocbht

@@ -403,8 +403,9 @@ DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
-DEFINE_uint32(cbhtturnoff, 20, "CBHT TURN OFF Percentage");
+DEFINE_uint32(cbhtturnoff, 20, "CBHT TURN OFF Miss Percentage");
 
+DEFINE_uint32(dcaflush, 90, "DCA flush Miss Percentage");
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -2513,6 +2514,11 @@ class Stats {
 
   void Report(const Slice& name) {
     
+    fprintf(stdout, "cbht nlimit         : %d\n", FLAGS_nlimit);
+    fprintf(stdout, "cbht bit length     : %d\n", FLAGS_cbhtbitlength);
+    fprintf(stdout, "cbht turnoff miss p : %u%%\n", FLAGS_cbhtturnoff);
+    fprintf(stdout, "dca flush miss perc : %u%%\n", FLAGS_dcaflush);
+    
     printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
 
     printf("\n\n count CBHT update self/from lru: %d/%d\n\n", called, called_refill);
@@ -3520,6 +3526,7 @@ class Benchmark {
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
+      totalhit[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;
@@ -3531,6 +3538,7 @@ class Benchmark {
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
     CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
+    DCAflush = FLAGS_dcaflush; //percentage
 
     called = 0;
     called_refill = 0;

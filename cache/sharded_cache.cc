@@ -45,8 +45,10 @@ int fullevictcount = 0;
 int N[SHARDCOUNT];  // all 0s
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
+int totalhit[SHARDCOUNT];
 int NLIMIT = 20000;
 int CBHTturnoff = NLIMIT * 20 / 100;
+int DCAflush = 90;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
 uint32_t threadcount = 0;

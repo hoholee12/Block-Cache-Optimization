@@ -59,7 +59,7 @@ class RWMutex_tmp {
   pthread_rwlock_t mu_; // the underlying platform mutex
 };
 
-#define SHARDCOUNT 1048576
+#define SHARDCOUNT 256
 
 //////////////////
 // benchmark stuff
@@ -81,15 +81,19 @@ extern int called_refill;
 extern int misscount;
 extern int invalidatedcount;
 extern int evictedcount;
+extern int fullevictcount;
 //////////////////
 
 //////////////////////////////
 // counters for CBHT internals
 extern int N[SHARDCOUNT];
+extern int Nsupple[SHARDCOUNT];
 extern bool CBHTState[SHARDCOUNT];
 extern int nohit[SHARDCOUNT];
+extern int totalhit[SHARDCOUNT];
 extern int NLIMIT;
 extern int CBHTturnoff;
+extern int DCAflush;
 extern RWMutex_tmp sac_rwm_;
 extern int CBHTbitlength;
 extern uint32_t threadcount;

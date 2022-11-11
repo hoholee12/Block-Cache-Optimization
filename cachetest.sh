@@ -7,7 +7,8 @@ ops=$(($1*1024))
 
 # dont throttle
 #i7-6700 base speed is 3.4ghz
-for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i; done
+for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i &>/dev/null; done
+echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 mkdir results_cache 2>/dev/null
 

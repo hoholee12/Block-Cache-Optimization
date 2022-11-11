@@ -70,7 +70,9 @@ DEFINE_uint32(nlimit, 20000, "CBHT N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "CBHT BIT LENGTH");
 
-DEFINE_uint32(cbhtturnoff, 20, "CBHT TURN OFF Percentage");
+DEFINE_uint32(cbhtturnoff, 20, "CBHT TURN OFF Miss Percentage");
+
+DEFINE_uint32(dcaflush, 90, "DCA flush Miss Percentage");
 
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
@@ -438,6 +440,7 @@ class CacheBench {
       N[i] = 0;
       CBHTState[i] = true;
       nohit[i] = 0;
+      totalhit[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;
@@ -449,6 +452,7 @@ class CacheBench {
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
     CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //percentage
+    DCAflush = FLAGS_dcaflush; //percentage
 
     called = 0;
     called_refill = 0;
@@ -870,6 +874,7 @@ class CacheBench {
     printf("cbht nlimit         : %d\n", FLAGS_nlimit);
     printf("cbht bit length     : %d\n", FLAGS_cbhtbitlength);
     printf("cbht turnoff miss p : %u%%\n", FLAGS_cbhtturnoff);
+    printf("dca flush miss perc : %u%%\n", FLAGS_dcaflush);
     printf("Populate cache      : %d\n", int{FLAGS_populate_cache});
     printf("Lookup+Insert pct   : %u%%\n", FLAGS_lookup_insert_percent);
     printf("Insert percentage   : %u%%\n", FLAGS_insert_percent);
