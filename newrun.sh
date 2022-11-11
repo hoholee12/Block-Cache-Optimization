@@ -25,7 +25,7 @@ runbench(){
     sudo time ./db_bench \
     -benchmarks="$2,stats" \
     -num=$dataset \
-    -threads=4 \
+    -threads=8 \
     -histogram \
     -statistics \
     -use_existing_db=true \
@@ -92,8 +92,9 @@ fi
 
 # dont throttle
 #i7-6700 base speed is 3.4ghz
-for i in $(seq 0 7); do sudo cpufreq-set -u 3.4ghz -g performance -c $i &>/dev/null; done
-echo off | sudo tee /sys/devices/system/cpu/smt/control
+#echo off | sudo tee /sys/devices/system/cpu/smt/control
+echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
 initbench
 runbench 1024 ycsbwkldc nocbht
