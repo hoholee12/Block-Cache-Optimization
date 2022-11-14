@@ -661,7 +661,7 @@ Cache::Handle* LRUCacheShard::Lookup(
     telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
     time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
     shardtotaltime[hashshard] += telapsedtotal;
-    
+    shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
   }
 
   // If handle table lookup failed, then allocate a handle outside the

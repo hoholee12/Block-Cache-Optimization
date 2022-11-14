@@ -431,6 +431,7 @@ class CacheBench {
     //initialize shard counters
     for(int i = 0; i < SHARDCOUNT; i++){
       shardtotaltime[i] = -1;
+      shardlasttime[i] = -1;
       shardaccesscount[i] = 0;
       threadnumshard[i] = -1;
       lookupblockcount[i] = 0;
@@ -629,6 +630,41 @@ class CacheBench {
     printf("\n\nlargest access count: shard=%d with %ld times\n", maxaccessi, maxaccesscount);
     printf("average access count = %ld times\n", accesstotal / (uint64_t)pow(2, numshardbits));
 
+    //results - shardlasttime
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    time_t subtract = shardlasttime[0];
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      if(subtract > shardlasttime[i]){
+        subtract = shardlasttime[i];
+      }
+    }
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      shardlasttime[i] -= subtract;
+    }
+    int maxlasti = -1;
+    time_t maxlastcount = 0;
+    time_t lasttotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      lasttotal += shardlasttime[i];
+      if(shardlasttime[i] > maxlastcount){
+        maxlasti = i;
+        maxlastcount = shardlasttime[i];
+      }
+      displayarr[j] += (uint64_t)shardlasttime[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+
+    printf("\n\nlargest last time: shard=%d with %ld ns\n", maxlasti, maxlastcount);
+    printf("average last time = %ld ns\n", lasttotal / (time_t)pow(2, numshardbits));
+
+
     //results - lookupblockcount
     memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
     j = 0;
@@ -653,6 +689,88 @@ class CacheBench {
     
     printf("\n\nlargest lookup block count: shard=%d with %ld times\n", maxblocki, maxblockcount);
     printf("average lookup block count = %ld times\n", blocktotal / (uint64_t)pow(2, numshardbits));
+
+
+    //results - dca nohit count
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int maxhiti = -1;
+    int maxhitcount = 0;
+    int hittotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      hittotal += nohit[i];
+      if(nohit[i] > maxhitcount){
+        maxhiti = i;
+        maxhitcount = nohit[i];
+      }
+      displayarr[j] += (uint64_t)nohit[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+    
+    printf("\n\nlargest dca nohit count: shard=%d with %d times\n", maxhiti, maxhitcount);
+    printf("average dca nohit count = %ld times\n", hittotal / (uint64_t)pow(2, numshardbits));
+
+
+    //results - dca totalhit count
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    int maxthiti = -1;
+    int maxthitcount = 0;
+    int thittotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      thittotal += totalhit[i];
+      if(totalhit[i] > maxthitcount){
+        maxthiti = i;
+        maxthitcount = totalhit[i];
+      }
+      displayarr[j] += (uint64_t)totalhit[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+    
+    printf("\n\nlargest dca totalhit count: shard=%d with %d times\n", maxthiti, maxthitcount);
+    printf("average dca totalhit count = %ld times\n", thittotal / (uint64_t)pow(2, numshardbits));
+
+
+    //results - dca hit percentage count
+    memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+    j = 0;
+    printf("\n\n");
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      totalhit[i] = 100 - (nohit[i]*100/totalhit[i]);
+    }
+    int maxphiti = -1;
+    int maxphitcount = 0;
+    int phittotal = 0;
+    for(uint64_t i = 0; i < shardnumlimit; i++){
+      phittotal += totalhit[i];
+      if(totalhit[i] > maxphitcount){
+        maxphiti = i;
+        maxphitcount = totalhit[i];
+      }
+      displayarr[j] += (uint64_t)totalhit[i];
+      if(i % repeat == repeat - 1){
+        //displayarr[j] /= repeat; //avg
+        j++;
+      }
+    }
+
+    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+    
+    printf("\n\nlargest dca hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
+    printf("average dca hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+
 
     printf("\n\nkey space usage\n\n");
     for(uint64_t i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){

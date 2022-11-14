@@ -20,6 +20,7 @@
 //////////////////
 // benchmark stuff
 time_t shardtotaltime[SHARDCOUNT];
+time_t shardlasttime[SHARDCOUNT];
 uint64_t shardaccesscount[SHARDCOUNT];
 uint64_t numshardbits;
 uint64_t shardnumlimit;

@@ -32,7 +32,7 @@ runbench(){
     -seed=1000 \
     -db=$mntlocation \
     -nlimit=20000 \
-    -dcaflush=90 \
+    -dcaflush=100 \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
@@ -64,9 +64,8 @@ fillbench(){
     -threads=1 \
     -histogram \
     -statistics \
+    -seed=1000 \
     -db=$mntlocation \
-    -use_direct_io_for_flush_and_compaction=true \
-    -use_direct_reads=true \
     &> results/fillrandom.txt \
 
     # -db_write_buffer_size=$((1024*1024*13)) \
@@ -79,12 +78,12 @@ fillbench(){
 }
 
 initbench(){
-    ./sata_ext4.sh
+    ./nvme_ext4.sh
     cp $baklocation/ycsbfilldb/* $mntlocation/
 }
 
 if [[ ! -d $baklocation/ycsbfilldb ]]; then
-    ./sata_ext4.sh
+    ./nvme_ext4.sh
     fillbench 102400
     mkdir $baklocation/ycsbfilldb/
     cp $mntlocation/* $baklocation/ycsbfilldb/
@@ -95,13 +94,6 @@ fi
 #echo off | sudo tee /sys/devices/system/cpu/smt/control
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
-
-initbench
-runbench 1024 ycsbwkldc nocbht
-
-initbench
-runbench 1024 ycsbwkldc
-exit
 
 
 initbench
