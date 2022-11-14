@@ -2726,6 +2726,7 @@ class Stats {
     j = 0;
     printf("\n\n");
     for(uint64_t i = 0; i < shardnumlimit; i++){
+      if(totalhit[i] == 0) break; //not used
       totalhit[i] = 100 - (nohit[i]*100/totalhit[i]);
     }
     int maxphiti = -1;
