@@ -562,7 +562,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
-    
     uint32_t hashshard = Shard(hash);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       if(CBHTState[hashshard])
@@ -579,7 +578,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
           nohit[hashshard]++;
-          if(nohit[hashshard] > CBHTturnoff){
+          if(nohit[hashshard] > Nsupple[hashshard]){
             CBHTState[hashshard] = false;
           }
           //cbht missed(doesnt exist or skipped)
@@ -620,12 +619,24 @@ Cache::Handle* LRUCacheShard::Lookup(
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
-            if(nohit[hashshard] > totalhit[hashshard] * DCAflush / 100){
+            
+            //dca flush
+            int hitrate = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
+            if(DCAflush != 0 && hitrate < lasthitrate[hashshard]){
               //evict everything if dca has too many misses.
               //is safe because i made sure that lru operation wont crash the entire thing
               cbhtable_.EvictFIFO(true);
               fullevictcount++;
             }
+            //smoothen rate with moving avg
+            lasthitrate[hashshard] = (lasthitrate[hashshard] + hitrate) >> 1;
+            //skip earlier if lower hitrate
+            //1. if hitrate low, dcaskip
+            //2. last resort, dcaflush
+            //    e.g.) dca flush at hitrate 16%(miss 83%), dca skip at hitrate 33%(miss 66%)
+            int nlimtmp = NLIMIT * (100 - lasthitrate[hashshard] * 2) / 100;
+            Nsupple[hashshard] = (nlimtmp > 0) ? nlimtmp : 0;
+            
             cbhtable_.Insert(temp);
             temp->indca = true;
             temp->refs = 1; //all dca entries should have 1 ref

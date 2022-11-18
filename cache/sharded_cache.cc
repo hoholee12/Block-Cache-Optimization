@@ -44,12 +44,15 @@ int fullevictcount = 0;
 //////////////////////////////
 // counters for CBHT internals
 int N[SHARDCOUNT];  // all 0s
+int Nsupple[SHARDCOUNT];
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
 int totalhit[SHARDCOUNT];
+int lasthitrate[SHARDCOUNT];
 int NLIMIT = 20000;
-int CBHTturnoff = NLIMIT * 20 / 100;
-int DCAflush = 90;
+//unified as hitrates
+int CBHTturnoff = NLIMIT * (100 - 66) / 100;
+int DCAflush = 33;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
 uint32_t threadcount = 0;

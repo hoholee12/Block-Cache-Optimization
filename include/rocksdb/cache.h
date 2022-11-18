@@ -92,7 +92,9 @@ extern int Nsupple[SHARDCOUNT];
 extern bool CBHTState[SHARDCOUNT];
 extern int nohit[SHARDCOUNT];
 extern int totalhit[SHARDCOUNT];
+extern int lasthitrate[SHARDCOUNT];
 extern int NLIMIT;
+//unified as hitrates
 extern int CBHTturnoff;
 extern int DCAflush;
 extern RWMutex_tmp sac_rwm_;

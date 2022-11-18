@@ -7,7 +7,7 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($1/1024))GB"_"$3"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
@@ -18,7 +18,13 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=20"
+        cbhtturnoff="-cbhtturnoff=66"
+    fi
+
+    if [[ $4 == "noflush" ]]; then
+        dcaflush="-dcaflush=0"
+    else
+        dcaflush="-dcaflush=33"
     fi
 
     #run
@@ -32,12 +38,12 @@ runbench(){
     -seed=1000 \
     -db=$mntlocation \
     -nlimit=20000 \
-    -dcaflush=100 \
+    $dcaflush \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*8)) \
     $cbhtturnoff \
-    &> results/"$2"_on_"$(($1/1024))GB"_"$3".txt \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4".txt \
     
     echo after run...
     df -T | grep mnt
@@ -96,44 +102,46 @@ echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
 
-initbench
-runbench 1024 ycsbwklda nocbht
+#initbench
+#runbench 1024 ycsbwklda nocbht
 
 initbench
 runbench 1024 ycsbwklda
 
+exit
 
-initbench
-runbench 1024 ycsbwkldb nocbht
+
+#initbench
+#runbench 1024 ycsbwkldb nocbht
 
 initbench
 runbench 1024 ycsbwkldb
 
 
-initbench
-runbench 1024 ycsbwkldc nocbht
+#initbench
+#runbench 1024 ycsbwkldc nocbht
 
 initbench
 runbench 1024 ycsbwkldc
 
 
-initbench
-runbench 1024 ycsbwkldd nocbht
+#initbench
+#runbench 1024 ycsbwkldd nocbht
 
 initbench
 runbench 1024 ycsbwkldd
 
 
-initbench
-runbench 1024 ycsbwkldf nocbht
+#initbench
+#runbench 1024 ycsbwkldf nocbht
 
 initbench
 runbench 1024 ycsbwkldf
 
 
 #slowest bench
-initbench
-runbench 1024 ycsbwklde nocbht
+#initbench
+#runbench 1024 ycsbwklde nocbht
 
 initbench
 runbench 1024 ycsbwklde
