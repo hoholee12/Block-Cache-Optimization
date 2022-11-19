@@ -18,13 +18,13 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=66"
+        cbhtturnoff="-cbhtturnoff=20"
     fi
 
     if [[ $4 == "noflush" ]]; then
         dcaflush="-dcaflush=0"
     else
-        dcaflush="-dcaflush=33"
+        dcaflush="-dcaflush=20"
     fi
 
     #run
@@ -106,37 +106,35 @@ echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 #runbench 1024 ycsbwklda nocbht
 
 initbench
-runbench 1024 ycsbwklda
-
-exit
+runbench 1024 ycsbwklda yescbht noflush
 
 
 #initbench
 #runbench 1024 ycsbwkldb nocbht
 
 initbench
-runbench 1024 ycsbwkldb
+runbench 1024 ycsbwkldb yescbht noflush
 
 
 #initbench
 #runbench 1024 ycsbwkldc nocbht
 
 initbench
-runbench 1024 ycsbwkldc
+runbench 1024 ycsbwkldc yescbht noflush
 
 
 #initbench
 #runbench 1024 ycsbwkldd nocbht
 
 initbench
-runbench 1024 ycsbwkldd
+runbench 1024 ycsbwkldd yescbht noflush
 
 
 #initbench
 #runbench 1024 ycsbwkldf nocbht
 
 initbench
-runbench 1024 ycsbwkldf
+runbench 1024 ycsbwkldf yescbht noflush
 
 
 #slowest bench
@@ -144,5 +142,5 @@ runbench 1024 ycsbwkldf
 #runbench 1024 ycsbwklde nocbht
 
 initbench
-runbench 1024 ycsbwklde
+runbench 1024 ycsbwklde yescbht noflush
 

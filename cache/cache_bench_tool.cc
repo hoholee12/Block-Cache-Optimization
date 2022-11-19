@@ -70,9 +70,9 @@ DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 6, "DCA BIT LENGTH");
 
-DEFINE_uint32(cbhtturnoff, 66, "DCA TURN OFF Miss Percentage");
+DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
-DEFINE_uint32(dcaflush, 33, "DCA flush Hit Percentage");
+DEFINE_uint32(dcaflush, 20, "DCA flush Hit Percentage");
 
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
@@ -444,7 +444,10 @@ class CacheBench {
       CBHTState[i] = true;
       nohit[i] = 0;
       totalhit[i] = 0;
-      lasthitrate[i] = FLAGS_dcaflush;
+      DCAskip_hit[i] = 100 - FLAGS_cbhtturnoff;
+      DCAskip_n[i] = 1;
+      DCAflush_hit[i] = FLAGS_dcaflush;
+      DCAflush_n[i] = 1;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;
@@ -455,7 +458,7 @@ class CacheBench {
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
-    CBHTturnoff = FLAGS_nlimit * FLAGS_cbhtturnoff / 100; //MISSRATE
+    CBHTturnoff = FLAGS_cbhtturnoff; //MISSRATE
     DCAflush = FLAGS_dcaflush; //hitrate
 
     called = 0;
@@ -753,7 +756,7 @@ class CacheBench {
       printf("average Nsupple = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
-    //results - lasthitrate
+    //results - DCAskip hitrate
     {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
       j = 0;
@@ -762,12 +765,12 @@ class CacheBench {
       int maxphitcount = 0;
       int phittotal = 0;
       for(uint64_t i = 0; i < shardnumlimit; i++){
-        phittotal += lasthitrate[i];
-        if(lasthitrate[i] > maxphitcount){
+        phittotal += (DCAskip_hit[i] / DCAskip_n[i]);
+        if((DCAskip_hit[i] / DCAskip_n[i]) > maxphitcount){
           maxphiti = i;
-          maxphitcount = lasthitrate[i];
+          maxphitcount = (DCAskip_hit[i] / DCAskip_n[i]);
         }
-        displayarr[j] += (uint64_t)lasthitrate[i];
+        displayarr[j] += (uint64_t)(DCAskip_hit[i] / DCAskip_n[i]);
         if(i % repeat == repeat - 1){
           //displayarr[j] /= repeat; //avg
           j++;
@@ -776,63 +779,37 @@ class CacheBench {
 
       for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
       
-      printf("\n\nlargest lasthitrate: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average lasthitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+      printf("\n\nlargest DCAskip hitrate: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average DCAskip hitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+    }
+
+    //results - DCAflush hitrate
+    {
+      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+      j = 0;
+      printf("\n\n");
+      int maxphiti = -1;
+      int maxphitcount = 0;
+      int phittotal = 0;
+      for(uint64_t i = 0; i < shardnumlimit; i++){
+        phittotal += (DCAflush_hit[i] / DCAflush_n[i]);
+        if((DCAflush_hit[i] / DCAflush_n[i]) > maxphitcount){
+          maxphiti = i;
+          maxphitcount = (DCAflush_hit[i] / DCAflush_n[i]);
+        }
+        displayarr[j] += (uint64_t)(DCAflush_hit[i] / DCAflush_n[i]);
+        if(i % repeat == repeat - 1){
+          //displayarr[j] /= repeat; //avg
+          j++;
+        }
+      }
+
+      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+      
+      printf("\n\nlargest DCAflush hitrate: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average DCAflush hitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
     
-    //results - nohit
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
-        phittotal += nohit[i];
-        if(nohit[i] > maxphitcount){
-          maxphiti = i;
-          maxphitcount = nohit[i];
-        }
-        displayarr[j] += (uint64_t)nohit[i];
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest nohit: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average nohit = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
-    //results - N
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
-        phittotal += N[i];
-        if(N[i] > maxphitcount){
-          maxphiti = i;
-          maxphitcount = N[i];
-        }
-        displayarr[j] += (uint64_t)N[i];
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest N: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average N = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
 /*
     printf("\n\nkey space usage\n\n");
     for(uint64_t i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){

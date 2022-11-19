@@ -622,20 +622,29 @@ Cache::Handle* LRUCacheShard::Lookup(
             
             //dca flush
             int hitrate = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
-            if(DCAflush != 0 && hitrate < lasthitrate[hashshard]){
+            //moving avg
+            if(DCAflush != 0 && hitrate < (DCAflush_hit[hashshard] / DCAflush_n[hashshard])){
               //evict everything if dca has too many misses.
               //is safe because i made sure that lru operation wont crash the entire thing
               cbhtable_.EvictFIFO(true);
               fullevictcount++;
             }
-            //smoothen rate with moving avg
-            lasthitrate[hashshard] = (lasthitrate[hashshard] + hitrate) >> 1;
-            //skip earlier if lower hitrate
-            //1. if hitrate low, dcaskip
-            //2. last resort, dcaflush
-            //    e.g.) dca flush at hitrate 16%(miss 83%), dca skip at hitrate 33%(miss 66%)
-            int nlimtmp = NLIMIT * (100 - lasthitrate[hashshard] * 2) / 100;
-            Nsupple[hashshard] = (nlimtmp > 0) ? nlimtmp : 0;
+            DCAflush_hit[hashshard] += hitrate;
+            DCAflush_n[hashshard]++;
+            
+            //skip faster if lower hitrate
+            // use moving mean if hitrate goes up. if hitrate were to burst, it would not be 
+            // effective
+            int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
+            if(hitrate > DCAskip_lasthit){
+              DCAskip_hit[hashshard] += hitrate;
+              DCAskip_n[hashshard]++;
+            }
+            else{
+              DCAskip_hit[hashshard] = hitrate;
+              DCAskip_n[hashshard] = 1;
+            }
+            Nsupple[hashshard] = NLIMIT * DCAskip_lasthit / 100;
             
             cbhtable_.Insert(temp);
             temp->indca = true;

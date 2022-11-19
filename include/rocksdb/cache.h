@@ -92,7 +92,10 @@ extern int Nsupple[SHARDCOUNT];
 extern bool CBHTState[SHARDCOUNT];
 extern int nohit[SHARDCOUNT];
 extern int totalhit[SHARDCOUNT];
-extern int lasthitrate[SHARDCOUNT];
+extern int DCAskip_hit[SHARDCOUNT];
+extern int DCAskip_n[SHARDCOUNT];
+extern int DCAflush_hit[SHARDCOUNT];
+extern int DCAflush_n[SHARDCOUNT];
 extern int NLIMIT;
 //unified as hitrates
 extern int CBHTturnoff;

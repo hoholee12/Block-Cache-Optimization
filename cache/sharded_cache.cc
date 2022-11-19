@@ -48,11 +48,14 @@ int Nsupple[SHARDCOUNT];
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
 int totalhit[SHARDCOUNT];
-int lasthitrate[SHARDCOUNT];
+int DCAskip_hit[SHARDCOUNT];
+int DCAskip_n[SHARDCOUNT];
+int DCAflush_hit[SHARDCOUNT];
+int DCAflush_n[SHARDCOUNT];
 int NLIMIT = 20000;
 //unified as hitrates
-int CBHTturnoff = NLIMIT * (100 - 66) / 100;
-int DCAflush = 33;
+int CBHTturnoff = 20; //MISSRATE
+int DCAflush = 20;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
 uint32_t threadcount = 0;
