@@ -509,8 +509,6 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           if(old->indca){
             WriteLock wl(&rwmutex_);
             cbhtable_.Remove(old->key(), old->hash);
-            //this assumes that the entry has been released prior to value update
-            old->Free(); //free the dca entry here
             //update to the new entry
             cbhtable_.Insert(e);
             e->indca = true;
@@ -656,7 +654,11 @@ Cache::Handle* LRUCacheShard::Lookup(
         // The entry is in LRU since it's in hash and has no external references
         LRU_Remove(e);
       }
-      e->Ref();
+
+      //dont change state if the entry is a part of dca.
+      if(e->refs != 1 && e->indca != true){
+        e->Ref();
+      }
       e->SetHit();
       if(CBHTturnoff){  //if turnoff hitrate is 0, always disable DCA
         //count to N
@@ -666,7 +668,13 @@ Cache::Handle* LRUCacheShard::Lookup(
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
             //save hitrate
-            hitrate[hashshard] = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
+            //use whichever hitrate that has the most access count.
+            if(totalhit[hashshard] > virtual_totalhit[hashshard]){
+              hitrate[hashshard] = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
+            }
+            else{
+              hitrate[hashshard] = 100 - (virtual_nohit[hashshard] * 100 / virtual_totalhit[hashshard]);
+            }
             //get median
             copyAndSort();
             int skip_median = sortarr[(shardnumlimit - 1) * CBHTturnoff / 100];
@@ -739,7 +747,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               cbhtable_.Insert(temp, true); //entries added from lru are first to be evicted
               temp2 = temp->prev;
               temp->indca = true;
-              //most likely 0 refs
+              //all lru entries have 0 refs
               temp->Ref();
               temp->SetHit();
               //no need to check for ref
@@ -753,6 +761,8 @@ Cache::Handle* LRUCacheShard::Lookup(
           CBHTState[hashshard] = true;
           nohit[hashshard] = 0;
           totalhit[hashshard] = 0;
+          virtual_nohit[hashshard] = 0;
+          virtual_totalhit[hashshard] = 0;
         }
       }
     }
@@ -957,7 +967,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
         if(e->indca){
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
-          e->Free();  //free the dca entry here
+          last_reference = true; //free the dca entry.
           invalidatedcount++;
         }
       }

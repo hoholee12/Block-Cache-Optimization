@@ -95,7 +95,6 @@ extern int totalhit[SHARDCOUNT];
 extern int hitrate[SHARDCOUNT];
 extern int virtual_nohit[SHARDCOUNT];
 extern int virtual_totalhit[SHARDCOUNT];
-extern int virtual_hitrate[SHARDCOUNT];
 extern int sortarr[SHARDCOUNT];
 extern int DCAskip_hit[SHARDCOUNT];
 extern int DCAskip_n[SHARDCOUNT];

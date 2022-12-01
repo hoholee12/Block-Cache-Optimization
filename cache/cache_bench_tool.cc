@@ -447,7 +447,6 @@ class CacheBench {
       hitrate[i] = 50;
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
-      virtual_hitrate[i] = 50;
       sortarr[i] = 50;
       DCAskip_hit[i] = 50;
       DCAskip_n[i] = 1;
@@ -761,8 +760,8 @@ class CacheBench {
 
       for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
       
-      printf("\n\nlargest dca hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average dca hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+      printf("\n\nlargest dca virtual hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average dca virtual hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
     //results - Nsupple

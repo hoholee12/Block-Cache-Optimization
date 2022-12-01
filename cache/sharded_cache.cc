@@ -51,7 +51,6 @@ int totalhit[SHARDCOUNT];
 int hitrate[SHARDCOUNT];
 int virtual_nohit[SHARDCOUNT];
 int virtual_totalhit[SHARDCOUNT];
-int virtual_hitrate[SHARDCOUNT];
 int sortarr[SHARDCOUNT];
 int DCAskip_hit[SHARDCOUNT];
 int DCAskip_n[SHARDCOUNT];
