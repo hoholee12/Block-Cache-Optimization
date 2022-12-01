@@ -661,6 +661,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
       e->SetHit();
       if(CBHTturnoff){  //if turnoff hitrate is 0, always disable DCA
+        int avg_skip_median = 0;
         //count to N
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
@@ -687,7 +688,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             //if the workload is not stable, every median calculation will fluctuate.
             //avg all of the shard's median for lesser error.
             //much faster than updating individual shard's median with sma
-            int avg_skip_median = 0;
+            
             for(uint32_t i = 0; i < shardnumlimit; i++){
               avg_skip_median += DCAskip_hit[i];
             }
@@ -758,7 +759,10 @@ Cache::Handle* LRUCacheShard::Lookup(
           }
           //turn it back on every nlimit
           //if CBHTturnoff is bigger than nlimit, it becomes useless.
-          CBHTState[hashshard] = true;
+          //keep it off until hitrate is over median
+          if(hitrate[hashshard] > avg_skip_median){
+            CBHTState[hashshard] = true;
+          }
           nohit[hashshard] = 0;
           totalhit[hashshard] = 0;
           virtual_nohit[hashshard] = 0;
