@@ -1,4 +1,5 @@
 #!/bin/bash
+exit #on hold
 size=$(($(lsblk -b --output SIZE -n -d /dev/sdb)/1000000))
 sudo fuser -k ~/mnt
 sudo umount ~/mnt

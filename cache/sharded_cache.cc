@@ -21,9 +21,9 @@
 // benchmark stuff
 time_t shardtotaltime[SHARDCOUNT];
 time_t shardlasttime[SHARDCOUNT];
-uint64_t shardaccesscount[SHARDCOUNT];
-uint64_t numshardbits;
-uint64_t shardnumlimit;
+uint32_t shardaccesscount[SHARDCOUNT];
+uint32_t numshardbits;
+uint32_t shardnumlimit;
 uint32_t threadnumshard[SHARDCOUNT];
 uint32_t lookupblockcount[SHARDCOUNT];
 bool lockheld[SHARDCOUNT];
@@ -32,7 +32,7 @@ bool dynaswitch;
 int totalDCAcount = 0;
 int noDCAcount = 0;
 int fullDCAcount = 0;
-uint64_t shardsperthread;
+uint32_t shardsperthread;
 int called = 0;
 int called_refill = 0;
 int misscount = 0;
@@ -48,6 +48,11 @@ int Nsupple[SHARDCOUNT];
 bool CBHTState[SHARDCOUNT]; // all trues
 int nohit[SHARDCOUNT]; // all 0s
 int totalhit[SHARDCOUNT];
+int hitrate[SHARDCOUNT];
+int virtual_nohit[SHARDCOUNT];
+int virtual_totalhit[SHARDCOUNT];
+int virtual_hitrate[SHARDCOUNT];
+int sortarr[SHARDCOUNT];
 int DCAskip_hit[SHARDCOUNT];
 int DCAskip_n[SHARDCOUNT];
 int DCAflush_hit[SHARDCOUNT];

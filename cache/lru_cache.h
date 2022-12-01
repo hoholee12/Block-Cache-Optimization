@@ -318,7 +318,7 @@ class CBHTable {
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
   
-  LRUHandle* EvictFIFO(bool flushall = false);
+  LRUHandle* EvictFIFO(bool flushall = false, LRUHandle* lru_ = nullptr);
   bool IsTableFull();
 
  private:
@@ -341,6 +341,9 @@ class CBHTable {
 
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
+
+  //lru elems
+  uint32_t lru_elems_;
 
   //for EvictFIFO
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;

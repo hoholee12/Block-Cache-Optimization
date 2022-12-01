@@ -160,6 +160,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool opposite) {
   else hashkeylist.push_back(std::make_pair(h->key(), h->hash));
   if (old == nullptr) {
     ++elems_;
+    if(opposite) ++lru_elems_;
     //start eviction if table is half full
     //evict 1 at 33, not 32.
     if (((elems_ - 1) >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
@@ -176,6 +177,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
   if (result != nullptr) {
     *ptr = result->next_hash_cbht;
     --elems_;
+    if(lru_elems_ > 0) --lru_elems_;
   }
   return result;
 }
@@ -190,13 +192,26 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
-LRUHandle* CBHTable::EvictFIFO(bool flushall){
+LRUHandle* CBHTable::EvictFIFO(bool flushall, LRUHandle* lru_){
   std::pair<Slice, uint32_t> temp;
   LRUHandle* result = nullptr;
-  while((!hashkeylist.empty())){
+  //only evict lru elements
+  while((!hashkeylist.empty()) && (lru_elems_ > 0)){
     temp = hashkeylist.front();
     result = Remove(temp.first, temp.second);  //does --elems_ internally
     hashkeylist.pop_front();
+    if(result != nullptr){
+      //status change
+      result->indca = false;
+      result->refs = 0;
+      //lru insert
+      if(result->next == nullptr && result->prev == nullptr && lru_ != nullptr){
+        result->next = lru_;
+        result->prev = lru_->prev;
+        result->prev->next = result;
+        result->next->prev = result;
+      }
+    }
     if(result != nullptr && !flushall){
       break;  //do only one eviction
     }
@@ -329,18 +344,23 @@ void LRUCacheShard::LRU_Remove(LRUHandle* e) {
   if(e->next == nullptr || e->prev == nullptr) return;
   //assert(e->next != nullptr);
   //assert(e->prev != nullptr);
-  if (lru_low_pri_ == e) {
-    lru_low_pri_ = e->prev;
+  if(e->indca != true || e->refs != 1){
+    if (lru_low_pri_ == e) {
+      lru_low_pri_ = e->prev;
+    }
   }
   e->next->prev = e->prev;
   e->prev->next = e->next;
   e->prev = e->next = nullptr;
   size_t total_charge = e->CalcTotalCharge(metadata_charge_policy_);
-  assert(lru_usage_ >= total_charge);
-  lru_usage_ -= total_charge;
-  if (e->InHighPriPool()) {
-    assert(high_pri_pool_usage_ >= total_charge);
-    high_pri_pool_usage_ -= total_charge;
+  //only recalc memusage when its not DCA
+  if(e->indca != true || e->refs != 1){
+    assert(lru_usage_ >= total_charge);
+    lru_usage_ -= total_charge;
+    if (e->InHighPriPool()) {
+      assert(high_pri_pool_usage_ >= total_charge);
+      high_pri_pool_usage_ -= total_charge;
+    }
   }
 }
 
@@ -356,9 +376,11 @@ void LRUCacheShard::LRU_Insert(LRUHandle* e) {
     e->prev = lru_.prev;
     e->prev->next = e;
     e->next->prev = e;
-    e->SetInHighPriPool(true);
-    high_pri_pool_usage_ += total_charge;
-    MaintainPoolSize();
+    if(e->indca != true || e->refs != 1){
+      e->SetInHighPriPool(true);
+      high_pri_pool_usage_ += total_charge;
+      MaintainPoolSize();
+    }
   } else {
     // Insert "e" to the head of low-pri pool. Note that when
     // high_pri_pool_ratio is 0, head of low-pri pool is also head of LRU list.
@@ -366,10 +388,14 @@ void LRUCacheShard::LRU_Insert(LRUHandle* e) {
     e->prev = lru_low_pri_;
     e->prev->next = e;
     e->next->prev = e;
-    e->SetInHighPriPool(false);
-    lru_low_pri_ = e;
+    if(e->indca != true || e->refs != 1){
+      e->SetInHighPriPool(false);
+      lru_low_pri_ = e;
+    }
   }
-  lru_usage_ += total_charge;
+  if(e->indca != true || e->refs != 1){
+    lru_usage_ += total_charge;
+  }
 }
 
 void LRUCacheShard::MaintainPoolSize() {
@@ -553,6 +579,20 @@ void LRUCacheShard::Promote(LRUHandle* e) {
   }
 }
 
+//find median
+int cmpfunc(const void* a, const void* b){
+  return (*(int*)a - *(int*)b);
+}
+
+void copyAndSort(){
+  //copy to sortarr
+  for(uint32_t i = 0; i < shardnumlimit; i++){
+    sortarr[i] = hitrate[i];
+  }
+  //sort
+  qsort(sortarr, shardnumlimit, sizeof(int), cmpfunc);
+}
+
 
 // CBHT is allocated per shard, not as standalone
 Cache::Handle* LRUCacheShard::Lookup(
@@ -578,7 +618,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //if there is too much miss, its most likely a very uniform workload.
           //turn it off.
           nohit[hashshard]++;
-          if(nohit[hashshard] > Nsupple[hashshard]){
+          if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
             CBHTState[hashshard] = false;
           }
           //cbht missed(doesnt exist or skipped)
@@ -605,6 +645,12 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     //sanity check
     if (e != nullptr) {
+      //identify DCA hitrate without actually using DCA
+      virtual_totalhit[hashshard]++;
+      if(e->indca != true){
+        virtual_nohit[hashshard]++;
+      }
+
       assert(e->InCache());
       if (!e->HasRefs()) {
         // The entry is in LRU since it's in hash and has no external references
@@ -612,39 +658,75 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
       e->Ref();
       e->SetHit();
-      if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+      if(CBHTturnoff){  //if turnoff hitrate is 0, always disable DCA
         //count to N
         if(N[hashshard]++ > NLIMIT){
           N[hashshard] = 0;
           {
             WriteLock wl(&rwmutex_);
             LRUHandle* temp = e;
+            //save hitrate
+            hitrate[hashshard] = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
+            //get median
+            copyAndSort();
+            int skip_median = sortarr[(shardnumlimit - 1) * CBHTturnoff / 100];
+            int flush_median = sortarr[(shardnumlimit - 1) * DCAflush / 100];
+            //set medians
+            DCAskip_hit[hashshard] = skip_median;
+            DCAflush_hit[hashshard] = flush_median;
             
+            //if the cache is too skewed, update on some shards may not be fast enough.
+            //if the workload is not stable, every median calculation will fluctuate.
+            //avg all of the shard's median for lesser error.
+            //much faster than updating individual shard's median with sma
+            int avg_skip_median = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              avg_skip_median += DCAskip_hit[i];
+            }
+            avg_skip_median /= shardnumlimit;
+            //dca skip
+            Nsupple[hashshard] = NLIMIT * avg_skip_median / 100;
+            
+            int avg_flush_median = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              avg_flush_median += DCAflush_hit[i];
+            }
+            avg_flush_median /= shardnumlimit;
             //dca flush
-            int hitrate = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
-            //moving avg
-            if(DCAflush != 0 && hitrate < (DCAflush_hit[hashshard] / DCAflush_n[hashshard])){
+            //int DCAflush_lasthit = DCAflush_hit[hashshard] / DCAflush_n[hashshard];
+            if(DCAflush != 0 && hitrate[hashshard] < avg_flush_median){
               //evict everything if dca has too many misses.
               //is safe because i made sure that lru operation wont crash the entire thing
-              cbhtable_.EvictFIFO(true);
+              cbhtable_.EvictFIFO(true, &lru_);
               fullevictcount++;
-            }
-            DCAflush_hit[hashshard] += hitrate;
-            DCAflush_n[hashshard]++;
-            
-            //skip faster if lower hitrate
-            // use moving mean if hitrate goes up. if hitrate were to burst, it would not be 
-            // effective
-            int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
-            if(hitrate > DCAskip_lasthit){
-              DCAskip_hit[hashshard] += hitrate;
-              DCAskip_n[hashshard]++;
+
+              //sma
+              //DCAflush_n[hashshard]++;
+              //DCAflush_hit[hashshard] += hitrate[hashshard];
+              
+              //ema
+              //DCAflush_n[hashshard]++;
+              //DCAflush_hit[hashshard] = ((hitrate[hashshard] - DCAflush_lasthit) * 2 / 
+              //DCAflush_n[hashshard] + DCAflush_lasthit) * DCAflush_n[hashshard];
             }
             else{
-              DCAskip_hit[hashshard] = hitrate;
-              DCAskip_n[hashshard] = 1;
+              //sma
+              //DCAflush_n[hashshard]++;
+              //DCAflush_hit[hashshard] += hitrate[hashshard];
+              
+              //ema
+              //DCAflush_n[hashshard]++;
+              //DCAflush_hit[hashshard] = ((hitrate[hashshard] - DCAflush_lasthit) * 2 / 
+              //DCAflush_n[hashshard] + DCAflush_lasthit) * DCAflush_n[hashshard];
             }
-            Nsupple[hashshard] = NLIMIT * DCAskip_lasthit / 100;
+
+            //skip faster if lower hitrate
+            //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
+
+            
+            
+            //DCAskip_hit[hashshard] += hitrate;
+            //DCAskip_n[hashshard]++;
             
             cbhtable_.Insert(temp);
             temp->indca = true;

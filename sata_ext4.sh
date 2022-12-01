@@ -1,5 +1,5 @@
 #!/bin/bash
-
+exit	#on hold
 ./sata_partition.sh
 
 #mnt

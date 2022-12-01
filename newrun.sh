@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mntlocation=/home/jeongho/mnt/
-baklocation=/home/jeongho/mntbackup2/
+mntlocation=/home/mj123/mnt/
+baklocation=/home/mj123/mntbackup2/
 
 runbench(){
     echo dataset $((9039*$1))
@@ -26,12 +26,13 @@ runbench(){
     else
         dcaflush="-dcaflush=20"
     fi
+    mkdir results 2>/dev/null
 
     #run
     sudo time ./db_bench \
     -benchmarks="$2,stats" \
     -num=$dataset \
-    -threads=8 \
+    -threads=32 \
     -histogram \
     -statistics \
     -use_existing_db=true \
@@ -67,7 +68,7 @@ fillbench(){
     sudo time ./db_bench \
     -benchmarks="ycsbfilldb" \
     -num=$((9039*$1)) \
-    -threads=1 \
+    -threads=32 \
     -histogram \
     -statistics \
     -seed=1000 \
@@ -101,46 +102,84 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
-
-#initbench
-#runbench 1024 ycsbwklda nocbht
-
 initbench
-runbench 1024 ycsbwklda yescbht noflush
-
-
-#initbench
-#runbench 1024 ycsbwkldb nocbht
-
-initbench
-runbench 1024 ycsbwkldb yescbht noflush
-
-
-#initbench
-#runbench 1024 ycsbwkldc nocbht
+runbench 1024 ycsbwkldc nocbht
 
 initbench
 runbench 1024 ycsbwkldc yescbht noflush
 
+initbench
+runbench 1024 ycsbwkldc yescbht yesflush
 
-#initbench
-#runbench 1024 ycsbwkldd nocbht
 
 initbench
-runbench 1024 ycsbwkldd yescbht noflush
-
-
-#initbench
-#runbench 1024 ycsbwkldf nocbht
-
-initbench
-runbench 1024 ycsbwkldf yescbht noflush
-
-
-#slowest bench
-#initbench
-#runbench 1024 ycsbwklde nocbht
+runbench 1024 ycsbwklde nocbht
 
 initbench
 runbench 1024 ycsbwklde yescbht noflush
 
+initbench
+runbench 1024 ycsbwklde yescbht yesflush
+
+
+exit
+
+initbench
+runbench 100 ycsbwklda nocbht
+
+initbench
+runbench 100 ycsbwklda yescbht noflush
+
+initbench
+runbench 100 ycsbwklda yescbht yesflush
+
+
+initbench
+runbench 100 ycsbwkldb nocbht
+
+initbench
+runbench 100 ycsbwkldb yescbht noflush
+
+initbench
+runbench 100 ycsbwkldb yescbht yesflush
+
+
+initbench
+runbench 100 ycsbwkldc nocbht
+
+initbench
+runbench 100 ycsbwkldc yescbht noflush
+
+initbench
+runbench 100 ycsbwkldc yescbht yesflush
+
+
+initbench
+runbench 100 ycsbwkldd nocbht
+
+initbench
+runbench 100 ycsbwkldd yescbht noflush
+
+initbench
+runbench 100 ycsbwkldd yescbht yesflush
+
+
+initbench
+runbench 100 ycsbwkldf nocbht
+
+initbench
+runbench 100 ycsbwkldf yescbht noflush
+
+initbench
+runbench 100 ycsbwkldf yescbht yesflush
+
+
+#slowest bench
+initbench
+runbench 100 ycsbwklde nocbht
+
+initbench
+runbench 100 ycsbwklde yescbht noflush
+
+initbench
+runbench 100 ycsbwklde yescbht yesflush

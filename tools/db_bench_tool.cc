@@ -2703,6 +2703,37 @@ class Stats {
       printf("average dca hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
+    //results - dca virtual hit percentage count
+    {
+      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+      j = 0;
+      printf("\n\n");
+      for(uint64_t i = 0; i < shardnumlimit; i++){
+        if(virtual_totalhit[i] == 0) break; //not used
+        virtual_totalhit[i] = 100 - (virtual_nohit[i]*100/virtual_totalhit[i]);
+      }
+      int maxphiti = -1;
+      int maxphitcount = 0;
+      int phittotal = 0;
+      for(uint64_t i = 0; i < shardnumlimit; i++){
+        phittotal += virtual_totalhit[i];
+        if(virtual_totalhit[i] > maxphitcount){
+          maxphiti = i;
+          maxphitcount = virtual_totalhit[i];
+        }
+        displayarr[j] += (uint64_t)virtual_totalhit[i];
+        if(i % repeat == repeat - 1){
+          //displayarr[j] /= repeat; //avg
+          j++;
+        }
+      }
+
+      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+      
+      printf("\n\nlargest dca hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average dca hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+    }
+
     //results - Nsupple
     {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
@@ -3680,9 +3711,14 @@ class Benchmark {
       CBHTState[i] = true;
       nohit[i] = 0;
       totalhit[i] = 0;
-      DCAskip_hit[i] = 100 - FLAGS_cbhtturnoff;
+      hitrate[i] = 50;
+      virtual_nohit[i] = 0;
+      virtual_totalhit[i] = 0;
+      virtual_hitrate[i] = 50;
+      sortarr[i] = 50;
+      DCAskip_hit[i] = 50;
       DCAskip_n[i] = 1;
-      DCAflush_hit[i] = FLAGS_dcaflush;
+      DCAflush_hit[i] = 50;
       DCAflush_n[i] = 1;
     }
     threadcount = FLAGS_threads;
@@ -3694,9 +3730,9 @@ class Benchmark {
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     NLIMIT = FLAGS_nlimit;
-    CBHTturnoff = FLAGS_cbhtturnoff; //MISSRATE
+    CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAflush = FLAGS_dcaflush; //hitrate
-
+    
     called = 0;
     called_refill = 0;
     misscount = 0;
