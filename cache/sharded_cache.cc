@@ -39,6 +39,7 @@ int misscount = 0;
 int invalidatedcount = 0;
 int evictedcount = 0;
 int fullevictcount = 0;
+int DCAentriesfreed = 0;
 //////////////////
 
 //////////////////////////////

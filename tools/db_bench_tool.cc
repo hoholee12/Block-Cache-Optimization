@@ -2533,6 +2533,8 @@ class Stats {
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
 
+    printf("\n\n actual DCA entries free()'d: %d\n\n", DCAentriesfreed);
+
     printf("\n\neasy index:\n");
 
     uint64_t shardlimit = SHARDLIMIT;
@@ -3738,6 +3740,7 @@ class Benchmark {
     invalidatedcount = 0;
     evictedcount = 0;
     fullevictcount = 0;
+    DCAentriesfreed = 0;
 
     
     keyrangecounter_size = FLAGS_num;

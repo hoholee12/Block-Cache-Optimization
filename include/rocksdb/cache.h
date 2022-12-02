@@ -83,6 +83,7 @@ extern int misscount;
 extern int invalidatedcount;
 extern int evictedcount;
 extern int fullevictcount;
+extern int DCAentriesfreed;
 //////////////////
 
 //////////////////////////////

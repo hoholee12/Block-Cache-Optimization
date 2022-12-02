@@ -471,7 +471,7 @@ class CacheBench {
     invalidatedcount = 0;
     evictedcount = 0;
     fullevictcount = 0;
-
+    DCAentriesfreed = 0;
 
     keyrangecounter_size = max_key_;
     keyrangecounter = (uint64_t*)malloc(sizeof(uint64_t)*keyrangecounter_size);
@@ -559,6 +559,8 @@ class CacheBench {
     printf("\n\n how much CBHT full eviction happened: %d\n\n", fullevictcount);
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
+
+    printf("\n\n actual DCA entries free()'d: %d\n\n", DCAentriesfreed);
 
     printf("\n\neasy index:\n");
 

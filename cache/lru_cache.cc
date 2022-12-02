@@ -201,9 +201,6 @@ LRUHandle* CBHTable::EvictFIFO(bool flushall, LRUHandle* lru_){
     result = Remove(temp.first, temp.second);  //does --elems_ internally
     hashkeylist.pop_front();
     if(result != nullptr){
-      //status change
-      result->indca = false;
-      result->refs = 0;
       //lru insert
       if(result->next == nullptr && result->prev == nullptr && lru_ != nullptr){
         result->next = lru_;
@@ -272,8 +269,13 @@ void LRUCacheShard::EraseUnRefEntries() {
     }
   }
 
-  for (auto entry : last_reference_list) {
-    entry->Free();
+  {
+    WriteLock wl(&rwmutex_);
+    for (auto entry : last_reference_list) {
+      if(!entry->indca){
+        entry->Free();
+      }
+    }
   }
 }
 
@@ -441,13 +443,18 @@ void LRUCacheShard::SetCapacity(size_t capacity) {
 
   // Try to insert the evicted entries into tiered cache
   // Free the entries outside of mutex for performance reasons
-  for (auto entry : last_reference_list) {
-    if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
-        !entry->IsPromoted()) {
-      secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
-          .PermitUncheckedError();
+  {
+    WriteLock wl(&rwmutex_);
+    for (auto entry : last_reference_list) {
+      if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
+          !entry->IsPromoted()) {
+        secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
+            .PermitUncheckedError();
+      }
+      if(!entry->indca){
+        entry->Free();
+      }
     }
-    entry->Free();
   }
 }
 
@@ -506,15 +513,27 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
         }
         //remove the entry from dca
         if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-          if(old->indca){
+          int exists = 0;
+          {
+            ReadLock rl(&rwmutex_);
+            if(cbhtable_.Lookup(old->key(), old->hash) != nullptr){
+              exists = 1;
+            }
+          }
+          if(exists)
+          {
             WriteLock wl(&rwmutex_);
             cbhtable_.Remove(old->key(), old->hash);
             //update to the new entry
             cbhtable_.Insert(e);
+            if(!e->DCA_ref){
+              e->DCA_ref = (int*)calloc(threadcount, sizeof(int));
+            }
+            e->refs = 1;
             e->indca = true;
-            e->refs = 1; //all dca entries should have 1 ref
-            invalidatedcount++;
+            e->SetHit();
           }
+          invalidatedcount++;
         }
       }
       if (handle == nullptr) {
@@ -526,17 +545,21 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
     }
   }
 
-  // Try to insert the evicted entries into the secondary cache
-  // Free the entries here outside of mutex for performance reasons
-  for (auto entry : last_reference_list) {
-    if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
-        !entry->IsPromoted()) {
-      secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
-          .PermitUncheckedError();
+  {
+    WriteLock wl(&rwmutex_);
+    // Try to insert the evicted entries into the secondary cache
+    // Free the entries here outside of mutex for performance reasons
+    for (auto entry : last_reference_list) {
+      if (secondary_cache_ && entry->IsSecondaryCacheCompatible() &&
+          !entry->IsPromoted()) {
+        secondary_cache_->Insert(entry->key(), entry->value, entry->info_.helper)
+            .PermitUncheckedError();
+      }
+      if(!entry->indca){
+        entry->Free();
+      }
     }
-    entry->Free();
   }
-
   return s;
 }
 
@@ -609,6 +632,8 @@ Cache::Handle* LRUCacheShard::Lookup(
         
         totalhit[hashshard]++;
         if(e != nullptr){
+          int mytid = pthread_self() % threadcount;
+          e->DCA_ref[mytid]++;
           return reinterpret_cast<Cache::Handle*>(e);
         }
         else{
@@ -622,7 +647,6 @@ Cache::Handle* LRUCacheShard::Lookup(
           //cbht missed(doesnt exist or skipped)
           misscount++;
         }
-
       }
     }
    
@@ -736,22 +760,30 @@ Cache::Handle* LRUCacheShard::Lookup(
             
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
-            
+            int mytid = pthread_self() % threadcount;
             cbhtable_.Insert(temp);
+            if(!temp->DCA_ref){
+              temp->DCA_ref = (int*)calloc(threadcount, sizeof(int));
+            }
+            temp->refs = 1;
             temp->indca = true;
-            temp->refs = 1; //all dca entries should have 1 ref
+            temp->SetHit();
+            temp->DCA_ref[mytid]++;
+
             called++;
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
             LRUHandle* temp2 = nullptr;
             while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
               cbhtable_.Insert(temp, true); //entries added from lru are first to be evicted
-              temp2 = temp->prev;
+              if(!temp->DCA_ref){
+                temp->DCA_ref = (int*)calloc(threadcount, sizeof(int));
+              }
+              temp->refs = 1;
               temp->indca = true;
-              //all lru entries have 0 refs
-              temp->Ref();
               temp->SetHit();
-              //no need to check for ref
+              temp2 = temp->prev;
+              //change the state only when its accessed in DCA. not here.
               LRU_Remove(temp); //keep all dca entries out of lru
               temp = temp2;
               called_refill++;
@@ -858,19 +890,21 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
     return false;
   }
   LRUHandle* e = reinterpret_cast<LRUHandle*>(handle);
-
   if(CBHTturnoff) {
-    if(e->indca) return true;  //never release dca items
+    ReadLock rl(&rwmutex_);
+    if(e->indca){
+      int mytid = pthread_self() % threadcount;
+      if(e->DCA_ref){
+        e->DCA_ref[mytid]--;
+      }
+      return true;  //dont free what was in DCA just now
+    }
   }
   bool last_reference = false;
   {
     MutexLock l(&mutex_);
     Holdvalue hv(Shard(lru_.prev->hash));
-    if(CBHTturnoff) {
-      //check one more time after the mutex just in case
-      if(e->indca) return true;  //never release dca items
-    }
-
+    
     last_reference = e->Unref();
     if (last_reference && e->InCache()) {
       // The item is still in cache, and nobody else holds a reference to it
@@ -904,10 +938,13 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   }
 
   // Free the entry here outside of mutex for performance reasons
-  //crashes here
   if (last_reference) {
-    e->Free();
+    WriteLock wl(&rwmutex_);
+    if(!e->indca){
+      e->Free();
+    }
   }
+  
   return last_reference;
 }
 
@@ -968,12 +1005,19 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
         last_reference = true;
       }
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-        if(e->indca){
+        int exists = 0;
+        {
+          ReadLock rl(&rwmutex_);
+          if(cbhtable_.Lookup(e->key(), e->hash) != nullptr){
+            exists = 1;
+          }
+        }
+        if(exists){
           WriteLock wl(&rwmutex_);
           cbhtable_.Remove(e->key(), e->hash);
-          last_reference = true; //free the dca entry.
-          invalidatedcount++;
         }
+        last_reference = true; //free the dca entry.
+        invalidatedcount++;
       }
     }
   }
@@ -981,7 +1025,10 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   // Free the entry here outside of mutex for performance reasons
   // last_reference will only be true if e != nullptr
   if (last_reference) {
-    e->Free();
+    WriteLock wl(&rwmutex_);
+    if(!e->indca){
+      e->Free();
+    }
   }
 }
 

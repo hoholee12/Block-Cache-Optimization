@@ -78,6 +78,8 @@ struct LRUHandle {
   // The number of external refs to this entry. The cache itself is not counted.
   uint32_t refs;
 
+  int *DCA_ref = nullptr;
+
   // to check whether the entry is in dca.
   // all of dca entries should have 1 as refs to avoid the normal last_reference path
   bool indca;
@@ -503,6 +505,9 @@ class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
   CBHTable cbhtable_;
   //rwlock for cbt
   mutable port::RWMutex rwmutex_;
+
+  //rwlock for DCA ref count
+  mutable port::RWMutex refmutex_;
 
   // Memory size for entries residing in the cache
   size_t usage_;
