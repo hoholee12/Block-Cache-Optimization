@@ -78,11 +78,12 @@ struct LRUHandle {
   // The number of external refs to this entry. The cache itself is not counted.
   uint32_t refs;
 
-  int *DCA_ref = nullptr;
-
   // to check whether the entry is in dca.
   // all of dca entries should have 1 as refs to avoid the normal last_reference path
   bool indca;
+
+  //for DCA ref pool
+  int DCAstamp;
 
   enum Flags : uint8_t {
     // Whether this entry is referenced by the hash table.
@@ -301,8 +302,9 @@ class CBHTable {
   ~CBHTable();
 
   LRUHandle* Lookup(const Slice& key, uint32_t hash);
-  LRUHandle* Insert(LRUHandle* h, bool opposite = false);
+  LRUHandle* Insert(LRUHandle* h);
   LRUHandle* Remove(const Slice& key, uint32_t hash);
+  void Unref(LRUHandle* e); //for DCA_ref_pool
 
   template <typename T>
   void ApplyToEntriesRange(T func, uint32_t index_begin, uint32_t index_end) {
@@ -320,14 +322,25 @@ class CBHTable {
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
   
-  LRUHandle* EvictFIFO(bool flushall = false, LRUHandle* lru_ = nullptr);
+  LRUHandle* EvictFIFO();
   bool IsTableFull();
+
+
+  //DCA ref pool
+  int * DCA_ref_pool;
+  std::deque<int> freestamplist;
+
+  
+  // ptr of lru_ head
+  LRUHandle *lru_;
 
  private:
   // Return a pointer to slot that points to a cache entry that
   // matches key/hash.  If there is no such cache entry, return a
   // pointer to the trailing slot in the corresponding linked list.
   LRUHandle** FindPointer(const Slice& key, uint32_t hash);
+
+
 
 
   // Number of hash bits (upper because lower bits used for sharding)
@@ -344,11 +357,9 @@ class CBHTable {
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
 
-  //lru elems
-  uint32_t lru_elems_;
-
   //for EvictFIFO
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;
+
 };
 
 // A single shard of sharded cache.
@@ -505,9 +516,6 @@ class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
   CBHTable cbhtable_;
   //rwlock for cbt
   mutable port::RWMutex rwmutex_;
-
-  //rwlock for DCA ref count
-  mutable port::RWMutex refmutex_;
 
   // Memory size for entries residing in the cache
   size_t usage_;
