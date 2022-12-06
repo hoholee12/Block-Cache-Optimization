@@ -156,7 +156,10 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
   LRUHandle* ptr = *FindPointer(key, hash);
   if(ptr != nullptr){
     int mytid = pthread_self() % threadcount;
-    DCA_ref_pool[(threadcount * ptr->DCAstamp) + mytid]++;
+    //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
+    if(ptr->DCAstamp > -1 && ptr->DCAstamp < (int)(size_t{1} << CBHTbitlength)){
+      DCA_ref_pool[(threadcount * ptr->DCAstamp) + mytid]++;
+    }
   }
   return ptr;
 }
@@ -218,7 +221,10 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
 
 void CBHTable::Unref(LRUHandle *e){
   int mytid = pthread_self() % threadcount;
-  DCA_ref_pool[(threadcount * e->DCAstamp) + mytid]--;
+  //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
+  if(e->DCAstamp > -1 && e->DCAstamp < (int)(size_t{1} << CBHTbitlength)){
+    DCA_ref_pool[(threadcount * e->DCAstamp) + mytid]--;
+  }
 }
 
 LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
