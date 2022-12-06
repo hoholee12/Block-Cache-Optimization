@@ -166,16 +166,18 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   LRUHandle* old = nullptr;
   //start eviction if table is half full
   //evict 1 at 33, not 32.
-  if (((elems_ - 1) >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
-    evictedcount++;
+  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
     old = EvictFIFO();
   }
 
   //check again
-  if (((elems_ - 1) >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
+  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
     //failed
     insertblocked++;
     return h;
+  }
+  else{
+    evictedcount++;
   }
   //continue
   LRUHandle** ptr = FindPointer(h->key(), h->hash);

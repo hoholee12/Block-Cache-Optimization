@@ -549,23 +549,21 @@ class CacheBench {
 
     printf("\n%s", stats_report.c_str());
 
-    printf("\n\n how much is CBHT update called: %d\n\n", called + called_refill);
+    printf("\n\n how much is DCA update called: %d\n\n", called + called_refill);
 
-    printf("\n\n count CBHT update self/from lru: %d/%d\n\n", called, called_refill);
+    printf("\n\n count DCA update self/from lru: %d/%d\n\n", called, called_refill);
 
     printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
 
-    printf("\n\n how much CBHT miss happened(missed + turned off): %d\n\n", misscount);
+    printf("\n\n how much DCA miss happened(missed + turned off): %d\n\n", misscount);
 
-    printf("\n\n how much CBHT invalidation happened: %d\n\n", invalidatedcount);
+    printf("\n\n how much DCA invalidation happened: %d\n\n", invalidatedcount);
 
-    printf("\n\n how much CBHT eviction happened: %d\n\n", evictedcount);
+    printf("\n\n how much DCA eviction happened / blocked: %d / %d\n\n", evictedcount, insertblocked);
 
-    printf("\n\n how much CBHT full eviction happened: %d\n\n", fullevictcount);
+    printf("\n\n how much DCA full eviction happened: %d\n\n", fullevictcount);
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
-
-    printf("\n\n DCA insert blocked: %d\n\n", insertblocked);
 
     printf("\n\neasy index:\n");
 

@@ -16,9 +16,14 @@ mkdir results_cache 2>/dev/null
 
 i=4
 shardbit=4
-threads=32
-constant=0.25
+threads=8
+constant=0.5
 
+for percent in 80; do
+    ./cache_bench --nlimit=20000 --cbhtturnoff=50 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/8)) > results_cache/resultpercentenabled$percent.txt
+done
+
+exit
 
 paramnoskip="--nlimit=20000 --cbhtturnoff=100 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
 paramnoskipnflush="--nlimit=20000 --cbhtturnoff=100 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
@@ -37,11 +42,6 @@ exit
 
 exit
 
-for percent in 80; do
-    ./cache_bench --nlimit=20000 --cbhtturnoff=50 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/8)) > results_cache/resultpercentenabled$percent.txt
-done
-
-exit
 
 #off
 for percent in 100 90 80 70 60 50; do
