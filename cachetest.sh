@@ -16,6 +16,27 @@ mkdir results_cache 2>/dev/null
 
 i=4
 shardbit=4
+threads=32
+constant=0.25
+
+
+paramnoskip="--nlimit=20000 --cbhtturnoff=100 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
+paramnoskipnflush="--nlimit=20000 --cbhtturnoff=100 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
+param="--nlimit=20000 --cbhtturnoff=50 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
+paramnoflush="--nlimit=20000 --cbhtturnoff=50 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
+paramnodca="--nlimit=20000 --cbhtturnoff=0 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
+
+./cache_bench $param > results_cache/csv.txt
+exit
+
+./cache_bench $paramnoskipnflush > results_cache/csv_noskipnflush.txt
+./cache_bench $paramnoskip > results_cache/csv_noskip.txt
+./cache_bench $paramnoflush > results_cache/csv_noflush.txt
+./cache_bench $paramnodca > results_cache/csv_nodca.txt
+./cache_bench $param > results_cache/csv.txt
+
+exit
+
 for percent in 80; do
     ./cache_bench --nlimit=20000 --cbhtturnoff=50 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/8)) > results_cache/resultpercentenabled$percent.txt
 done
@@ -30,29 +51,12 @@ done
 exit
 
 
-
-shardbit=4
-threads=32
-constant=0.25
 #20+ is hard limited and leads to segfault
 
 
 
 exit
 
-paramnoskip="--nlimit=20000 --cbhtturnoff=100 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
-paramnoskipnflush="--nlimit=20000 --cbhtturnoff=100 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
-param="--nlimit=20000 --cbhtturnoff=50 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
-paramnoflush="--nlimit=20000 --cbhtturnoff=50 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
-paramnodca="--nlimit=20000 --cbhtturnoff=0 --dcaflush=0 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
-
-./cache_bench $paramnoskipnflush > results_cache/csv_noskipnflush.txt
-./cache_bench $paramnoskip > results_cache/csv_noskip.txt
-./cache_bench $paramnoflush > results_cache/csv_noflush.txt
-./cache_bench $paramnodca > results_cache/csv_nodca.txt
-./cache_bench $param > results_cache/csv.txt
-
-exit
 
 paramskip67flush33="--nlimit=20000 --cbhtturnoff=50 --dcaflush=25 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
 paramskip33flush67="--nlimit=20000 --cbhtturnoff=75 --dcaflush=50 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=32 --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"

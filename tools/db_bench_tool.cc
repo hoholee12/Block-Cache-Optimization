@@ -2533,7 +2533,7 @@ class Stats {
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
 
-    printf("\n\n actual DCA entries free()'d: %d\n\n", DCAentriesfreed);
+    printf("\n\n DCA insert blocked: %d\n\n", insertblocked);
 
     printf("\n\neasy index:\n");
 
@@ -3404,6 +3404,57 @@ class Benchmark {
   };
 
   std::shared_ptr<Cache> NewCache(int64_t capacity) {
+    
+    //initialize shard counters
+    for(int i = 0; i < SHARDCOUNT; i++){
+      shardtotaltime[i] = -1;
+      shardlasttime[i] = -1;
+      shardaccesscount[i] = 0;
+      threadnumshard[i] = -1;
+      lookupblockcount[i] = 0;
+      lockheld[i] = false;
+
+      //CBHT internals
+      N[i] = 0;
+      int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
+      Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
+      CBHTState[i] = true;
+      nohit[i] = 0;
+      totalhit[i] = 0;
+      hitrate[i] = 50;
+      virtual_nohit[i] = 0;
+      virtual_totalhit[i] = 0;
+      sortarr[i] = 50;
+      DCAskip_hit[i] = 50;
+      DCAskip_n[i] = 1;
+      DCAflush_hit[i] = 50;
+      DCAflush_n[i] = 1;
+    }
+    threadcount = FLAGS_threads;
+    numshardbits = FLAGS_cache_numshardbits;
+    shardnumlimit = pow(2, numshardbits);
+    if(shardnumlimit < (uint32_t)FLAGS_threads) shardsperthread = shardnumlimit;
+    else shardsperthread = shardnumlimit / (uint32_t)FLAGS_threads;
+
+    enableshardfix = FLAGS_enableshardfix;
+    CBHTbitlength = FLAGS_cbhtbitlength;
+    NLIMIT = FLAGS_nlimit;
+    CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
+    DCAflush = FLAGS_dcaflush; //hitrate
+    
+    called = 0;
+    called_refill = 0;
+    misscount = 0;
+    invalidatedcount = 0;
+    evictedcount = 0;
+    fullevictcount = 0;
+    insertblocked = 0;
+
+    
+    keyrangecounter_size = FLAGS_num;
+    keyrangecounter = (long*)malloc(sizeof(long)*keyrangecounter_size);
+    memset(keyrangecounter, 0, sizeof(long)*keyrangecounter_size);
+
     if (capacity <= 0) {
       return nullptr;
     }
@@ -3696,56 +3747,6 @@ class Benchmark {
     std::stringstream benchmark_stream(FLAGS_benchmarks);
     std::string name;
     std::unique_ptr<ExpiredTimeFilter> filter;
-
-    //initialize shard counters
-    for(int i = 0; i < SHARDCOUNT; i++){
-      shardtotaltime[i] = -1;
-      shardlasttime[i] = -1;
-      shardaccesscount[i] = 0;
-      threadnumshard[i] = -1;
-      lookupblockcount[i] = 0;
-      lockheld[i] = false;
-
-      //CBHT internals
-      N[i] = 0;
-      int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
-      Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
-      CBHTState[i] = true;
-      nohit[i] = 0;
-      totalhit[i] = 0;
-      hitrate[i] = 50;
-      virtual_nohit[i] = 0;
-      virtual_totalhit[i] = 0;
-      sortarr[i] = 50;
-      DCAskip_hit[i] = 50;
-      DCAskip_n[i] = 1;
-      DCAflush_hit[i] = 50;
-      DCAflush_n[i] = 1;
-    }
-    threadcount = FLAGS_threads;
-    numshardbits = FLAGS_cache_numshardbits;
-    shardnumlimit = pow(2, numshardbits);
-    if(shardnumlimit < (uint32_t)FLAGS_threads) shardsperthread = shardnumlimit;
-    else shardsperthread = shardnumlimit / (uint32_t)FLAGS_threads;
-
-    enableshardfix = FLAGS_enableshardfix;
-    CBHTbitlength = FLAGS_cbhtbitlength;
-    NLIMIT = FLAGS_nlimit;
-    CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
-    DCAflush = FLAGS_dcaflush; //hitrate
-    
-    called = 0;
-    called_refill = 0;
-    misscount = 0;
-    invalidatedcount = 0;
-    evictedcount = 0;
-    fullevictcount = 0;
-    DCAentriesfreed = 0;
-
-    
-    keyrangecounter_size = FLAGS_num;
-    keyrangecounter = (long*)malloc(sizeof(long)*keyrangecounter_size);
-    memset(keyrangecounter, 0, sizeof(long)*keyrangecounter_size);
 
     //and then we init zipf
     init_zipf_generator(0, FLAGS_num);
