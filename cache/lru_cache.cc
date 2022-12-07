@@ -236,7 +236,7 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
-LRUHandle* CBHTable::EvictFIFO(){
+LRUHandle* CBHTable::EvictFIFO(bool flushall){
   std::pair<Slice, uint32_t> temp;
   LRUHandle* result = nullptr;
   int hardlimit = size_t{1} << CBHTbitlength;
@@ -267,7 +267,7 @@ LRUHandle* CBHTable::EvictFIFO(){
         hashkeylist.push_back(temp);
       }
     }
-    if(result != nullptr){
+    if(result != nullptr && !flushall){
       break;  //do only one eviction
     }
     //continue if the eviction was invalid(entry didnt exist)
@@ -760,12 +760,11 @@ Cache::Handle* LRUCacheShard::Lookup(
             avg_flush_median /= shardnumlimit;
             //dca flush
             //int DCAflush_lasthit = DCAflush_hit[hashshard] / DCAflush_n[hashshard];
-            /*
+            
             if(DCAflush != 0 && hitrate[hashshard] < avg_flush_median){
               //evict everything if dca has too many misses.
-              //is safe because i made sure that lru operation wont crash the entire thing
-              cbhtable_.EvictFIFO(true, &lru_);
-              fullevictcount++;
+              cbhtable_.EvictFIFO(true);
+              fullevictcount++; //not a full evict. some entries may be left due to existing refs.
 
               //sma
               //DCAflush_n[hashshard]++;
@@ -786,7 +785,6 @@ Cache::Handle* LRUCacheShard::Lookup(
               //DCAflush_hit[hashshard] = ((hitrate[hashshard] - DCAflush_lasthit) * 2 / 
               //DCAflush_n[hashshard] + DCAflush_lasthit) * DCAflush_n[hashshard];
             }
-*/
             //skip faster if lower hitrate
             //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
 
