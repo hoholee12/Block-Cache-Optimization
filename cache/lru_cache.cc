@@ -166,11 +166,10 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 
 //this replaces to new entry from old entry via same key, and returns old one?
 LRUHandle* CBHTable::Insert(LRUHandle* h) {
-  LRUHandle* old = nullptr;
   //start eviction if table is half full
   //evict 1 at 33, not 32.
   if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
-    old = EvictFIFO();
+    EvictFIFO();
   }
 
   //check again
@@ -184,7 +183,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   }
   //continue
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
-  old = *ptr;
+  LRUHandle* old = *ptr;
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
   *ptr = h;
 
@@ -567,7 +566,6 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           if(old->indca){
             WriteLock wl(&rwmutex_);
             if(old->indca){
-              cbhtable_.Remove(old->key(), old->hash);
               //update to the new entry
               cbhtable_.Insert(e);
               invalidatedcount++;
