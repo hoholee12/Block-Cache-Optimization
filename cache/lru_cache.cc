@@ -211,6 +211,9 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
       freestamplist.push_back(result->DCAstamp);
       result->indca = false;
       result->refs = 0;
+      for(uint32_t i = 0; i < threadcount; i++){
+        result->refs += DCA_ref_pool[(threadcount * result->DCAstamp) + i];
+      }
       result->DCAstamp = -1;
     }
 
@@ -238,30 +241,24 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
-LRUHandle* CBHTable::EvictFIFO(bool flushall){
+LRUHandle* CBHTable::EvictFIFO(){
   std::pair<Slice, uint32_t> temp;
+  LRUHandle* e = nullptr;
   LRUHandle* result = nullptr;
   int hardlimit = size_t{1} << CBHTbitlength;
   //avoid looping indefinitely
   while(!hashkeylist.empty() && hardlimit-- > 0){
     temp = hashkeylist.front();
     hashkeylist.pop_front();
-    result = Lookup(temp.first, temp.second);
-    if(result != nullptr){
+    e = Lookup(temp.first, temp.second);
+    if(e != nullptr){
       int refexists = 0;
       for(uint32_t i = 0; i < threadcount; i++){
-        refexists += DCA_ref_pool[(threadcount * result->DCAstamp) + i];
+        refexists += DCA_ref_pool[(threadcount * e->DCAstamp) + i];
       }
       //if all thread ref were 0 then this should trigger
       if(refexists == 0){
         result = Remove(temp.first, temp.second);  //does --elems_ internally
-        //lru insert
-        if(result->next == nullptr && result->prev == nullptr && lru_ != nullptr){
-          result->next = lru_;
-          result->prev = lru_->prev;
-          result->prev->next = result;
-          result->next->prev = result;
-        }
       }
       //if ref exists, put it back into hashlist and loop again
       else{
@@ -269,7 +266,7 @@ LRUHandle* CBHTable::EvictFIFO(bool flushall){
         hashkeylist.push_back(temp);
       }
     }
-    if(result != nullptr && !flushall){
+    if(result != nullptr){  //we will loop until we get one result.
       break;  //do only one eviction
     }
     //continue if the eviction was invalid(entry didnt exist)
@@ -322,6 +319,15 @@ void LRUCacheShard::EraseUnRefEntries() {
 
       LRU_Remove(old);
       table_.Remove(old->key(), old->hash);
+      if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+        if(old->indca){
+          WriteLock wl(&rwmutex_);
+          if(old->indca){
+            cbhtable_.Remove(old->key(), old->hash);
+            invalidatedcount++;
+          }
+        }
+      }
       
       old->SetInCache(false);
       size_t total_charge = old->CalcTotalCharge(metadata_charge_policy_);
@@ -479,6 +485,15 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
 
     LRU_Remove(old);
     table_.Remove(old->key(), old->hash);
+    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
+      if(old->indca){
+        WriteLock wl(&rwmutex_);
+        if(old->indca){
+          cbhtable_.Remove(old->key(), old->hash);
+          invalidatedcount++;
+        }
+      }
+    }
 
     old->SetInCache(false);
     size_t old_total_charge = old->CalcTotalCharge(metadata_charge_policy_);
@@ -765,8 +780,13 @@ Cache::Handle* LRUCacheShard::Lookup(
             
             if(DCAflush != 0 && hitrate[hashshard] < avg_flush_median){
               //evict everything if dca has too many misses.
-              cbhtable_.EvictFIFO(true);
-              fullevictcount++; //not a full evict. some entries may be left due to existing refs.
+              LRUHandle* evicted = nullptr;
+              int i = 0;
+              while((evicted = cbhtable_.EvictFIFO()) != nullptr){
+                LRU_Insert(evicted);
+                i++;
+              }
+              if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
 
               //sma
               //DCAflush_n[hashshard]++;
@@ -943,8 +963,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         
       } else {
         // Put the item back on the LRU list, and don't free it
-        
-        LRU_Insert(e);
+        if(!e->indca) LRU_Insert(e);
         last_reference = false;
       }
     }

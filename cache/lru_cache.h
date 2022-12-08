@@ -322,7 +322,7 @@ class CBHTable {
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
   
-  LRUHandle* EvictFIFO(bool flushall = false);
+  LRUHandle* EvictFIFO();
   bool IsTableFull();
 
 
