@@ -187,7 +187,9 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
   *ptr = h;
 
-  ++elems_;
+  if(old == nullptr){
+    ++elems_;
+  }
   hashkeylist.push_back(std::make_pair(h->key(), h->hash));
 
   h->indca = true;
