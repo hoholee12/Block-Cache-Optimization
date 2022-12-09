@@ -820,14 +820,16 @@ Cache::Handle* LRUCacheShard::Lookup(
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
             LRUHandle* temp2 = nullptr;
+            int i = 0;
             while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
+              i++;
               cbhtable_.Insert(temp);
               temp2 = temp->prev;
               //no need to check for ref
               LRU_Remove(temp); //keep all dca entries out of lru
               temp = temp2;
-              called_refill++;
             }
+            if(i > 0) called_refill++;
             //turn it back on every nlimit
             //if CBHTturnoff is bigger than nlimit, it becomes useless.
             //keep it off until hitrate is over median

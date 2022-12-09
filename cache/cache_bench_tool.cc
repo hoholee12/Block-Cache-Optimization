@@ -551,7 +551,7 @@ class CacheBench {
 
     printf("\n\n how much is DCA update called: %d\n\n", called + called_refill);
 
-    printf("\n\n count DCA update self/from lru: %d/%d\n\n", called, called_refill);
+    printf("\n\n count DCA update self/prefetch from lru: %d/%d\n\n", called, called_refill);
 
     printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
 
