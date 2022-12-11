@@ -122,6 +122,7 @@ class ShardedCache : public Cache {
  private:
   const uint32_t shard_mask_;
   mutable port::Mutex capacity_mutex_;
+  mutable port::Mutex tid_mutex_; //for tids
   size_t capacity_;
   bool strict_capacity_limit_;
   std::atomic<uint64_t> last_id_;

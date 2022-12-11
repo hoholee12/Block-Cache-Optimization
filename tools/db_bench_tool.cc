@@ -3402,6 +3402,13 @@ class Benchmark {
   };
 
   std::shared_ptr<Cache> NewCache(int64_t capacity) {
+
+    
+    //this is for stats.
+    struct timespec tstart = {0, 0};
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+    inittime = tstart.tv_sec;
+    prevtime = inittime / 10;
     
     //initialize shard counters
     for(int i = 0; i < SHARDCOUNT; i++){

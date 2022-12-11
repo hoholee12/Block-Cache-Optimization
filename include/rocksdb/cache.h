@@ -26,6 +26,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <map>
 
 #include "rocksdb/memory_allocator.h"
 #include "rocksdb/slice.h"
@@ -84,10 +85,13 @@ extern int invalidatedcount;
 extern int evictedcount;
 extern int fullevictcount;
 extern int insertblocked;
+extern time_t inittime;
+extern time_t prevtime;
 //////////////////
 
 //////////////////////////////
 // counters for CBHT internals
+extern std::map<pthread_t, int> tids;
 extern int N[SHARDCOUNT];
 extern int Nsupple[SHARDCOUNT];
 extern bool CBHTState[SHARDCOUNT];

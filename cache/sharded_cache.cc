@@ -41,10 +41,13 @@ int evictedcount = 0;
 int fullevictcount = 0;
 int DCAentriesfreed = 0;
 int insertblocked = 0;
+time_t inittime;
+time_t prevtime;
 //////////////////
 
 //////////////////////////////
 // counters for CBHT internals
+std::map<pthread_t, int> tids;
 int N[SHARDCOUNT];  // all 0s
 int Nsupple[SHARDCOUNT];
 bool CBHTState[SHARDCOUNT]; // all trues
@@ -147,6 +150,13 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
     shardnum = Shard(hash);
   }
   threadnumshard[shardnum] = threadnum; //log this
+
+  //map threadnum to tid
+  if(tids.size() < threadcount){
+    MutexLock l(&tid_mutex_);
+    tids[pthread_self()] = threadnum;
+  }
+
   return GetShard(shardnum)
       ->Lookup(key, hash, helper, create_cb, priority, wait, stats);
 }

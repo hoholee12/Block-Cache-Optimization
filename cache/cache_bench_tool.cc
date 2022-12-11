@@ -976,6 +976,13 @@ class CacheBench {
     uint64_t start_time = clock->NowMicros();
     StopWatchNano timer(clock);
 
+    
+    //this is for stats.
+    struct timespec tstart = {0, 0};
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+    inittime = tstart.tv_sec;
+    prevtime = inittime / 10;
+
     for (uint64_t i = 0; i < FLAGS_ops_per_thread; i++) {
       timer.Start();
       

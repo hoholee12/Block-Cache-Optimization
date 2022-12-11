@@ -37,6 +37,15 @@ public:
     lockheld[myshard] = false;
   }
 };
+
+int getmytid(){
+  std::map<pthread_t, int>::iterator tidit = tids.find(pthread_self());
+  int mytid = -1;
+  if(tidit != tids.end()){
+    mytid = tidit->second;
+  }
+  return mytid;
+}
   
 uint32_t Shard(uint32_t hash) {
   uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
@@ -146,6 +155,7 @@ CBHTable::CBHTable(int max_upper_hash_bits)
         for(uint32_t i = 0; i < (size_t{1} << CBHTbitlength); i++){
           freestamplist.push_back(i);
         }
+
       }
 
 CBHTable::~CBHTable() {
@@ -155,10 +165,10 @@ CBHTable::~CBHTable() {
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
   LRUHandle* ptr = *FindPointer(key, hash);
   if(ptr != nullptr){
-    int mytid = pthread_self() % threadcount;
     //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
-    if(ptr->DCAstamp > -1 && ptr->DCAstamp < (int)(size_t{1} << CBHTbitlength)){
-      DCA_ref_pool[(threadcount * ptr->DCAstamp) + mytid]++;
+    int stamptmp = ptr->DCAstamp;
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+      DCA_ref_pool[(threadcount * stamptmp) + getmytid()]++;
     }
   }
   return ptr;
@@ -173,7 +183,8 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   }
 
   //check again
-  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
+  //there could be a edge case where freestamplist is empty while DCA is available.(probably due to bug)
+  if (((elems_ >> (length_bits_ - 1)) > 0) || freestamplist.empty()) {  // elems_ >= length / 2
     //failed
     insertblocked++;
     return h;
@@ -181,6 +192,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   else{
     evictedcount++;
   }
+  
   //continue
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
@@ -194,11 +206,14 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
 
   h->indca = true;
   h->refs = 1;
-  h->DCAstamp = freestamplist.front();
+  
+  int stamptmp = freestamplist.front();
+  h->DCAstamp = stamptmp;
   for(uint32_t i = 0; i < threadcount; i++){
-    DCA_ref_pool[(threadcount * h->DCAstamp) + i] = 0;
+    DCA_ref_pool[(threadcount * stamptmp) + i] = 0;
   }
   freestamplist.pop_front();
+
   return old;
 }
 
@@ -207,12 +222,13 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
   LRUHandle* result = *ptr;
   if (result != nullptr) {
     //backup stamp before init
-    if(result->DCAstamp > -1 && result->DCAstamp < (int)(size_t{1} << CBHTbitlength)){
-      freestamplist.push_back(result->DCAstamp);
+    int stamptmp = result->DCAstamp;
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+      freestamplist.push_back(stamptmp);
       result->indca = false;
       result->refs = 0;
       for(uint32_t i = 0; i < threadcount; i++){
-        result->refs += DCA_ref_pool[(threadcount * result->DCAstamp) + i];
+        result->refs += DCA_ref_pool[(threadcount * stamptmp) + i];
       }
       result->DCAstamp = -1;
     }
@@ -224,10 +240,10 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
 }
 
 void CBHTable::Unref(LRUHandle *e){
-  int mytid = pthread_self() % threadcount;
   //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
-  if(e->DCAstamp > -1 && e->DCAstamp < (int)(size_t{1} << CBHTbitlength)){
-    DCA_ref_pool[(threadcount * e->DCAstamp) + mytid]--;
+  int stamptmp = e->DCAstamp;
+  if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+    DCA_ref_pool[(threadcount * stamptmp) + getmytid()]--;
   }
 }
 
@@ -253,8 +269,9 @@ LRUHandle* CBHTable::EvictFIFO(){
     e = Lookup(temp.first, temp.second);
     if(e != nullptr){
       int refexists = 0;
+      int stamptmp = e->DCAstamp;
       for(uint32_t i = 0; i < threadcount; i++){
-        refexists += DCA_ref_pool[(threadcount * e->DCAstamp) + i];
+        refexists += DCA_ref_pool[(threadcount * stamptmp) + i];
       }
       //if all thread ref were 0 then this should trigger
       if(refexists == 0){
@@ -409,23 +426,18 @@ void LRUCacheShard::LRU_Remove(LRUHandle* e) {
   if(e->next == nullptr || e->prev == nullptr) return;
   //assert(e->next != nullptr);
   //assert(e->prev != nullptr);
-  if(e->indca != true || e->refs != 1){
-    if (lru_low_pri_ == e) {
-      lru_low_pri_ = e->prev;
-    }
+  if (lru_low_pri_ == e) {
+    lru_low_pri_ = e->prev;
   }
   e->next->prev = e->prev;
   e->prev->next = e->next;
   e->prev = e->next = nullptr;
   size_t total_charge = e->CalcTotalCharge(metadata_charge_policy_);
-  //only recalc memusage when its not DCA
-  if(e->indca != true || e->refs != 1){
-    assert(lru_usage_ >= total_charge);
-    lru_usage_ -= total_charge;
-    if (e->InHighPriPool()) {
-      assert(high_pri_pool_usage_ >= total_charge);
-      high_pri_pool_usage_ -= total_charge;
-    }
+  assert(lru_usage_ >= total_charge);
+  lru_usage_ -= total_charge;
+  if (e->InHighPriPool()) {
+    assert(high_pri_pool_usage_ >= total_charge);
+    high_pri_pool_usage_ -= total_charge;
   }
 }
 
@@ -441,11 +453,9 @@ void LRUCacheShard::LRU_Insert(LRUHandle* e) {
     e->prev = lru_.prev;
     e->prev->next = e;
     e->next->prev = e;
-    if(e->indca != true || e->refs != 1){
-      e->SetInHighPriPool(true);
-      high_pri_pool_usage_ += total_charge;
-      MaintainPoolSize();
-    }
+    e->SetInHighPriPool(true);
+    high_pri_pool_usage_ += total_charge;
+    MaintainPoolSize();
   } else {
     // Insert "e" to the head of low-pri pool. Note that when
     // high_pri_pool_ratio is 0, head of low-pri pool is also head of LRU list.
@@ -453,14 +463,10 @@ void LRUCacheShard::LRU_Insert(LRUHandle* e) {
     e->prev = lru_low_pri_;
     e->prev->next = e;
     e->next->prev = e;
-    if(e->indca != true || e->refs != 1){
-      e->SetInHighPriPool(false);
-      lru_low_pri_ = e;
-    }
+    e->SetInHighPriPool(false);
+    lru_low_pri_ = e;
   }
-  if(e->indca != true || e->refs != 1){
-    lru_usage_ += total_charge;
-  }
+  lru_usage_ += total_charge;
 }
 
 void LRUCacheShard::MaintainPoolSize() {
@@ -664,7 +670,6 @@ void copyAndSort(){
   qsort(sortarr, shardnumlimit, sizeof(int), cmpfunc);
 }
 
-
 // CBHT is allocated per shard, not as standalone
 Cache::Handle* LRUCacheShard::Lookup(
     const Slice& key, uint32_t hash,
@@ -716,6 +721,7 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     //sanity check
     if (e != nullptr) {
+
       //identify DCA hitrate without actually using DCA
       virtual_totalhit[hashshard]++;
       if(e->indca != true){
@@ -741,6 +747,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           WriteLock wl(&rwmutex_);
           if(N[hashshard] > NLIMIT){
             N[hashshard] = 0;
+
             LRUHandle* temp = e;
             //save hitrate
             //use whichever hitrate that has the most access count.
@@ -840,6 +847,18 @@ Cache::Handle* LRUCacheShard::Lookup(
             totalhit[hashshard] = 0;
             virtual_nohit[hashshard] = 0;
             virtual_totalhit[hashshard] = 0;
+
+
+            //time to print out important stats
+            time_t elapsed = (tstart.tv_sec - inittime) / 10;
+            if(elapsed != prevtime){
+              printf("thread #%d nlimit reached: %ld seconds in, invalidation: %d, eviction: %d, blocked:"
+              "%d, fullevict: %d\n", getmytid(), elapsed, invalidatedcount, evictedcount, insertblocked,
+              fullevictcount);
+            }
+            prevtime = elapsed;
+            //important stats end
+
           }
         }
       }
