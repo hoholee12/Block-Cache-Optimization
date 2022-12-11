@@ -145,9 +145,9 @@ void LRUHandleTable::Resize() {
 }
 
 CBHTable::CBHTable(int max_upper_hash_bits)
-    : length_bits_(CBHTbitlength),
+    : elems_(0),
+      length_bits_(CBHTbitlength),
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
-      elems_(0),
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
         //we don't want destructor to be called while accessing ref pool, so we use malloc.
@@ -205,7 +205,6 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   hashkeylist.push_back(std::make_pair(h->key(), h->hash));
 
   h->indca = true;
-  h->refs = 1;
   
   int stamptmp = freestamplist.front();
   h->DCAstamp = stamptmp;
@@ -226,9 +225,15 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
       freestamplist.push_back(stamptmp);
       result->indca = false;
-      result->refs = 0;
+      int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
-        result->refs += DCA_ref_pool[(threadcount * stamptmp) + i];
+        refstmp += DCA_ref_pool[(threadcount * stamptmp) + i];
+      }
+      if((int)result->refs + refstmp < 0){
+        result->refs = 0;
+      }
+      else{
+        result->refs += refstmp;
       }
       result->DCAstamp = -1;
     }
@@ -735,7 +740,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
 
       //dont change state if the entry is a part of dca.
-      if(e->refs != 1 && e->indca != true){
+      if(e->indca != true){
         e->Ref();
       }
       e->SetHit();
@@ -852,8 +857,8 @@ Cache::Handle* LRUCacheShard::Lookup(
             //time to print out important stats
             time_t elapsed = (tstart.tv_sec - inittime) / 10;
             if(elapsed != prevtime){
-              printf("thread #%d nlimit reached: %ld seconds in, invalidation: %d, eviction: %d, blocked:"
-              "%d, fullevict: %d\n", getmytid(), elapsed, invalidatedcount, evictedcount, insertblocked,
+              printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked:"
+              "%d, fullevict: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
               fullevictcount);
             }
             prevtime = elapsed;

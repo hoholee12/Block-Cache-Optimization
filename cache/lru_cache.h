@@ -122,8 +122,8 @@ struct LRUHandle {
 
   // Just reduce the reference count by 1. Return true if it was last reference.
   bool Unref() {
-    assert(refs > 0);
-    refs--;
+    //assert(refs > 0);
+    if(refs > 0) refs--;
     return refs == 0;
   }
 
@@ -334,14 +334,15 @@ class CBHTable {
   // ptr of lru_ head
   LRUHandle *lru_;
 
+
+  // Number of elements currently in the table
+  uint32_t elems_;
+
  private:
   // Return a pointer to slot that points to a cache entry that
   // matches key/hash.  If there is no such cache entry, return a
   // pointer to the trailing slot in the corresponding linked list.
   LRUHandle** FindPointer(const Slice& key, uint32_t hash);
-
-
-
 
   // Number of hash bits (upper because lower bits used for sharding)
   // used for table index. Length == 1 << length_bits_
@@ -350,9 +351,6 @@ class CBHTable {
   // The table consists of an array of buckets where each bucket is
   // a linked list of cache entries that hash into the bucket.
   std::unique_ptr<LRUHandle*[]> list_;
-
-  // Number of elements currently in the table
-  uint32_t elems_;
 
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
