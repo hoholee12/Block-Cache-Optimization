@@ -208,9 +208,6 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   
   int stamptmp = freestamplist.front();
   h->DCAstamp = stamptmp;
-  for(uint32_t i = 0; i < threadcount; i++){
-    DCA_ref_pool[(threadcount * stamptmp) + i] = 0;
-  }
   freestamplist.pop_front();
 
   return old;
@@ -228,6 +225,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
         refstmp += DCA_ref_pool[(threadcount * stamptmp) + i];
+        DCA_ref_pool[(threadcount * stamptmp) + i] = 0; //zero
       }
       if((int)result->refs + refstmp < 0){
         result->refs = 0;
