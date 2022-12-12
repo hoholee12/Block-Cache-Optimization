@@ -155,13 +155,14 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
   //map threadnum to tid
   if(tids.size() < threadcount){
     MutexLock l(&tid_mutex_);
-    pthread_t tmp = pthread_self();
-    std::map<pthread_t, int>::iterator tidit = tids.find(tmp);
-    if(tidit == tids.end()){
-      printf("thread #%d registered.\n", tidincr);
-      tids[tmp] = tidincr++;
+    if(tids.size() < threadcount){
+      pthread_t tmp = pthread_self();
+      std::map<pthread_t, int>::iterator tidit = tids.find(tmp);
+      if(tidit == tids.end()){
+        printf("thread #%d registered.\n", tidincr);
+        tids[tmp] = tidincr++;
+      }
     }
-  
   }
 
   return GetShard(shardnum)

@@ -40,7 +40,7 @@ public:
 
 int getmytid(){
   std::map<pthread_t, int>::iterator tidit = tids.find(pthread_self());
-  int mytid = -1;
+  int mytid = 0;
   if(tidit != tids.end()){
     mytid = tidit->second;
   }
