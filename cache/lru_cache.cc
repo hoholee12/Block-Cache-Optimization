@@ -183,7 +183,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   }
 
   //check again
-  //there could be a edge case where freestamplist is empty while DCA is available.(probably due to bug)
+  //there could be a edge case where stamplist is empty while DCA is available.(probably due to bug)
   if (((elems_ >> (length_bits_ - 1)) > 0) || freestamplist.empty()) {  // elems_ >= length / 2
     //failed
     insertblocked++;
@@ -220,7 +220,6 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
     //backup stamp before init
     int stamptmp = result->DCAstamp;
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-      freestamplist.push_back(stamptmp);
       result->indca = false;
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
@@ -234,6 +233,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
         result->refs += refstmp;
       }
       result->DCAstamp = -1;
+      freestamplist.push_back(stamptmp);
     }
 
     *ptr = result->next_hash_cbht;
