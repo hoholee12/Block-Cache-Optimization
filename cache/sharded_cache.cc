@@ -68,6 +68,7 @@ int DCAflush = 20;
 RWMutex_tmp sac_rwm_;
 int CBHTbitlength = 6;
 uint32_t threadcount = 0;
+int tidincr = 0;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {
@@ -154,7 +155,13 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
   //map threadnum to tid
   if(tids.size() < threadcount){
     MutexLock l(&tid_mutex_);
-    tids[pthread_self()] = threadnum;
+    pthread_t tmp = pthread_self();
+    std::map<pthread_t, int>::iterator tidit = tids.find(tmp);
+    if(tidit == tids.end()){
+      printf("thread #%d registered.\n", tidincr);
+      tids[tmp] = tidincr++;
+    }
+  
   }
 
   return GetShard(shardnum)

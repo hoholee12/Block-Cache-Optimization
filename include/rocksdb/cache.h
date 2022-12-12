@@ -112,6 +112,7 @@ extern int DCAflush;
 extern RWMutex_tmp sac_rwm_;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
+extern int tidincr;
 //////////////////////////////
 
 
