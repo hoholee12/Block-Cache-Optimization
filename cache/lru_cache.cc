@@ -213,7 +213,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   return old;
 }
 
-LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
+LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
   LRUHandle** ptr = FindPointer(key, hash);
   LRUHandle* result = *ptr;
   if (result != nullptr) {
@@ -226,6 +226,13 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
         refstmp += DCA_ref_pool[(threadcount * stamptmp) + i];
         DCA_ref_pool[(threadcount * stamptmp) + i] = 0; //zero
       }
+      //don't force. return nullptr if it is still referenced.
+      if(dontforce){
+        if(refstmp != 0){
+          return nullptr;
+        }
+      }
+      //otherwise...
       if((int)result->refs + refstmp < 0){
         result->refs = 0;
       }
@@ -236,6 +243,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash) {
       freestamplist.push_back(stamptmp);
     }
 
+    //remove from dca
     *ptr = result->next_hash_cbht;
     --elems_;
   }
@@ -271,19 +279,10 @@ LRUHandle* CBHTable::EvictFIFO(){
     hashkeylist.pop_front();
     e = Lookup(temp.first, temp.second);
     if(e != nullptr){
-      int refexists = 0;
-      int stamptmp = e->DCAstamp;
-      for(uint32_t i = 0; i < threadcount; i++){
-        refexists += DCA_ref_pool[(threadcount * stamptmp) + i];
-      }
-      //if all thread ref were 0 then this should trigger
-      if(refexists == 0){
-        result = Remove(temp.first, temp.second);  //does --elems_ internally
-      }
-      //if ref exists, put it back into hashlist and loop again
-      else{
-        result = nullptr;
-        hashkeylist.push_back(temp);
+      result = Remove(temp.first, temp.second, false);  //true: dont force remove 
+      //(set to false for now because force removing seems to be better for performance)
+      if(result == nullptr){  //remove couldnt remove it because it is referenced.
+        hashkeylist.push_back(temp);  //insert it back
       }
     }
     if(result != nullptr){  //we will loop until we get one result.

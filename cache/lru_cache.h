@@ -303,7 +303,7 @@ class CBHTable {
 
   LRUHandle* Lookup(const Slice& key, uint32_t hash);
   LRUHandle* Insert(LRUHandle* h);
-  LRUHandle* Remove(const Slice& key, uint32_t hash);
+  LRUHandle* Remove(const Slice& key, uint32_t hash, bool dontforce = false);
   void Unref(LRUHandle* e); //for DCA_ref_pool
 
   template <typename T>
