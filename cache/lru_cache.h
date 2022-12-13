@@ -327,9 +327,8 @@ class CBHTable {
 
 
   //DCA ref pool
-  int * DCA_ref_pool;
-  std::deque<int> freestamplist;
-
+  int * DCA_ref_pool; //[slot availability check], [actual ref slots]
+  int stampincr;
   
   // ptr of lru_ head
   LRUHandle *lru_;

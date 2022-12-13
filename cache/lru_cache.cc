@@ -151,11 +151,9 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
         //we don't want destructor to be called while accessing ref pool, so we use malloc.
-        DCA_ref_pool = (int*)calloc((size_t{1} << CBHTbitlength) * threadcount, sizeof(int));
-        for(uint32_t i = 0; i < (size_t{1} << CBHTbitlength); i++){
-          freestamplist.push_back(i);
-        }
-
+        ////[slot availability check], [actual ref slots]
+        DCA_ref_pool = (int*)calloc((size_t{1} << CBHTbitlength) + (size_t{1} << CBHTbitlength) * threadcount, sizeof(int));
+        stampincr = 0;
       }
 
 CBHTable::~CBHTable() {
@@ -168,7 +166,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
     //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
     int stamptmp = ptr->DCAstamp;
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-      DCA_ref_pool[(threadcount * stamptmp) + getmytid()]++;
+      DCA_ref_pool[(threadcount * stamptmp) + getmytid() + (size_t{1} << CBHTbitlength)]++;
     }
   }
   return ptr;
@@ -184,7 +182,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
 
   //check again
   //there could be a edge case where stamplist is empty while DCA is available.(probably due to bug)
-  if (((elems_ >> (length_bits_ - 1)) > 0) || freestamplist.empty()) {  // elems_ >= length / 2
+  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
     //failed
     insertblocked++;
     return h;
@@ -206,9 +204,17 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
 
   h->indca = true;
   
-  int stamptmp = freestamplist.front();
+
+  //get stamp
+  uint32_t stamptmp = 0;
+  for(uint32_t i = 0; i < (size_t{1} << CBHTbitlength); i++){
+    if(DCA_ref_pool[i] == 0){
+      DCA_ref_pool[i] = 1;
+      stamptmp = i;
+      break;
+    }
+  }
   h->DCAstamp = stamptmp;
-  freestamplist.pop_front();
 
   return old;
 }
@@ -223,8 +229,8 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       result->indca = false;
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
-        refstmp += DCA_ref_pool[(threadcount * stamptmp) + i];
-        DCA_ref_pool[(threadcount * stamptmp) + i] = 0; //zero
+        refstmp += DCA_ref_pool[(threadcount * stamptmp) + i + (size_t{1} << CBHTbitlength)];
+        DCA_ref_pool[(threadcount * stamptmp) + i + (size_t{1} << CBHTbitlength)] = 0; //zero
       }
       //don't force. return nullptr if it is still referenced.
       if(dontforce){
@@ -240,7 +246,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
         result->refs += refstmp;
       }
       result->DCAstamp = -1;
-      freestamplist.push_back(stamptmp);
+      DCA_ref_pool[stamptmp] = 0;
     }
 
     //remove from dca
@@ -254,7 +260,7 @@ void CBHTable::Unref(LRUHandle *e){
   //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
   int stamptmp = e->DCAstamp;
   if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-    DCA_ref_pool[(threadcount * stamptmp) + getmytid()]--;
+    DCA_ref_pool[(threadcount * stamptmp) + getmytid() + (size_t{1} << CBHTbitlength)]--;
   }
 }
 
@@ -731,10 +737,8 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
 
       assert(e->InCache());
-      if (!e->HasRefs()) {
-        // The entry is in LRU since it's in hash and has no external references
-        LRU_Remove(e);
-      }
+      // The entry is in LRU since it's in hash and has no external references
+      LRU_Remove(e);
 
       //dont change state if the entry is a part of dca.
       if(e->indca != true){
