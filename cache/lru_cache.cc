@@ -152,7 +152,7 @@ CBHTable::CBHTable(int max_upper_hash_bits)
         //for DCA ref pool
         //we don't want destructor to be called while accessing ref pool, so we use malloc.
         ////[slot availability check], [actual ref slots]
-        DCA_ref_pool = (int*)calloc((size_t{1} << CBHTbitlength) + (size_t{1} << CBHTbitlength) * threadcount, sizeof(int));
+        DCA_ref_pool = (int*)calloc(((size_t{1} << CBHTbitlength) * threadcount) + (size_t{1} << CBHTbitlength), sizeof(int));
         stampincr = 0;
       }
 
@@ -166,7 +166,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
     //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
     int stamptmp = ptr->DCAstamp;
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-      DCA_ref_pool[(threadcount * stamptmp) + getmytid() + (size_t{1} << CBHTbitlength)]++;
+      DCA_ref_pool[(threadcount * stamptmp) + getmytid()]++;
     }
   }
   return ptr;
@@ -207,7 +207,9 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
 
   //get stamp
   uint32_t stamptmp = 0;
-  for(uint32_t i = 0; i < (size_t{1} << CBHTbitlength); i++){
+  for(uint32_t i = (size_t{1} << CBHTbitlength) * threadcount
+  ; i < (size_t{1} << CBHTbitlength) + (size_t{1} << CBHTbitlength) * threadcount
+  ; i++){
     if(DCA_ref_pool[i] == 0){
       DCA_ref_pool[i] = 1;
       stamptmp = i;
@@ -229,8 +231,8 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       result->indca = false;
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
-        refstmp += DCA_ref_pool[(threadcount * stamptmp) + i + (size_t{1} << CBHTbitlength)];
-        DCA_ref_pool[(threadcount * stamptmp) + i + (size_t{1} << CBHTbitlength)] = 0; //zero
+        refstmp += DCA_ref_pool[(threadcount * stamptmp) + i];
+        if(!dontforce) DCA_ref_pool[(threadcount * stamptmp) + i] = 0; //zero
       }
       //don't force. return nullptr if it is still referenced.
       if(dontforce){
@@ -246,7 +248,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
         result->refs += refstmp;
       }
       result->DCAstamp = -1;
-      DCA_ref_pool[stamptmp] = 0;
+      DCA_ref_pool[((size_t{1} << CBHTbitlength) * threadcount) + stamptmp] = 0;
     }
 
     //remove from dca
@@ -260,7 +262,7 @@ void CBHTable::Unref(LRUHandle *e){
   //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
   int stamptmp = e->DCAstamp;
   if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-    DCA_ref_pool[(threadcount * stamptmp) + getmytid() + (size_t{1} << CBHTbitlength)]--;
+    DCA_ref_pool[(threadcount * stamptmp) + getmytid()]--;
   }
 }
 
@@ -856,6 +858,7 @@ Cache::Handle* LRUCacheShard::Lookup(
 
 
             //time to print out important stats
+            /*
             time_t elapsed = (tstart.tv_sec - inittime) / 10;
             if(elapsed != prevtime){
               printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked:"
@@ -863,6 +866,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               fullevictcount);
             }
             prevtime = elapsed;
+            */
             //important stats end
 
           }

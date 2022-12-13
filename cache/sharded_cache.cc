@@ -159,7 +159,7 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
       pthread_t tmp = pthread_self();
       std::map<pthread_t, int>::iterator tidit = tids.find(tmp);
       if(tidit == tids.end()){
-        printf("thread #%d registered.\n", tidincr);
+        //printf("thread #%d registered.\n", tidincr);
         tids[tmp] = tidincr++;
       }
     }
