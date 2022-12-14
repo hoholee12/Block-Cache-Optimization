@@ -689,8 +689,8 @@ Cache::Handle* LRUCacheShard::Lookup(
   LRUHandle* e = nullptr;
   { 
     uint32_t hashshard = Shard(hash);
-    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-      if(CBHTState[hashshard])
+    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
+      if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
         ReadLock rl(&rwmutex_);
         e = cbhtable_.Lookup(key, hash);
