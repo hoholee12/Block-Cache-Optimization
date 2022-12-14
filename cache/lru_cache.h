@@ -84,6 +84,7 @@ struct LRUHandle {
 
   //for DCA ref pool
   int DCAstamp;
+  int DCAstamp_tc;
 
   enum Flags : uint8_t {
     // Whether this entry is referenced by the hash table.
@@ -327,7 +328,8 @@ class CBHTable {
 
 
   //DCA ref pool
-  int * DCA_ref_pool; //[slot availability check], [actual ref slots]
+  int * DCA_ref_pool; //[actual ref slots], [slot avail index]
+  int availindex;
   int stampincr;
   
   // ptr of lru_ head
