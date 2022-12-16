@@ -779,8 +779,10 @@ Cache::Handle* LRUCacheShard::Lookup(
             }
             //get median
             copyAndSort();
-            int skip_median = sortarr[(shardnumlimit - 1) * CBHTturnoff / 100];
-            int flush_median = sortarr[(shardnumlimit - 1) * DCAflush / 100];
+            //instead of just picking median, add and divide by 2.
+            //this is to make sure skip still happens when all shards are low hitrate.
+            int skip_median = (sortarr[(shardnumlimit - 1) * CBHTturnoff / 100] + CBHTturnoff) / 2;
+            int flush_median = (sortarr[(shardnumlimit - 1) * DCAflush / 100] + DCAflush) / 2;
             //set medians
             DCAskip_hit[hashshard] = skip_median;
             DCAflush_hit[hashshard] = flush_median;
