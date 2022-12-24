@@ -89,6 +89,7 @@ extern time_t inittime;
 extern time_t prevtime;
 extern int cachehit;
 extern int cachemiss;
+extern bool compactioninprogress;
 //////////////////
 
 //////////////////////////////

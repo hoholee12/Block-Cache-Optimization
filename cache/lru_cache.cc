@@ -299,7 +299,7 @@ LRUHandle* CBHTable::EvictFIFO(){
     hashkeylist.pop_front();
     e = Lookup(temp.first, temp.second);
     if(e != nullptr){
-      result = Remove(temp.first, temp.second, false);  //true: dont force remove 
+      result = Remove(temp.first, temp.second, true);  //true: dont force remove 
       //(set to false for now because force removing seems to be better for performance)
       if(result == nullptr){  //remove couldnt remove it because it is referenced.
         hashkeylist.push_back(temp);  //insert it back
@@ -884,9 +884,13 @@ Cache::Handle* LRUCacheShard::Lookup(
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
       prevtime = elapsed;
-      printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked: "
-      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
+      printf("%ld seconds in, elems: %d, evict: %d, block: "
+      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, cbhtable_.elems_, evictedcount, insertblocked,
       fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
+      if(compactioninprogress){
+        compactioninprogress = false;
+        printf("compaction happened at %ld seconds in.\n", elapsed);
+      }
     }
     //important stats end
     

@@ -110,6 +110,7 @@ Status TableCache::GetTableReader(
   std::unique_ptr<FSRandomAccessFile> file;
   FileOptions fopts = file_options;
   Status s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
+  compactioninprogress = true;
   //printf("mymsg %s CREATE\n", fname.c_str());
   if (s.ok()) {
     s = ioptions_.fs->NewRandomAccessFile(fname, fopts, &file, nullptr);

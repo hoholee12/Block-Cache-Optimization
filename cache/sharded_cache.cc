@@ -45,6 +45,7 @@ time_t inittime;
 time_t prevtime;
 int cachehit = 0;
 int cachemiss = 0;
+bool compactioninprogress;
 //////////////////
 
 //////////////////////////////

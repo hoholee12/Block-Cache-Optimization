@@ -757,7 +757,12 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   time_t elapsed = (tstart.tv_sec - inittime) / 10;
   if(elapsed != prevtime){
     prevtime = elapsed;
-    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, cachehit * 100 / (cachehit + cachemiss));
+    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, 
+    cachehit * 100 / (cachehit + cachemiss));
+    if(compactioninprogress){
+      compactioninprogress = false;
+      printf("compaction happened at %ld seconds in.\n", elapsed);
+    }
   }
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
