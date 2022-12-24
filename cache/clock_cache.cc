@@ -699,9 +699,28 @@ Status ClockCacheShard::Insert(const Slice& key, uint32_t hash, void* value,
   return s;
 }
 
+uint32_t Shard(uint32_t hash) {
+  uint32_t shard_mask_ = (uint32_t{1} << numshardbits) - 1;
+  return hash & shard_mask_;
+}
+
 Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
+  
+  struct timespec telapsed = {0, 0};
+  struct timespec tstart = {0, 0}, tend = {0, 0};
+
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+  
+  uint32_t hashshard = Shard(hash);
   HashTable::const_accessor accessor;
+
   if (!table_.find(accessor, CacheKey(key, hash))) {
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+    shardtotaltime[hashshard] += telapsedtotal;
+    shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
     return nullptr;
   }
   CacheHandle* handle = accessor->second;
@@ -709,6 +728,12 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   // Ref() could fail if another thread sneak in and evict/erase the cache
   // entry before we are able to hold reference.
   if (!Ref(reinterpret_cast<Cache::Handle*>(handle))) {
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+    shardtotaltime[hashshard] += telapsedtotal;
+    shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
     return nullptr;
   }
   // Double check the key since the handle may now representing another key
@@ -719,8 +744,28 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
     Unref(handle, false, &context);
     // It is possible Unref() delete the entry, so we need to cleanup.
     Cleanup(context);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+    shardtotaltime[hashshard] += telapsedtotal;
+    shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
     return nullptr;
   }
+
+
+  time_t elapsed = (tstart.tv_sec - inittime) / 10;
+  if(elapsed != prevtime){
+    prevtime = elapsed;
+    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, cachehit * 100 / (cachehit + cachemiss));
+  }
+
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+  telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+  telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+  time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+  shardtotaltime[hashshard] += telapsedtotal;
+  shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
   return reinterpret_cast<Cache::Handle*>(handle);
 }
 

@@ -700,6 +700,13 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
+    
+    struct timespec telapsed = {0, 0};
+    struct timespec tstart = {0, 0}, tend = {0, 0};
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+
+    
     uint32_t hashshard = Shard(hash);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
       if(CBHTState[hashshard] || CBHTturnoff == 100)
@@ -730,10 +737,6 @@ Cache::Handle* LRUCacheShard::Lookup(
   //miss
     //1. mutex lock
     
-    struct timespec telapsed = {0, 0};
-    struct timespec tstart = {0, 0}, tend = {0, 0};
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
     
     if(lockheld[hashshard]) lookupblockcount[hashshard]++;
     MutexLock l(&mutex_);
@@ -870,22 +873,22 @@ Cache::Handle* LRUCacheShard::Lookup(
             virtual_nohit[hashshard] = 0;
             virtual_totalhit[hashshard] = 0;
 
-
-            //time to print out important stats
-            time_t elapsed = (tstart.tv_sec - inittime) / 10;
-            if(elapsed != prevtime){
-              printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked:"
-              "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
-              fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
-            }
-            prevtime = elapsed;
-            //important stats end
-
           }
         }
       }
     }
     shardaccesscount[hashshard] += 1;
+
+    
+    //time to print out important stats
+    time_t elapsed = (tstart.tv_sec - inittime) / 10;
+    if(elapsed != prevtime){
+      prevtime = elapsed;
+      printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked: "
+      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
+      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
+    }
+    //important stats end
     
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
