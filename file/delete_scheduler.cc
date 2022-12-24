@@ -71,13 +71,13 @@ Status DeleteScheduler::DeleteFile(const std::string& file_path,
     Status s = fs_->DeleteFile(file_path, IOOptions(), nullptr);
 
     std::string bad_file;
-    int level = countlevel[TableFileNameToNumber(file_path.c_str())] - 1;
-    printf("mymsg %s DELETE level:%d\n", file_path.c_str(), level);
+    //int level = countlevel[TableFileNameToNumber(file_path.c_str())] - 1;
+    //printf("mymsg %s DELETE level:%d\n", file_path.c_str(), level);
     if (s.IsPathNotFound()) {
-      printf("can't delete!!\n");
+      //printf("can't delete!!\n");
       bad_file = Rocks2LevelTableFileName(file_path);
       s = fs_->DeleteFile(bad_file, IOOptions(), nullptr);
-      printf("mymsg %s DELETE again\n", bad_file.c_str());
+      //printf("mymsg %s DELETE again\n", bad_file.c_str());
     }
     
     if (s.ok()) {

@@ -3872,7 +3872,7 @@ Status DBImpl::CheckConsistency() {
 
   if (immutable_db_options_.skip_checking_sst_file_sizes_on_db_open) {
 
-    printf("Rocks2level is called on db_impl.cc 1\n");
+    //printf("Rocks2level is called on db_impl.cc 1\n");
 
     // Instead of calling GetFileSize() for each expected file, call
     // GetChildren() for the DB directory and check that all expected files
@@ -3910,7 +3910,7 @@ Status DBImpl::CheckConsistency() {
       }
     }
   } else {
-printf("Rocks2level is called on db_impl.cc 2\n");
+//printf("Rocks2level is called on db_impl.cc 2\n");
     for (const auto& md : metadata) {
       // md.name has a leading "/".
       std::string file_path = md.db_path + md.name;

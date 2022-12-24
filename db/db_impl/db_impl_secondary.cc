@@ -500,7 +500,7 @@ Status DBImplSecondary::CheckConsistency() {
   std::vector<LiveFileMetaData> metadata;
   versions_->GetLiveFilesMetaData(&metadata);
 
-printf("Rocks2level is called on db_impl_secondary.cc 1\n");
+//printf("Rocks2level is called on db_impl_secondary.cc 1\n");
 
   std::string corruption_messages;
   for (const auto& md : metadata) {

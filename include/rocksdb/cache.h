@@ -87,6 +87,8 @@ extern int fullevictcount;
 extern int insertblocked;
 extern time_t inittime;
 extern time_t prevtime;
+extern int cachehit;
+extern int cachemiss;
 //////////////////
 
 //////////////////////////////

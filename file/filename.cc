@@ -18,7 +18,7 @@
 #include "util/stop_watch.h"
 #include "util/string_util.h"
 
-int countlevel[1000000];
+//int countlevel[1000000];
 
 namespace ROCKSDB_NAMESPACE {
 

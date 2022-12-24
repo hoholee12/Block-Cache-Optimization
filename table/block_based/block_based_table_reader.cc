@@ -360,9 +360,13 @@ Cache::Handle* BlockBasedTable::GetEntryFromCache(
                           rep_->ioptions.statistics.get());
 
   if (cache_handle != nullptr) {
+    //cache hit
+    cachehit++;
     UpdateCacheHitMetrics(block_type, get_context,
                           block_cache->GetUsage(cache_handle));
   } else {
+    //cache miss
+    cachemiss++;
     UpdateCacheMissMetrics(block_type, get_context);
   }
 

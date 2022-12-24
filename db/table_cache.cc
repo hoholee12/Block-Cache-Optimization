@@ -104,19 +104,19 @@ Status TableCache::GetTableReader(
     const SliceTransform* prefix_extractor, bool skip_filters, int level,
     bool prefetch_index_and_filter_in_cache,
     size_t max_file_size_for_l0_meta_pin) {
-      countlevel[fd.GetNumber()] = level + 1;
-      printf("current level: %d\n", level);
+      //countlevel[fd.GetNumber()] = level + 1;
+      //printf("current level: %d\n", level);
       std::string fname = TableFileName(ioptions_.cf_paths, fd.GetNumber(), fd.GetPathId(), level);
   std::unique_ptr<FSRandomAccessFile> file;
   FileOptions fopts = file_options;
   Status s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
-  printf("mymsg %s CREATE\n", fname.c_str());
+  //printf("mymsg %s CREATE\n", fname.c_str());
   if (s.ok()) {
     s = ioptions_.fs->NewRandomAccessFile(fname, fopts, &file, nullptr);
   }
   RecordTick(ioptions_.stats, NO_FILE_OPENS);
   if (s.IsPathNotFound()) {
-    printf("Rocks2level is called from table_cache.cc\n");
+    //printf("Rocks2level is called from table_cache.cc\n");
     fname = Rocks2LevelTableFileName(fname);
     s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
     if (s.ok()) {

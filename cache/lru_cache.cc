@@ -872,15 +872,13 @@ Cache::Handle* LRUCacheShard::Lookup(
 
 
             //time to print out important stats
-            /*
             time_t elapsed = (tstart.tv_sec - inittime) / 10;
             if(elapsed != prevtime){
               printf("thread #%d nlimit reached: %ld seconds in, DCA SIZE: %d, eviction: %d, blocked:"
-              "%d, fullevict: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
-              fullevictcount);
+              "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", getmytid(), elapsed, cbhtable_.elems_, evictedcount, insertblocked,
+              fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
             }
             prevtime = elapsed;
-            */
             //important stats end
 
           }
