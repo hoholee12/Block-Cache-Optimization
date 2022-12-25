@@ -710,6 +710,17 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   struct timespec tstart = {0, 0}, tend = {0, 0};
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+
+  time_t elapsed = (tstart.tv_sec - inittime) / 10;
+  if(elapsed != prevtime){
+    prevtime = elapsed;
+    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, 
+    cachehit * 100 / (cachehit + cachemiss));
+    if(compactioninprogress){
+      compactioninprogress = false;
+      printf("compaction happened at %ld seconds in.\n", elapsed);
+    }
+  }
   
   uint32_t hashshard = Shard(hash);
   HashTable::const_accessor accessor;
@@ -754,16 +765,7 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   }
 
 
-  time_t elapsed = (tstart.tv_sec - inittime) / 10;
-  if(elapsed != prevtime){
-    prevtime = elapsed;
-    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, 
-    cachehit * 100 / (cachehit + cachemiss));
-    if(compactioninprogress){
-      compactioninprogress = false;
-      printf("compaction happened at %ld seconds in.\n", elapsed);
-    }
-  }
+  
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
   telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);

@@ -414,7 +414,6 @@ class CacheBench {
 
     called = 0;
     called_refill = 0;
-    misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;
     fullevictcount = 0;
@@ -554,8 +553,6 @@ class CacheBench {
     printf("\n\n count DCA update self/prefetch from lru: %d/%d\n\n", called, called_refill);
 
     printf("\n\n lookup ops: %ld\n\n", FLAGS_threads * FLAGS_ops_per_thread * FLAGS_lookup_percent / 100);
-
-    printf("\n\n how much DCA miss happened(missed + turned off): %d\n\n", misscount);
 
     printf("\n\n how much DCA invalidation happened: %d\n\n", invalidatedcount);
 

@@ -706,9 +706,30 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
 
+    //time to print out important stats
+    time_t elapsed = (tstart.tv_sec - inittime) / 10;
+    if(elapsed != prevtime){
+      prevtime = elapsed;
+      printf("%ld seconds in, elems: %d, evict: %d, block: "
+      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, cbhtable_.elems_, evictedcount, insertblocked,
+      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
+      if(compactioninprogress){
+        compactioninprogress = false;
+        printf("compaction happened at %ld seconds in.\n", elapsed);
+      }
+    }
+    //important stats end
+
     
     uint32_t hashshard = Shard(hash);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
+      //negative cache check
+      //if it doesnt exist in the LRU cache, it doesnt exist in the DCA anyway.
+      e = table_.Lookup(key, hash);
+      if(e == nullptr){
+        return nullptr;
+      }
+      
       if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
         ReadLock rl(&rwmutex_);
@@ -726,17 +747,12 @@ Cache::Handle* LRUCacheShard::Lookup(
           if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
             CBHTState[hashshard] = false;
           }
-          //cbht missed(doesnt exist or skipped)
-          misscount++;
         }
-
       }
     }
    
   
-  //miss
-    //1. mutex lock
-    
+    //vanilla path
     
     if(lockheld[hashshard]) lookupblockcount[hashshard]++;
     MutexLock l(&mutex_);
@@ -879,20 +895,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     }
     shardaccesscount[hashshard] += 1;
 
-    
-    //time to print out important stats
-    time_t elapsed = (tstart.tv_sec - inittime) / 10;
-    if(elapsed != prevtime){
-      prevtime = elapsed;
-      printf("%ld seconds in, elems: %d, evict: %d, block: "
-      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, cbhtable_.elems_, evictedcount, insertblocked,
-      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
-      if(compactioninprogress){
-        compactioninprogress = false;
-        printf("compaction happened at %ld seconds in.\n", elapsed);
-      }
-    }
-    //important stats end
     
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
     telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);

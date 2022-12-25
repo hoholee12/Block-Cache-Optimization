@@ -2523,8 +2523,6 @@ class Stats {
 
     printf("\n\n count DCA update self/prefetch from lru: %d/%d\n\n", called, called_refill);
 
-    printf("\n\n how much DCA miss happened(missed + turned off): %d\n\n", misscount);
-
     printf("\n\n how much DCA invalidation happened: %d\n\n", invalidatedcount);
 
     printf("\n\n how much DCA eviction happened / blocked: %d / %d\n\n", evictedcount, insertblocked);
@@ -3449,7 +3447,6 @@ class Benchmark {
     
     called = 0;
     called_refill = 0;
-    misscount = 0;
     invalidatedcount = 0;
     evictedcount = 0;
     fullevictcount = 0;

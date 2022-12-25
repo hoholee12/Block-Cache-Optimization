@@ -35,7 +35,6 @@ int fullDCAcount = 0;
 uint32_t shardsperthread;
 int called = 0;
 int called_refill = 0;
-int misscount = 0;
 int invalidatedcount = 0;
 int evictedcount = 0;
 int fullevictcount = 0;
