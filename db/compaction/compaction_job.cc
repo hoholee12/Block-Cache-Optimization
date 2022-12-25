@@ -614,9 +614,6 @@ void CompactionJob::GenSubcompactionBoundaries() {
 
 Status CompactionJob::Run() {
 
-    printf("Compaction started. block caches may be flushed.\n");
-
-
   AutoThreadOperationStageUpdater stage_updater(
       ThreadStatus::STAGE_COMPACTION_RUN);
   TEST_SYNC_POINT("CompactionJob::Run():Start");

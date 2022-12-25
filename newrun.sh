@@ -7,7 +7,7 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
@@ -18,14 +18,21 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=20"
+        cbhtturnoff="-cbhtturnoff=50"
     fi
 
     if [[ $4 == "noflush" ]]; then
         dcaflush="-dcaflush=0"
     else
-        dcaflush="-dcaflush=20"
+        dcaflush="-dcaflush=50"
     fi
+
+    if [[ $5 == "clockcache" ]]; then
+        clockcache="-use_clock_cache=true"
+    else
+        clockcache="-use_clock_cache=false"
+    fi
+
     mkdir results 2>/dev/null
 
     #run
@@ -38,13 +45,14 @@ runbench(){
     -use_existing_db=true \
     -seed=1000 \
     -db=$mntlocation \
-    -nlimit=20000 \
+    -nlimit=1000 \
     $dcaflush \
+    $clockcache \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
-    -cache_size=$((1024*1024*1024*8)) \
+    -cache_size=$((1024*1024*256)) \
     $cbhtturnoff \
-    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4".txt \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5".txt \
     
     echo after run...
     df -T | grep mnt
@@ -102,33 +110,12 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
-initbench
-runbench 1024 ycsbwkldc nocbht
-
-initbench
-runbench 1024 ycsbwkldc yescbht noflush
-
-initbench
-runbench 1024 ycsbwkldc yescbht yesflush
-
-
-initbench
-runbench 1024 ycsbwklde nocbht
-
-initbench
-runbench 1024 ycsbwklde yescbht noflush
-
-initbench
-runbench 1024 ycsbwklde yescbht yesflush
-
-
-exit
 
 initbench
 runbench 100 ycsbwklda nocbht
 
 initbench
-runbench 100 ycsbwklda yescbht noflush
+runbench 100 ycsbwklda nocbht noflush clockcache
 
 initbench
 runbench 100 ycsbwklda yescbht yesflush
@@ -138,7 +125,7 @@ initbench
 runbench 100 ycsbwkldb nocbht
 
 initbench
-runbench 100 ycsbwkldb yescbht noflush
+runbench 100 ycsbwkldb nocbht noflush clockcache
 
 initbench
 runbench 100 ycsbwkldb yescbht yesflush
@@ -148,7 +135,7 @@ initbench
 runbench 100 ycsbwkldc nocbht
 
 initbench
-runbench 100 ycsbwkldc yescbht noflush
+runbench 100 ycsbwkldc nocbht noflush clockcache
 
 initbench
 runbench 100 ycsbwkldc yescbht yesflush
@@ -158,28 +145,27 @@ initbench
 runbench 100 ycsbwkldd nocbht
 
 initbench
-runbench 100 ycsbwkldd yescbht noflush
+runbench 100 ycsbwkldd nocbht noflush clockcache
 
 initbench
 runbench 100 ycsbwkldd yescbht yesflush
 
 
 initbench
-runbench 100 ycsbwkldf nocbht
-
-initbench
-runbench 100 ycsbwkldf yescbht noflush
-
-initbench
-runbench 100 ycsbwkldf yescbht yesflush
-
-
-#slowest bench
-initbench
 runbench 100 ycsbwklde nocbht
 
 initbench
-runbench 100 ycsbwklde yescbht noflush
+runbench 100 ycsbwklde nocbht noflush clockcache
 
 initbench
 runbench 100 ycsbwklde yescbht yesflush
+
+
+initbench
+runbench 100 ycsbwkldf nocbht
+
+initbench
+runbench 100 ycsbwkldf nocbht noflush clockcache
+
+initbench
+runbench 100 ycsbwkldf yescbht yesflush
