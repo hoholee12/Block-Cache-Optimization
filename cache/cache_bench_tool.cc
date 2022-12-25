@@ -376,11 +376,10 @@ class CacheBench {
 
 
     //initialize shard counters
-    for(int i = 0; i < SHARDCOUNT; i++){
+    for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
       shardtotaltime[i] = -1;
       shardlasttime[i] = -1;
       shardaccesscount[i] = 0;
-      threadnumshard[i] = -1;
       lookupblockcount[i] = 0;
       lockheld[i] = false;
 
@@ -572,12 +571,6 @@ class CacheBench {
     }
     uint64_t displayarr[SHARDLIMIT];
 
-    //print the index first for convenience
-    for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", i*repeat);
-    
-    //thread num shard
-    printf("\n\nthreadnumshard:\n");
-    for(uint64_t i = 0; i < shardlimit; i++) printf("%d\n", threadnumshard[i]);
     int j = 0;
     
     //results - shardtotaltime
@@ -588,7 +581,7 @@ class CacheBench {
       int maxtotali = -1;
       time_t maxtotaltime = -1;
       time_t totaltotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         if(shardtotaltime[i] != -1) {
           totaltotal += shardtotaltime[i];
           if(shardtotaltime[i] > maxtotaltime){
@@ -620,7 +613,7 @@ class CacheBench {
       int maxaccessi = -1;
       uint64_t maxaccesscount = 0;
       uint64_t accesstotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         accesstotal += shardaccesscount[i];
         if(shardaccesscount[i] > maxaccesscount){
           maxaccessi = i;
@@ -647,18 +640,18 @@ class CacheBench {
       j = 0;
       printf("\n\n");
       time_t subtract = shardlasttime[0];
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         if(subtract > shardlasttime[i]){
           subtract = shardlasttime[i];
         }
       }
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         shardlasttime[i] -= subtract;
       }
       int maxlasti = -1;
       time_t maxlastcount = 0;
       time_t lasttotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         lasttotal += shardlasttime[i];
         if(shardlasttime[i] > maxlastcount){
           maxlasti = i;
@@ -685,7 +678,7 @@ class CacheBench {
       int maxblocki = -1;
       uint64_t maxblockcount = 0;
       uint64_t blocktotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         blocktotal += lookupblockcount[i];
         if(lookupblockcount[i] > maxblockcount){
           maxblocki = i;
@@ -709,14 +702,14 @@ class CacheBench {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
       j = 0;
       printf("\n\n");
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         if(totalhit[i] == 0) break; //not used
         totalhit[i] = 100 - (nohit[i]*100/totalhit[i]);
       }
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         phittotal += totalhit[i];
         if(totalhit[i] > maxphitcount){
           maxphiti = i;
@@ -740,14 +733,14 @@ class CacheBench {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
       j = 0;
       printf("\n\n");
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         if(virtual_totalhit[i] == 0) break; //not used
         virtual_totalhit[i] = 100 - (virtual_nohit[i]*100/virtual_totalhit[i]);
       }
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         phittotal += virtual_totalhit[i];
         if(virtual_totalhit[i] > maxphitcount){
           maxphiti = i;
@@ -774,7 +767,7 @@ class CacheBench {
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         phittotal += Nsupple[i];
         if(Nsupple[i] > maxphitcount){
           maxphiti = i;
@@ -801,7 +794,7 @@ class CacheBench {
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         phittotal += (DCAskip_hit[i] / DCAskip_n[i]);
         if((DCAskip_hit[i] / DCAskip_n[i]) > maxphitcount){
           maxphiti = i;
@@ -828,7 +821,7 @@ class CacheBench {
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit; i++){
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
         phittotal += (DCAflush_hit[i] / DCAflush_n[i]);
         if((DCAflush_hit[i] / DCAflush_n[i]) > maxphitcount){
           maxphiti = i;

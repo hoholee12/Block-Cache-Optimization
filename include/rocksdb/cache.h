@@ -61,17 +61,17 @@ class RWMutex_tmp {
 };
 
 #define SHARDCOUNT 256
+#define PADDING 64
 
 //////////////////
 // benchmark stuff
-extern time_t shardtotaltime[SHARDCOUNT];
-extern time_t shardlasttime[SHARDCOUNT];
-extern uint32_t shardaccesscount[SHARDCOUNT];
+extern time_t shardtotaltime[SHARDCOUNT * PADDING];
+extern time_t shardlasttime[SHARDCOUNT * PADDING];
+extern uint32_t shardaccesscount[SHARDCOUNT * PADDING];
 extern uint32_t numshardbits;
 extern uint32_t shardnumlimit;
-extern uint32_t threadnumshard[SHARDCOUNT];
-extern uint32_t lookupblockcount[SHARDCOUNT];
-extern bool lockheld[SHARDCOUNT];
+extern uint32_t lookupblockcount[SHARDCOUNT * PADDING];
+extern bool lockheld[SHARDCOUNT * PADDING];
 extern bool enableshardfix;
 extern bool dynaswitch;
 extern int totalDCAcount;
@@ -94,24 +94,23 @@ extern bool compactioninprogress;
 //////////////////////////////
 // counters for CBHT internals
 extern std::map<pthread_t, int> tids;
-extern int N[SHARDCOUNT];
-extern int Nsupple[SHARDCOUNT];
-extern bool CBHTState[SHARDCOUNT];
-extern int nohit[SHARDCOUNT];
-extern int totalhit[SHARDCOUNT];
-extern int hitrate[SHARDCOUNT];
-extern int virtual_nohit[SHARDCOUNT];
-extern int virtual_totalhit[SHARDCOUNT];
-extern int sortarr[SHARDCOUNT];
-extern int DCAskip_hit[SHARDCOUNT];
-extern int DCAskip_n[SHARDCOUNT];
-extern int DCAflush_hit[SHARDCOUNT];
-extern int DCAflush_n[SHARDCOUNT];
+extern int N[SHARDCOUNT * PADDING];
+extern int Nsupple[SHARDCOUNT * PADDING];
+extern bool CBHTState[SHARDCOUNT * PADDING];
+extern int nohit[SHARDCOUNT * PADDING];
+extern int totalhit[SHARDCOUNT * PADDING];
+extern int hitrate[SHARDCOUNT * PADDING];
+extern int virtual_nohit[SHARDCOUNT * PADDING];
+extern int virtual_totalhit[SHARDCOUNT * PADDING];
+extern int sortarr[SHARDCOUNT * PADDING];
+extern int DCAskip_hit[SHARDCOUNT * PADDING];
+extern int DCAskip_n[SHARDCOUNT * PADDING];
+extern int DCAflush_hit[SHARDCOUNT * PADDING];
+extern int DCAflush_n[SHARDCOUNT * PADDING];
 extern int NLIMIT;
 //unified as hitrates
 extern int CBHTturnoff;
 extern int DCAflush;
-extern RWMutex_tmp sac_rwm_;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
 extern int tidincr;

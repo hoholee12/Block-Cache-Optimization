@@ -685,7 +685,7 @@ int cmpfunc(const void* a, const void* b){
 
 void copyAndSort(){
   //copy to sortarr
-  for(uint32_t i = 0; i < shardnumlimit; i++){
+  for(uint32_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
     sortarr[i] = hitrate[i];
   }
   //sort
@@ -712,7 +712,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       prevtime = elapsed;
       printf("%ld seconds in, elems: %d, evict: %d, block: "
       "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, cbhtable_.elems_, evictedcount, insertblocked,
-      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[(shardnumlimit - 1) * 50 / 100]);
+      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[((shardnumlimit - 1) * 50 / 100) * PADDING]);
       if(compactioninprogress){
         compactioninprogress = false;
         printf("compaction happened at %ld seconds in.\n", elapsed);
@@ -720,8 +720,8 @@ Cache::Handle* LRUCacheShard::Lookup(
     }
     //important stats end
 
-    
-    uint32_t hashshard = Shard(hash);
+    uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
+
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
       //negative cache check
       //if it doesnt exist in the LRU cache, it doesnt exist in the DCA anyway.

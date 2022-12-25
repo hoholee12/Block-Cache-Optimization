@@ -19,58 +19,56 @@
 
 //////////////////
 // benchmark stuff
-time_t shardtotaltime[SHARDCOUNT];
-time_t shardlasttime[SHARDCOUNT];
-uint32_t shardaccesscount[SHARDCOUNT];
-uint32_t numshardbits;
-uint32_t shardnumlimit;
-uint32_t threadnumshard[SHARDCOUNT];
-uint32_t lookupblockcount[SHARDCOUNT];
-bool lockheld[SHARDCOUNT];
-bool enableshardfix;
-bool dynaswitch;
-int totalDCAcount = 0;
-int noDCAcount = 0;
-int fullDCAcount = 0;
-uint32_t shardsperthread;
-int called = 0;
-int called_refill = 0;
-int invalidatedcount = 0;
-int evictedcount = 0;
-int fullevictcount = 0;
-int DCAentriesfreed = 0;
-int insertblocked = 0;
-time_t inittime;
-time_t prevtime;
-int cachehit = 0;
-int cachemiss = 0;
-bool compactioninprogress;
+alignas(PADDING) time_t shardtotaltime[SHARDCOUNT * PADDING];
+alignas(PADDING) time_t shardlasttime[SHARDCOUNT * PADDING];
+alignas(PADDING) uint32_t shardaccesscount[SHARDCOUNT * PADDING];
+alignas(PADDING) uint32_t numshardbits;
+alignas(PADDING) uint32_t shardnumlimit;
+alignas(PADDING) uint32_t lookupblockcount[SHARDCOUNT * PADDING];
+alignas(PADDING) bool lockheld[SHARDCOUNT * PADDING];
+alignas(PADDING) bool enableshardfix;
+alignas(PADDING) bool dynaswitch;
+alignas(PADDING) int totalDCAcount = 0;
+alignas(PADDING) int noDCAcount = 0;
+alignas(PADDING) int fullDCAcount = 0;
+alignas(PADDING) uint32_t shardsperthread;
+alignas(PADDING) int called = 0;
+alignas(PADDING) int called_refill = 0;
+alignas(PADDING) int invalidatedcount = 0;
+alignas(PADDING) int evictedcount = 0;
+alignas(PADDING) int fullevictcount = 0;
+alignas(PADDING) int DCAentriesfreed = 0;
+alignas(PADDING) int insertblocked = 0;
+alignas(PADDING) time_t inittime;
+alignas(PADDING) time_t prevtime;
+alignas(PADDING) int cachehit = 0;
+alignas(PADDING) int cachemiss = 0;
+alignas(PADDING) bool compactioninprogress;
 //////////////////
 
 //////////////////////////////
 // counters for CBHT internals
-std::map<pthread_t, int> tids;
-int N[SHARDCOUNT];  // all 0s
-int Nsupple[SHARDCOUNT];
-bool CBHTState[SHARDCOUNT]; // all trues
-int nohit[SHARDCOUNT]; // all 0s
-int totalhit[SHARDCOUNT];
-int hitrate[SHARDCOUNT];
-int virtual_nohit[SHARDCOUNT];
-int virtual_totalhit[SHARDCOUNT];
-int sortarr[SHARDCOUNT];
-int DCAskip_hit[SHARDCOUNT];
-int DCAskip_n[SHARDCOUNT];
-int DCAflush_hit[SHARDCOUNT];
-int DCAflush_n[SHARDCOUNT];
-int NLIMIT = 20000;
+alignas(PADDING) std::map<pthread_t, int> tids;
+alignas(PADDING) int N[SHARDCOUNT * PADDING];  // all 0s
+alignas(PADDING) int Nsupple[SHARDCOUNT * PADDING];
+alignas(PADDING) bool CBHTState[SHARDCOUNT * PADDING]; // all trues
+alignas(PADDING) int nohit[SHARDCOUNT * PADDING]; // all 0s
+alignas(PADDING) int totalhit[SHARDCOUNT * PADDING];
+alignas(PADDING) int hitrate[SHARDCOUNT * PADDING];
+alignas(PADDING) int virtual_nohit[SHARDCOUNT * PADDING];
+alignas(PADDING) int virtual_totalhit[SHARDCOUNT * PADDING];
+alignas(PADDING) int sortarr[SHARDCOUNT * PADDING];
+alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
+alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
+alignas(PADDING) int DCAflush_hit[SHARDCOUNT * PADDING];
+alignas(PADDING) int DCAflush_n[SHARDCOUNT * PADDING];
+alignas(PADDING) int NLIMIT = 20000;
 //unified as hitrates
-int CBHTturnoff = 20; //MISSRATE
-int DCAflush = 20;
-RWMutex_tmp sac_rwm_;
-int CBHTbitlength = 6;
-uint32_t threadcount = 0;
-int tidincr = 0;
+alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
+alignas(PADDING) int DCAflush = 20;
+alignas(PADDING) int CBHTbitlength = 6;
+alignas(PADDING) uint32_t threadcount = 0;
+alignas(PADDING) int tidincr = 0;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {
@@ -152,8 +150,7 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
   else{
     shardnum = Shard(hash);
   }
-  threadnumshard[shardnum] = threadnum; //log this
-
+  
   //map threadnum to tid
   if(tids.size() < threadcount){
     MutexLock l(&tid_mutex_);

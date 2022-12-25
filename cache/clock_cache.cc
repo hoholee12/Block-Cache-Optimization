@@ -722,7 +722,7 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
     }
   }
   
-  uint32_t hashshard = Shard(hash);
+  uint32_t hashshard = Shard(hash) * PADDING;
   HashTable::const_accessor accessor;
 
   if (!table_.find(accessor, CacheKey(key, hash))) {
