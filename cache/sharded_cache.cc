@@ -43,7 +43,8 @@ alignas(PADDING) time_t inittime;
 alignas(PADDING) time_t prevtime;
 alignas(PADDING) int cachehit = 0;
 alignas(PADDING) int cachemiss = 0;
-alignas(PADDING) bool compactioninprogress;
+alignas(PADDING) bool compactioninprogress = false;
+alignas(PADDING) int evictedfromlrucount = 0;
 //////////////////
 
 //////////////////////////////

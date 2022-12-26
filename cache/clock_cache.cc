@@ -577,6 +577,7 @@ bool ClockCacheShard::EvictFromCache(size_t charge, CleanupContext* context) {
   size_t new_head = head_;
   bool second_iteration = false;
   while (usage + charge > capacity) {
+    evictedfromlrucount++;
     assert(new_head < list_.size());
     if (TryEvict(&list_[new_head], context)) {
       usage = usage_.load(std::memory_order_relaxed);
@@ -714,7 +715,7 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   time_t elapsed = (tstart.tv_sec - inittime) / 10;
   if(elapsed != prevtime){
     prevtime = elapsed;
-    printf("%ld seconds in, block cache hitrate: %d\n", elapsed, 
+    printf("%ld seconds in, evict: %d, block cache hitrate: %d\n", elapsed, evictedfromlrucount,
     cachehit * 100 / (cachehit + cachemiss));
     if(compactioninprogress){
       compactioninprogress = false;

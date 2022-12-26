@@ -238,8 +238,8 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
     //backup stamp before init
     int stamptmp = result->DCAstamp;
     int stamptmp_tc = result->DCAstamp_tc;
+    //sanity check
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
-      result->indca = false;
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
         refstmp += DCA_ref_pool[stamptmp_tc + i];
@@ -260,11 +260,12 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       }
       result->DCAstamp = -1;
       DCA_ref_pool[availindex + stamptmp] = 0;
-    }
 
-    //remove from dca
-    *ptr = result->next_hash_cbht;
-    --elems_;
+      result->indca = false;
+      //remove from dca
+      *ptr = result->next_hash_cbht;
+      --elems_;
+    }
   }
   return result;
 }
@@ -507,12 +508,12 @@ void LRUCacheShard::MaintainPoolSize() {
 void LRUCacheShard::EvictFromLRU(size_t charge,
                                  autovector<LRUHandle*>* deleted) {
   while ((usage_ + charge) > capacity_ && lru_.next != &lru_) {
+    evictedfromlrucount++;
     LRUHandle* old = lru_.next;
     // LRU list contains only elements which can be evicted
     assert(old->InCache() && !old->HasRefs());
 
     LRU_Remove(old);
-    table_.Remove(old->key(), old->hash);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       if(old->indca){
         WriteLock wl(&rwmutex_);
@@ -522,6 +523,7 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
         }
       }
     }
+    table_.Remove(old->key(), old->hash);
 
     old->SetInCache(false);
     size_t old_total_charge = old->CalcTotalCharge(metadata_charge_policy_);
@@ -637,7 +639,6 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
     }
     entry->Free();
   }
-
   return s;
 }
 
@@ -710,9 +711,10 @@ Cache::Handle* LRUCacheShard::Lookup(
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
       prevtime = elapsed;
-      printf("%ld seconds in, elems: %d, evict: %d, block: "
-      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, cbhtable_.elems_, evictedcount, insertblocked,
-      fullevictcount, cachehit * 100 / (cachehit + cachemiss), sortarr[((shardnumlimit - 1) * 50 / 100) * PADDING]);
+      printf("%ld seconds in, lruevict: %d, elems: %d, evict: %d, block: "
+      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, evictedfromlrucount, cbhtable_.elems_,
+       evictedcount, insertblocked, fullevictcount, cachehit * 100 / (cachehit + cachemiss), 
+       sortarr[((shardnumlimit - 1) * 50 / 100) * PADDING]);
       if(compactioninprogress){
         compactioninprogress = false;
         printf("compaction happened at %ld seconds in.\n", elapsed);
