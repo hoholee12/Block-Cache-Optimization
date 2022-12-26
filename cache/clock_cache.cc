@@ -716,7 +716,7 @@ Cache::Handle* ClockCacheShard::Lookup(const Slice& key, uint32_t hash) {
   if(elapsed != prevtime){
     prevtime = elapsed;
     printf("%ld seconds in, evict: %d, block cache hitrate: %d\n", elapsed, evictedfromlrucount,
-    cachehit * 100 / (cachehit + cachemiss));
+    (cachehit + cachemiss > 0) ? cachehit * 100 / (cachehit + cachemiss) : 0);
     if(compactioninprogress){
       compactioninprogress = false;
       printf("compaction happened at %ld seconds in.\n", elapsed);

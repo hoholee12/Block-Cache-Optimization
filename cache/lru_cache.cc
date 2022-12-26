@@ -713,7 +713,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       prevtime = elapsed;
       printf("%ld seconds in, lruevict: %d, elems: %d, evict: %d, block: "
       "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, evictedfromlrucount, cbhtable_.elems_,
-       evictedcount, insertblocked, fullevictcount, cachehit * 100 / (cachehit + cachemiss), 
+       evictedcount, insertblocked, fullevictcount, (cachehit + cachemiss > 0) ? cachehit * 100 / (cachehit + cachemiss) : 0, 
        sortarr[((shardnumlimit - 1) * 50 / 100) * PADDING]);
       if(compactioninprogress){
         compactioninprogress = false;
