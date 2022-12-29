@@ -1,4 +1,3 @@
-rocks_test_mysql.cc
 make_config.mk
 rocksdb.pc
 
