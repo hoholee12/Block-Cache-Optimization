@@ -24,3 +24,4 @@ sudo time ./db_bench_"$3" \
 
 echo after run...
 df -T | grep mnt
+----
