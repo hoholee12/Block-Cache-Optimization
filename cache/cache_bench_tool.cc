@@ -386,6 +386,7 @@ class CacheBench {
       //CBHT internals
       N[i] = 0;
       NLIMIT[i] = FLAGS_nlimit;
+      NLIMIT_N[i] = 1;
       int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
       Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
       CBHTState[i] = 1;
@@ -851,12 +852,13 @@ class CacheBench {
       int maxphitcount = 0;
       int phittotal = 0;
       for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        phittotal += NLIMIT[i];
-        if(NLIMIT[i] > maxphitcount){
+        int NLIMITtmp = NLIMIT[i] / NLIMIT_N[i];
+        phittotal += NLIMITtmp;
+        if(NLIMITtmp > maxphitcount){
           maxphiti = i;
-          maxphitcount = NLIMIT[i];
+          maxphitcount = NLIMITtmp;
         }
-        displayarr[j] += (uint64_t)NLIMIT[i];
+        displayarr[j] += (uint64_t)NLIMITtmp;
         if(i % repeat == repeat - 1){
           //displayarr[j] /= repeat; //avg
           j++;

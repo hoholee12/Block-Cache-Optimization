@@ -785,9 +785,10 @@ Cache::Handle* LRUCacheShard::Lookup(
         int avg_skip_median = 0;
         //count to N
         N[hashshard]++;
-        if(N[hashshard] > NLIMIT[hashshard] || (DCAflush != 0 && compactiontrigger[hashshard])){
+        int NLIMITtmp = NLIMIT[hashshard] / NLIMIT_N[hashshard];
+        if(N[hashshard] > NLIMITtmp || (DCAflush != 0 && compactiontrigger[hashshard])){
           WriteLock wl(&rwmutex_);
-          if(N[hashshard] > NLIMIT[hashshard]){
+          if(N[hashshard] > NLIMITtmp){
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
@@ -831,11 +832,15 @@ Cache::Handle* LRUCacheShard::Lookup(
                 i++;
               }
               if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
-              NLIMIT[hashshard] = (NLIMIT[hashshard] + N[hashshard]) / 2; //slowly reduce nlimit to a smaller number
+              //slowly adapt nlimit to compaction cycles
+              NLIMIT[hashshard] += N[hashshard];
+              NLIMIT_N[hashshard]++;
               compactiontrigger[hashshard] = 0;
             }
             else{
-              NLIMIT[hashshard] = (NLIMIT[hashshard] + NDEFAULT) / 2; //slowly move nlimit back to default
+              //slowly move nlimit back to default
+              NLIMIT[hashshard] += NDEFAULT;
+              NLIMIT_N[hashshard]++;
             }
             //skip faster if lower hitrate
             //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
@@ -850,7 +855,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             }
             avg_skip_median /= shardnumlimit;
             //dca skip
-            Nsupple[hashshard] = NLIMIT[hashshard] * hitrate[hashshard] / 100;
+            Nsupple[hashshard] = NLIMITtmp * hitrate[hashshard] / 100;
             
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
