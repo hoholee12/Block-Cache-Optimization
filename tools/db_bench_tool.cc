@@ -2810,6 +2810,34 @@ class Stats {
       printf("average DCAflush hitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
     
+    //results - NLIMIT
+    {
+      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+      j = 0;
+      printf("\n\n");
+      int maxphiti = -1;
+      int maxphitcount = 0;
+      int phittotal = 0;
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
+        phittotal += NLIMIT[i];
+        if(NLIMIT[i] > maxphitcount){
+          maxphiti = i;
+          maxphitcount = NLIMIT[i];
+        }
+        displayarr[j] += (uint64_t)NLIMIT[i];
+        if(i % repeat == repeat - 1){
+          //displayarr[j] /= repeat; //avg
+          j++;
+        }
+      }
+
+      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+      
+      printf("\n\nlargest NLIMIT: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average NLIMIT = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+    }
+    
+
 /*
     printf("\n\nkey space usage\n\n");
     for(long i = 0; i < keyrangecounter_size && i < KEYRANGELIMIT; i++){
@@ -3415,9 +3443,10 @@ class Benchmark {
 
       //CBHT internals
       N[i] = 0;
+      NLIMIT[i] = FLAGS_nlimit;
       int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
       Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
-      CBHTState[i] = true;
+      CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;
       hitrate[i] = 50;
@@ -3428,6 +3457,7 @@ class Benchmark {
       DCAskip_n[i] = 1;
       DCAflush_hit[i] = 50;
       DCAflush_n[i] = 1;
+      compactiontrigger[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;
@@ -3437,7 +3467,6 @@ class Benchmark {
 
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
-    NLIMIT = FLAGS_nlimit;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAflush = FLAGS_dcaflush; //hitrate
     
