@@ -97,7 +97,7 @@ extern int evictedfromlrucount;
 extern std::map<pthread_t, int> tids;
 extern int N[SHARDCOUNT * PADDING];
 extern int Nsupple[SHARDCOUNT * PADDING];
-extern bool CBHTState[SHARDCOUNT * PADDING];
+extern int CBHTState[SHARDCOUNT * PADDING];
 extern int nohit[SHARDCOUNT * PADDING];
 extern int totalhit[SHARDCOUNT * PADDING];
 extern int hitrate[SHARDCOUNT * PADDING];
@@ -108,7 +108,8 @@ extern int DCAskip_hit[SHARDCOUNT * PADDING];
 extern int DCAskip_n[SHARDCOUNT * PADDING];
 extern int DCAflush_hit[SHARDCOUNT * PADDING];
 extern int DCAflush_n[SHARDCOUNT * PADDING];
-extern int NLIMIT;
+extern int NLIMIT[SHARDCOUNT * PADDING];
+extern int compactiontrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
 extern int CBHTturnoff;
 extern int DCAflush;

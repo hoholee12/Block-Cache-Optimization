@@ -52,7 +52,7 @@ alignas(PADDING) int evictedfromlrucount = 0;
 alignas(PADDING) std::map<pthread_t, int> tids;
 alignas(PADDING) int N[SHARDCOUNT * PADDING];  // all 0s
 alignas(PADDING) int Nsupple[SHARDCOUNT * PADDING];
-alignas(PADDING) bool CBHTState[SHARDCOUNT * PADDING]; // all trues
+alignas(PADDING) int CBHTState[SHARDCOUNT * PADDING]; // all trues
 alignas(PADDING) int nohit[SHARDCOUNT * PADDING]; // all 0s
 alignas(PADDING) int totalhit[SHARDCOUNT * PADDING];
 alignas(PADDING) int hitrate[SHARDCOUNT * PADDING];
@@ -63,7 +63,8 @@ alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAflush_hit[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAflush_n[SHARDCOUNT * PADDING];
-alignas(PADDING) int NLIMIT = 20000;
+alignas(PADDING) int NLIMIT[SHARDCOUNT * PADDING];
+alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
 alignas(PADDING) int DCAflush = 20;
@@ -151,7 +152,7 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
   else{
     shardnum = Shard(hash);
   }
-  
+
   //map threadnum to tid
   if(tids.size() < threadcount){
     MutexLock l(&tid_mutex_);

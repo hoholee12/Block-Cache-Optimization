@@ -727,11 +727,12 @@ Cache::Handle* LRUCacheShard::Lookup(
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
       //negative cache check
       //if it doesnt exist in the LRU cache, it doesnt exist in the DCA anyway.
+      /*
       e = table_.Lookup(key, hash);
       if(e == nullptr){
         return nullptr;
       }
-      
+      */
       if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
         ReadLock rl(&rwmutex_);
@@ -747,7 +748,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           //turn it off.
           nohit[hashshard]++;
           if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
-            CBHTState[hashshard] = false;
+            CBHTState[hashshard] = 0;
           }
         }
       }
@@ -784,9 +785,9 @@ Cache::Handle* LRUCacheShard::Lookup(
         int avg_skip_median = 0;
         //count to N
         N[hashshard]++;
-        if(N[hashshard] > NLIMIT){
+        if(N[hashshard] > NLIMIT[hashshard]){
           WriteLock wl(&rwmutex_);
-          if(N[hashshard] > NLIMIT){
+          if(N[hashshard] > NLIMIT[hashshard]){
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
@@ -799,6 +800,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               hitrate[hashshard] = 100 - (virtual_nohit[hashshard] * 100 / virtual_totalhit[hashshard]);
             }
             //get median
+            /*
             copyAndSort();
             //instead of just picking median, add and divide by 2.
             //this is to make sure skip still happens when all shards are low hitrate.
@@ -808,6 +810,29 @@ Cache::Handle* LRUCacheShard::Lookup(
             DCAskip_hit[hashshard] = skip_median;
             DCAflush_hit[hashshard] = flush_median;
             
+            int avg_flush_median = 0;
+            for(uint32_t i = 0; i < shardnumlimit; i++){
+              avg_flush_median += DCAflush_hit[i];
+            }
+            avg_flush_median /= shardnumlimit;
+            //dca flush
+            //int DCAflush_lasthit = DCAflush_hit[hashshard] / DCAflush_n[hashshard];
+            //NLIMIT[hashshard] = 50000 * (hitrate[hashshard]) / 100;
+            */
+            if(DCAflush != 0 && compactiontrigger[hashshard]){
+              //evict everything after compaction.
+              LRUHandle* evicted = nullptr;
+              int i = 0;
+              while((evicted = cbhtable_.EvictFIFO()) != nullptr){
+                LRU_Insert(evicted);
+                i++;
+              }
+              if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
+              compactiontrigger[hashshard] = 0;
+            }
+            //skip faster if lower hitrate
+            //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
+
             //if the cache is too skewed, update on some shards may not be fast enough.
             //if the workload is not stable, every median calculation will fluctuate.
             //avg all of the shard's median for lesser error.
@@ -818,49 +843,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             }
             avg_skip_median /= shardnumlimit;
             //dca skip
-            Nsupple[hashshard] = NLIMIT * avg_skip_median / 100;
-            
-            int avg_flush_median = 0;
-            for(uint32_t i = 0; i < shardnumlimit; i++){
-              avg_flush_median += DCAflush_hit[i];
-            }
-            avg_flush_median /= shardnumlimit;
-            //dca flush
-            //int DCAflush_lasthit = DCAflush_hit[hashshard] / DCAflush_n[hashshard];
-            
-            if(DCAflush != 0 && hitrate[hashshard] < avg_flush_median){
-              //evict everything if dca has too many misses.
-              LRUHandle* evicted = nullptr;
-              int i = 0;
-              while((evicted = cbhtable_.EvictFIFO()) != nullptr){
-                LRU_Insert(evicted);
-                i++;
-              }
-              if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
-
-              //sma
-              //DCAflush_n[hashshard]++;
-              //DCAflush_hit[hashshard] += hitrate[hashshard];
-              
-              //ema
-              //DCAflush_n[hashshard]++;
-              //DCAflush_hit[hashshard] = ((hitrate[hashshard] - DCAflush_lasthit) * 2 / 
-              //DCAflush_n[hashshard] + DCAflush_lasthit) * DCAflush_n[hashshard];
-            }
-            else{
-              //sma
-              //DCAflush_n[hashshard]++;
-              //DCAflush_hit[hashshard] += hitrate[hashshard];
-              
-              //ema
-              //DCAflush_n[hashshard]++;
-              //DCAflush_hit[hashshard] = ((hitrate[hashshard] - DCAflush_lasthit) * 2 / 
-              //DCAflush_n[hashshard] + DCAflush_lasthit) * DCAflush_n[hashshard];
-            }
-            //skip faster if lower hitrate
-            //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
-
-            
+            Nsupple[hashshard] = NLIMIT[hashshard] * hitrate[hashshard] / 100;
             
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
@@ -884,13 +867,12 @@ Cache::Handle* LRUCacheShard::Lookup(
             //if CBHTturnoff is bigger than nlimit, it becomes useless.
             //keep it off until hitrate is over median
             if(hitrate[hashshard] > avg_skip_median){
-              CBHTState[hashshard] = true;
+              CBHTState[hashshard] = 1;
             }
             nohit[hashshard] = 0;
             totalhit[hashshard] = 0;
             virtual_nohit[hashshard] = 0;
             virtual_totalhit[hashshard] = 0;
-
           }
         }
       }

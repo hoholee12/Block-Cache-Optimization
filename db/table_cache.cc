@@ -111,6 +111,9 @@ Status TableCache::GetTableReader(
   FileOptions fopts = file_options;
   Status s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
   compactioninprogress = true;
+  for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
+    compactiontrigger[i] = 1;
+  }
   //printf("mymsg %s CREATE\n", fname.c_str());
   if (s.ok()) {
     s = ioptions_.fs->NewRandomAccessFile(fname, fopts, &file, nullptr);
