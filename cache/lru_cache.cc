@@ -793,13 +793,9 @@ Cache::Handle* LRUCacheShard::Lookup(
 
             LRUHandle* temp = e;
             //save hitrate
-            //use whichever hitrate that has the most access count.
-            if(totalhit[hashshard] > virtual_totalhit[hashshard]){
-              hitrate[hashshard] = 100 - (nohit[hashshard] * 100 / totalhit[hashshard]);
-            }
-            else{
-              hitrate[hashshard] = 100 - (virtual_nohit[hashshard] * 100 / virtual_totalhit[hashshard]);
-            }
+            hitrate[hashshard] = 100 - ((nohit[hashshard] + virtual_nohit[hashshard]) * 100 /
+             (totalhit[hashshard] + virtual_totalhit[hashshard]));
+            
             //get median
             /*
             copyAndSort();
@@ -849,11 +845,12 @@ Cache::Handle* LRUCacheShard::Lookup(
             //if the workload is not stable, every median calculation will fluctuate.
             //avg all of the shard's median for lesser error.
             //much faster than updating individual shard's median with sma
-            
+            /*
             for(uint32_t i = 0; i < shardnumlimit; i++){
               avg_skip_median += DCAskip_hit[i];
             }
             avg_skip_median /= shardnumlimit;
+            */
             //dca skip
             Nsupple[hashshard] = NLIMITtmp * hitrate[hashshard] / 100;
             

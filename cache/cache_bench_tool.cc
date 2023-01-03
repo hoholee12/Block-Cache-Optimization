@@ -396,10 +396,6 @@ class CacheBench {
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
       sortarr[i] = 50;
-      DCAskip_hit[i] = 50;
-      DCAskip_n[i] = 1;
-      DCAflush_hit[i] = 50;
-      DCAflush_n[i] = 1;
       compactiontrigger[i] = 0;
     }
     threadcount = FLAGS_threads;
@@ -705,20 +701,16 @@ class CacheBench {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
       j = 0;
       printf("\n\n");
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        if(totalhit[i] == 0) break; //not used
-        totalhit[i] = 100 - (nohit[i]*100/totalhit[i]);
-      }
       int maxphiti = -1;
       int maxphitcount = 0;
       int phittotal = 0;
       for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        phittotal += totalhit[i];
-        if(totalhit[i] > maxphitcount){
+        phittotal += hitrate[i];
+        if(hitrate[i] > maxphitcount){
           maxphiti = i;
-          maxphitcount = totalhit[i];
+          maxphitcount = hitrate[i];
         }
-        displayarr[j] += (uint64_t)totalhit[i];
+        displayarr[j] += (uint64_t)hitrate[i];
         if(i % repeat == repeat - 1){
           //displayarr[j] /= repeat; //avg
           j++;
@@ -729,37 +721,6 @@ class CacheBench {
       
       printf("\n\nlargest dca hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average dca hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
-    //results - dca virtual hit percentage count
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        if(virtual_totalhit[i] == 0) break; //not used
-        virtual_totalhit[i] = 100 - (virtual_nohit[i]*100/virtual_totalhit[i]);
-      }
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        phittotal += virtual_totalhit[i];
-        if(virtual_totalhit[i] > maxphitcount){
-          maxphiti = i;
-          maxphitcount = virtual_totalhit[i];
-        }
-        displayarr[j] += (uint64_t)virtual_totalhit[i];
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest dca virtual hit percentage: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average dca virtual hit percentage = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
     //results - Nsupple
@@ -787,60 +748,6 @@ class CacheBench {
       
       printf("\n\nlargest Nsupple: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average Nsupple = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
-    //results - DCAskip hitrate
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        phittotal += (DCAskip_hit[i] / DCAskip_n[i]);
-        if((DCAskip_hit[i] / DCAskip_n[i]) > maxphitcount){
-          maxphiti = i;
-          maxphitcount = (DCAskip_hit[i] / DCAskip_n[i]);
-        }
-        displayarr[j] += (uint64_t)(DCAskip_hit[i] / DCAskip_n[i]);
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest DCAskip hitrate: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average DCAskip hitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
-    //results - DCAflush hitrate
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        phittotal += (DCAflush_hit[i] / DCAflush_n[i]);
-        if((DCAflush_hit[i] / DCAflush_n[i]) > maxphitcount){
-          maxphiti = i;
-          maxphitcount = (DCAflush_hit[i] / DCAflush_n[i]);
-        }
-        displayarr[j] += (uint64_t)(DCAflush_hit[i] / DCAflush_n[i]);
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest DCAflush hitrate: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average DCAflush hitrate = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
     //results - NLIMIT
