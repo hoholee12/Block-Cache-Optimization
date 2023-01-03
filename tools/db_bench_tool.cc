@@ -3465,6 +3465,7 @@ class Benchmark {
     if(shardnumlimit < (uint32_t)FLAGS_threads) shardsperthread = shardnumlimit;
     else shardsperthread = shardnumlimit / (uint32_t)FLAGS_threads;
 
+    NDEFAULT = FLAGS_nlimit;
     enableshardfix = FLAGS_enableshardfix;
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate

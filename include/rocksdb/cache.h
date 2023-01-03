@@ -111,6 +111,7 @@ extern int DCAflush_n[SHARDCOUNT * PADDING];
 extern int NLIMIT[SHARDCOUNT * PADDING];
 extern int compactiontrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
+extern int NDEFAULT;
 extern int CBHTturnoff;
 extern int DCAflush;
 extern int CBHTbitlength;

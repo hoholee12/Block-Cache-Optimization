@@ -785,7 +785,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         int avg_skip_median = 0;
         //count to N
         N[hashshard]++;
-        if(N[hashshard] > NLIMIT[hashshard]){
+        if(N[hashshard] > NLIMIT[hashshard] || (DCAflush != 0 && compactiontrigger[hashshard])){
           WriteLock wl(&rwmutex_);
           if(N[hashshard] > NLIMIT[hashshard]){
             N[hashshard] = 0;
@@ -819,6 +819,9 @@ Cache::Handle* LRUCacheShard::Lookup(
             //int DCAflush_lasthit = DCAflush_hit[hashshard] / DCAflush_n[hashshard];
             //NLIMIT[hashshard] = 50000 * (hitrate[hashshard]) / 100;
             */
+
+            //start evicting DCA and reduce NLIMIT when compaction happens.
+            //this is to adapt NLIMIT to compaction cycles.
             if(DCAflush != 0 && compactiontrigger[hashshard]){
               //evict everything after compaction.
               LRUHandle* evicted = nullptr;
@@ -828,7 +831,11 @@ Cache::Handle* LRUCacheShard::Lookup(
                 i++;
               }
               if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
+              NLIMIT[hashshard] = (NLIMIT[hashshard] + N[hashshard]) / 2; //slowly reduce nlimit to a smaller number
               compactiontrigger[hashshard] = 0;
+            }
+            else{
+              NLIMIT[hashshard] = (NLIMIT[hashshard] + NDEFAULT) / 2; //slowly move nlimit back to default
             }
             //skip faster if lower hitrate
             //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];

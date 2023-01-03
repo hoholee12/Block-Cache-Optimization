@@ -66,6 +66,7 @@ alignas(PADDING) int DCAflush_n[SHARDCOUNT * PADDING];
 alignas(PADDING) int NLIMIT[SHARDCOUNT * PADDING];
 alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
+alignas(PADDING) int NDEFAULT = 20000;
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
 alignas(PADDING) int DCAflush = 20;
 alignas(PADDING) int CBHTbitlength = 6;
