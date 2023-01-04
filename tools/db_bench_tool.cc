@@ -401,7 +401,9 @@ DEFINE_bool(enableshardfix, false, "enableshardfix");
 
 DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
-DEFINE_uint32(cbhtbitlength, 6, "DCA BIT LENGTH");
+DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
+
+DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
@@ -2515,7 +2517,7 @@ class Stats {
   void Report(const Slice& name) {
     
     printf("dca nlimit          : %d\n", FLAGS_nlimit);
-    printf("dca bit length      : %d\n", FLAGS_cbhtbitlength);
+    printf("dca size limit      : %d\n", FLAGS_dcasizelimit);
     printf("dca skip miss perce : %u%%\n", FLAGS_cbhtturnoff);
     printf("dca flush hit perce : %u%%\n", FLAGS_dcaflush);
     
@@ -2530,6 +2532,10 @@ class Stats {
     printf("\n\n how much DCA full eviction happened: %d\n\n", fullevictcount);
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
+
+    printf("\n\n freecount_eraseunref: %d, freecount_setcapacity: %d, freecount_insertitem: %d, freecount_secondarycache: %d, "
+    "freecount_release: %d, freecount_erase: %d \n\n", freecount_eraseunref, freecount_setcapacity, freecount_insertitem, 
+    freecount_secondarycache, freecount_release, freecount_erase);
 
     printf("\n\neasy index:\n");
 
@@ -3376,6 +3382,7 @@ class Benchmark {
 
     NDEFAULT = FLAGS_nlimit;
     enableshardfix = FLAGS_enableshardfix;
+    DCAsizelimit = FLAGS_dcasizelimit;
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAflush = FLAGS_dcaflush; //hitrate

@@ -90,6 +90,12 @@ extern int cachehit;
 extern int cachemiss;
 extern bool compactioninprogress;
 extern int evictedfromlrucount;
+extern int freecount_eraseunref;
+extern int freecount_setcapacity;
+extern int freecount_insertitem;
+extern int freecount_secondarycache;
+extern int freecount_release;
+extern int freecount_erase;
 //////////////////
 
 //////////////////////////////
@@ -111,6 +117,7 @@ extern int compactiontrigger[SHARDCOUNT * PADDING];
 extern int NDEFAULT;
 extern int CBHTturnoff;
 extern int DCAflush;
+extern uint32_t DCAsizelimit;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
 extern int tidincr;

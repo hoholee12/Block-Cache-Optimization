@@ -45,6 +45,12 @@ alignas(PADDING) int cachehit = 0;
 alignas(PADDING) int cachemiss = 0;
 alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int evictedfromlrucount = 0;
+alignas(PADDING) int freecount_eraseunref = 0;
+alignas(PADDING) int freecount_setcapacity = 0;
+alignas(PADDING) int freecount_insertitem = 0;
+alignas(PADDING) int freecount_secondarycache = 0;
+alignas(PADDING) int freecount_release = 0;
+alignas(PADDING) int freecount_erase = 0;
 //////////////////
 
 //////////////////////////////
@@ -66,7 +72,8 @@ alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
 alignas(PADDING) int NDEFAULT = 20000;
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
 alignas(PADDING) int DCAflush = 20;
-alignas(PADDING) int CBHTbitlength = 6;
+alignas(PADDING) uint32_t DCAsizelimit = 50;
+alignas(PADDING) int CBHTbitlength = 12;
 alignas(PADDING) uint32_t threadcount = 0;
 alignas(PADDING) int tidincr = 0;
 //////////////////////////////

@@ -167,7 +167,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
     //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
     int stamptmp = ptr->DCAstamp;
     int stamptmp_tc = ptr->DCAstamp_tc;
-    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
       DCA_ref_pool[stamptmp_tc + getmytid()]++;
     }
   }
@@ -208,12 +208,12 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   
   //get stamp
   uint32_t stamptmp = 0;
-  uint32_t looped = 0;  
+  uint32_t looped = 0;
   uint32_t i = stampincr;
-  while(looped < (size_t{1} << CBHTbitlength)){
+  while(looped < (size_t{1} << length_bits_)){
     i++;
     looped++;
-    if(i >= (size_t{1} << CBHTbitlength)){
+    if(i >= (size_t{1} << length_bits_)){
       i = 0;
     }
     if(DCA_ref_pool[availindex + i] == 0){
@@ -239,7 +239,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
     int stamptmp = result->DCAstamp;
     int stamptmp_tc = result->DCAstamp_tc;
     //sanity check
-    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
         refstmp += DCA_ref_pool[stamptmp_tc + i];
@@ -274,7 +274,7 @@ void CBHTable::Unref(LRUHandle *e){
   //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
   int stamptmp = e->DCAstamp;
   int stamptmp_tc = e->DCAstamp_tc;
-  if(stamptmp > -1 && stamptmp < (int)(size_t{1} << CBHTbitlength)){
+  if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
     DCA_ref_pool[stamptmp_tc + getmytid()]--;
   }
 }
@@ -293,7 +293,7 @@ LRUHandle* CBHTable::EvictFIFO(){
   std::pair<Slice, uint32_t> temp;
   LRUHandle* e = nullptr;
   LRUHandle* result = nullptr;
-  int hardlimit = size_t{1} << CBHTbitlength;
+  int hardlimit = size_t{1} << length_bits_;
   //avoid looping indefinitely
   while(!hashkeylist.empty() && hardlimit-- > 0){
     temp = hashkeylist.front();
@@ -379,6 +379,7 @@ void LRUCacheShard::EraseUnRefEntries() {
 
   for (auto entry : last_reference_list) {
     entry->Free();
+    freecount_eraseunref++;
   }
 }
 
@@ -552,6 +553,7 @@ void LRUCacheShard::SetCapacity(size_t capacity) {
           .PermitUncheckedError();
     }
     entry->Free();
+    freecount_setcapacity++;
   }
 }
 
@@ -607,23 +609,23 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           assert(usage_ >= old_total_charge);
           usage_ -= old_total_charge;
           last_reference_list.push_back(old);
-        }
-        //remove the entry from dca
-        if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
-          if(old->indca){
-            WriteLock wl(&rwmutex_);
+          //remove the entry from dca
+          if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
             if(old->indca){
-              //update to the new entry
-              cbhtable_.Insert(e);
-              invalidatedcount++;
+              WriteLock wl(&rwmutex_);
+              if(old->indca){
+                //update to the new entry
+                cbhtable_.Insert(e);
+                invalidatedcount++;
+              }
             }
           }
         }
       }
       if (handle == nullptr) {
-        if(!e->indca) LRU_Insert(e);
+        LRU_Insert(e);
       } else {
-        if(!e->indca) e->Ref();
+        e->Ref();
         *handle = reinterpret_cast<Cache::Handle*>(e);
       }
     }
@@ -638,6 +640,7 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           .PermitUncheckedError();
     }
     entry->Free();
+    freecount_insertitem++;
   }
   return s;
 }
@@ -701,9 +704,9 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
-    /*
-    struct timespec telapsed = {0, 0};
-    struct timespec tstart = {0, 0}, tend = {0, 0};
+    
+    //struct timespec telapsed = {0, 0};
+    struct timespec tstart = {0, 0};//, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
 
@@ -711,17 +714,10 @@ Cache::Handle* LRUCacheShard::Lookup(
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
       prevtime = elapsed;
-      printf("%ld seconds in, lruevict: %d, elems: %d, evict: %d, block: "
-      "%d, fullevict: %d, block cache hitrate: %d, DCA hitrate: %d\n", elapsed, evictedfromlrucount, cbhtable_.elems_,
-       evictedcount, insertblocked, fullevictcount, (cachehit + cachemiss > 0) ? cachehit * 100 / (cachehit + cachemiss) : 0, 
-       sortarr[((shardnumlimit - 1) * 50 / 100) * PADDING]);
-      if(compactioninprogress){
-        compactioninprogress = false;
-        printf("compaction happened at %ld seconds in.\n", elapsed);
-      }
+      printf("%ld seconds in, pinned_usage: %d%%, lru_usage: %d%%, total: %d%%\n", elapsed, ((int)usage_ - (int)lru_usage_) * 100 / (int)capacity_, (int)lru_usage_ * 100 / (int)capacity_, (int)usage_ * 100 / (int)capacity_);
     }
     //important stats end
-*/
+
     uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
 
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
@@ -740,6 +736,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         
         totalhit[hashshard]++;
         if(e != nullptr){
+          e->SetHit();
           return reinterpret_cast<Cache::Handle*>(e);
         }
         else{
@@ -765,22 +762,19 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     //sanity check
     if (e != nullptr) {
+      e->SetHit();
 
       //identify DCA hitrate without actually using DCA
       virtual_totalhit[hashshard]++;
-      if(e->indca != true){
-        virtual_nohit[hashshard]++;
-      }
+      if(!e->indca) virtual_nohit[hashshard]++;
 
       assert(e->InCache());
       // The entry is in LRU since it's in hash and has no external references
       LRU_Remove(e);
 
       //dont change state if the entry is a part of dca.
-      if(e->indca != true){
-        e->Ref();
-      }
-      e->SetHit();
+      e->Ref();
+
       if(CBHTturnoff){  //if turnoff hitrate is 0, always disable DCA
         int avg_skip_median = 0;
         //count to N
@@ -819,12 +813,13 @@ Cache::Handle* LRUCacheShard::Lookup(
 
             //start evicting DCA and reduce NLIMIT when compaction happens.
             //this is to adapt NLIMIT to compaction cycles.
-            if(DCAflush != 0 && compactiontrigger[hashshard]){
+            //also, flush DCA when pinned usage is too high.
+            if(DCAflush != 0 && 
+            (compactiontrigger[hashshard] || (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){
               //evict everything after compaction.
               LRUHandle* evicted = nullptr;
               int i = 0;
               while((evicted = cbhtable_.EvictFIFO()) != nullptr){
-                LRU_Insert(evicted);
                 i++;
               }
               if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
@@ -863,7 +858,9 @@ Cache::Handle* LRUCacheShard::Lookup(
             //fill the rest of the table that is emptied by invalidated entries
             LRUHandle* temp2 = nullptr;
             int i = 0;
-            while (!cbhtable_.IsTableFull() && lru_.next != &lru_){ //dont fill if LRU empty
+            //dont fill if LRU empty or pinned usage over half
+            while (!cbhtable_.IsTableFull() && lru_.next != &lru_ && 
+            (((usage_ - lru_usage_) * 100 / capacity_) < DCAsizelimit)){
               i++;
               cbhtable_.Insert(temp);
               temp2 = temp->prev;
@@ -934,6 +931,7 @@ Cache::Handle* LRUCacheShard::Lookup(
           // The secondary cache returned a handle, but the lookup failed
           e->Unref();
           e->Free();
+          freecount_secondarycache++;
           e = nullptr;
         } else {
           PERF_COUNTER_ADD(secondary_cache_hit_count, 1);
@@ -1009,7 +1007,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         
       } else {
         // Put the item back on the LRU list, and don't free it
-        if(!e->indca) LRU_Insert(e);
+        LRU_Insert(e);
         last_reference = false;
       }
     }
@@ -1029,6 +1027,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
   //crashes here
   if (last_reference) {
     e->Free();
+    freecount_release++;
   }
   return last_reference;
 }
@@ -1106,6 +1105,7 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
   // last_reference will only be true if e != nullptr
   if (last_reference) {
     e->Free();
+    freecount_erase++;
   }
 }
 
