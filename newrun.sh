@@ -7,7 +7,7 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
@@ -27,11 +27,18 @@ runbench(){
         dcaflush="-dcaflush=50"
     fi
 
-    if [[ $5 == "clockcache" ]]; then
-        clockcache="-use_clock_cache=true"
-    else
+    if [[ $5 == "noclockcache" ]]; then
         clockcache="-use_clock_cache=false"
+    else
+        clockcache="-use_clock_cache=true"
     fi
+
+    if [[ $6 == "nodcasizelimit" ]]; then
+        dcasize="-dcasizelimit=0"
+    else
+        dcasize="-dcasizelimit=50"
+    fi
+
 
     mkdir results 2>/dev/null
 
@@ -45,14 +52,15 @@ runbench(){
     -use_existing_db=true \
     -seed=1000 \
     -db=$mntlocation \
-    -nlimit=1000 \
+    -nlimit=10000 \
+    $dcasize \
     $dcaflush \
     $clockcache \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
-    -cache_size=$((1024*1024*256)) \
+    -cache_size=$((1024*1024*1024*8)) \
     $cbhtturnoff \
-    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5".txt \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6".txt \
     
     echo after run...
     df -T | grep mnt
@@ -110,62 +118,90 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
+initbench
+runbench 512 ycsbwkldc yescbht yesflush noclockcache yesdcasizelimit
 
 initbench
-runbench 100 ycsbwklda nocbht
+runbench 512 ycsbwkldc yescbht noflush noclockcache yesdcasizelimit
 
-initbench
-runbench 100 ycsbwklda nocbht noflush clockcache
+exit
 
-initbench
-runbench 100 ycsbwklda yescbht yesflush
-
-
-initbench
-runbench 100 ycsbwkldb nocbht
-
-initbench
-runbench 100 ycsbwkldb nocbht noflush clockcache
-
-initbench
-runbench 100 ycsbwkldb yescbht yesflush
 
 
 initbench
-runbench 100 ycsbwkldc nocbht
+runbench 512 ycsbwklda nocbht noflush noclockcache
 
 initbench
-runbench 100 ycsbwkldc nocbht noflush clockcache
+runbench 512 ycsbwklda nocbht noflush yesclockcache
 
 initbench
-runbench 100 ycsbwkldc yescbht yesflush
-
-
-initbench
-runbench 100 ycsbwkldd nocbht
+runbench 512 ycsbwklda yescbht yesflush noclockcache yesdcasizelimit
 
 initbench
-runbench 100 ycsbwkldd nocbht noflush clockcache
+runbench 512 ycsbwklda yescbht noflush noclockcache yesdcasizelimit
 
-initbench
-runbench 100 ycsbwkldd yescbht yesflush
 
 
 initbench
-runbench 100 ycsbwklde nocbht
+runbench 512 ycsbwkldb nocbht noflush noclockcache
 
 initbench
-runbench 100 ycsbwklde nocbht noflush clockcache
+runbench 512 ycsbwkldb nocbht noflush yesclockcache
 
 initbench
-runbench 100 ycsbwklde yescbht yesflush
+runbench 512 ycsbwkldb yescbht yesflush noclockcache yesdcasizelimit
+
+initbench
+runbench 512 ycsbwkldb yescbht noflush noclockcache yesdcasizelimit
 
 
 initbench
-runbench 100 ycsbwkldf nocbht
+runbench 512 ycsbwkldc nocbht noflush noclockcache
 
 initbench
-runbench 100 ycsbwkldf nocbht noflush clockcache
+runbench 512 ycsbwkldc nocbht noflush yesclockcache
 
 initbench
-runbench 100 ycsbwkldf yescbht yesflush
+runbench 512 ycsbwkldc yescbht yesflush noclockcache yesdcasizelimit
+
+initbench
+runbench 512 ycsbwkldc yescbht noflush noclockcache yesdcasizelimit
+
+
+initbench
+runbench 512 ycsbwkldd nocbht noflush noclockcache
+
+initbench
+runbench 512 ycsbwkldd nocbht noflush yesclockcache
+
+initbench
+runbench 512 ycsbwkldd yescbht yesflush noclockcache yesdcasizelimit
+
+initbench
+runbench 512 ycsbwkldd yescbht noflush noclockcache yesdcasizelimit
+
+
+initbench
+runbench 512 ycsbwklde nocbht noflush noclockcache
+
+initbench
+runbench 512 ycsbwklde nocbht noflush yesclockcache
+
+initbench
+runbench 512 ycsbwklde yescbht yesflush noclockcache yesdcasizelimit
+
+initbench
+runbench 512 ycsbwklde yescbht noflush noclockcache yesdcasizelimit
+
+
+initbench
+runbench 512 ycsbwkldf nocbht noflush noclockcache
+
+initbench
+runbench 512 ycsbwkldf nocbht noflush yesclockcache
+
+initbench
+runbench 512 ycsbwkldf yescbht yesflush noclockcache yesdcasizelimit
+
+initbench
+runbench 512 ycsbwkldf yescbht noflush noclockcache yesdcasizelimit

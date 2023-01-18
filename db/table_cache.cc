@@ -112,7 +112,9 @@ Status TableCache::GetTableReader(
   Status s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
   compactioninprogress = true;
   for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
-    compactiontrigger[i] = 1;
+    if(compactiontrigger[i] == 0){
+      compactiontrigger[i] = 1;
+    }
   }
   //printf("mymsg %s CREATE\n", fname.c_str());
   if (s.ok()) {

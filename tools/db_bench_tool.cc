@@ -2413,11 +2413,12 @@ class Stats {
         hist_.insert({op_type, std::move(hist_temp)});
       }
       hist_[op_type]->Add(micros);
-
+      /*
       if (micros > 20000 && !FLAGS_stats_interval) {
         fprintf(stderr, "long op: %" PRIu64 " micros%30s\r", micros, "");
         fflush(stderr);
       }
+      */
       last_op_finish_ = now;
     }
 

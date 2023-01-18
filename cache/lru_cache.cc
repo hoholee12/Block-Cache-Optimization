@@ -776,13 +776,22 @@ Cache::Handle* LRUCacheShard::Lookup(
       e->Ref();
 
       if(CBHTturnoff){  //if turnoff hitrate is 0, always disable DCA
-        int avg_skip_median = 0;
         //count to N
         N[hashshard]++;
         int NLIMITtmp = NLIMIT[hashshard] / NLIMIT_N[hashshard];
+
+        /*
+        compactiontrigger=0
+        compactiontrigger=1 : compaction just happened
+        compactiontrigger=2 : DCA cleared, wait one update cycle
+        compactiontrigger=3 : start DCA prefetching
+        */
+        if(compactiontrigger[hashshard] == 2){
+          compactiontrigger[hashshard] = 3;
+        }
         if(N[hashshard] > NLIMITtmp || (DCAflush != 0 && compactiontrigger[hashshard])){
           WriteLock wl(&rwmutex_);
-          if(N[hashshard] > NLIMITtmp){
+          if(N[hashshard] > NLIMITtmp || (DCAflush != 0 && compactiontrigger[hashshard])){
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
@@ -815,7 +824,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             //this is to adapt NLIMIT to compaction cycles.
             //also, flush DCA when pinned usage is too high.
             if(DCAflush != 0 && 
-            (compactiontrigger[hashshard] || (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){
+            (compactiontrigger[hashshard] == 1 || (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){
               //evict everything after compaction.
               LRUHandle* evicted = nullptr;
               int i = 0;
@@ -824,14 +833,14 @@ Cache::Handle* LRUCacheShard::Lookup(
               }
               if(i > 0) fullevictcount++; //not a full evict. some entries may be left due to existing refs.
               //slowly adapt nlimit to compaction cycles
-              NLIMIT[hashshard] += N[hashshard];
-              NLIMIT_N[hashshard]++;
-              compactiontrigger[hashshard] = 0;
+              //NLIMIT[hashshard] += N[hashshard];
+              //NLIMIT_N[hashshard]++;
+              compactiontrigger[hashshard] = 2;
             }
             else{
               //slowly move nlimit back to default
-              NLIMIT[hashshard] += NDEFAULT;
-              NLIMIT_N[hashshard]++;
+              //NLIMIT[hashshard] += NDEFAULT;
+              //NLIMIT_N[hashshard]++;
             }
             //skip faster if lower hitrate
             //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
@@ -846,35 +855,44 @@ Cache::Handle* LRUCacheShard::Lookup(
             }
             avg_skip_median /= shardnumlimit;
             */
-            //dca skip
-            Nsupple[hashshard] = NLIMITtmp * hitrate[hashshard] / 100;
+            
             
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
-            
-            cbhtable_.Insert(temp);
-            called++;
-            temp = lru_.prev;
-            //fill the rest of the table that is emptied by invalidated entries
-            LRUHandle* temp2 = nullptr;
-            int i = 0;
-            //dont fill if LRU empty or pinned usage over half
-            while (!cbhtable_.IsTableFull() && lru_.next != &lru_ && 
-            (((usage_ - lru_usage_) * 100 / capacity_) < DCAsizelimit)){
-              i++;
+            if(compactiontrigger[hashshard] != 2){
               cbhtable_.Insert(temp);
-              temp2 = temp->prev;
-              //no need to check for ref
-              LRU_Remove(temp); //keep all dca entries out of lru
-              temp = temp2;
+              called++;
+              temp = lru_.prev;
+              //fill the rest of the table that is emptied by invalidated entries
+              LRUHandle* temp2 = nullptr;
+              //start filling up DCA after enough accesses to LRU cache.
+            
+              int i = 0;
+              //dont fill if LRU empty or pinned usage over half
+              while (!cbhtable_.IsTableFull() && lru_.next != &lru_ && 
+              (((usage_ - lru_usage_) * 100 / capacity_) < DCAsizelimit)){
+                i++;
+                cbhtable_.Insert(temp);
+                temp2 = temp->prev;
+                //no need to check for ref
+                LRU_Remove(temp); //keep all dca entries out of lru
+                temp = temp2;
+              }
+              compactiontrigger[hashshard] = 0;
+              if(i > 0) called_refill++;
             }
-            if(i > 0) called_refill++;
-            //turn it back on every nlimit
-            //if CBHTturnoff is bigger than nlimit, it becomes useless.
-            //keep it off until hitrate is over median
-            if(hitrate[hashshard] > avg_skip_median){
+            
+            //leave DCA off if no hit exceeded Nsupple
+            //or if compacted blocks were not enriched with accesses yet.
+            if(CBHTState[hashshard] != 0 && compactiontrigger[hashshard] != 2){
               CBHTState[hashshard] = 1;
             }
+            else{
+              CBHTState[hashshard] = 0;
+            }
+            //dca skip
+            Nsupple[hashshard] = NLIMITtmp * hitrate[hashshard] / 100;
+
             nohit[hashshard] = 0;
             totalhit[hashshard] = 0;
             virtual_nohit[hashshard] = 0;
