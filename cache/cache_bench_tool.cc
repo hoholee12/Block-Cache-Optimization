@@ -72,9 +72,9 @@ DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
 
 DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
-DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
+DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
-DEFINE_uint32(dcaflush, 20, "DCA flush Hit Percentage");
+DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
 DEFINE_uint32(lookup_insert_percent, 87,
               "Ratio of lookup (+ insert on not found) to total workload "
@@ -387,10 +387,9 @@ class CacheBench {
 
       //CBHT internals
       N[i] = 0;
-      NLIMIT[i] = FLAGS_nlimit;
+      NLIMIT[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       NLIMIT_N[i] = 1;
-      int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
-      Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
+      Nsupple[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;
@@ -398,7 +397,8 @@ class CacheBench {
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
       sortarr[i] = 50;
-      compactiontrigger[i] = 0;
+      DCAskip_hit[i] = 0;
+      DCAskip_n[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;
@@ -411,7 +411,7 @@ class CacheBench {
     DCAsizelimit = FLAGS_dcasizelimit;
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
-    DCAflush = FLAGS_dcaflush; //hitrate
+    DCAprefetch = FLAGS_dcaprefetch;
 
     called = 0;
     called_refill = 0;
@@ -1013,7 +1013,6 @@ class CacheBench {
     printf("dca nlimit          : %d\n", FLAGS_nlimit);
     printf("dca size limit      : %d\n", FLAGS_dcasizelimit);
     printf("dca skip miss perce : %u%%\n", FLAGS_cbhtturnoff);
-    printf("dca flush hit perce : %u%%\n", FLAGS_dcaflush);
     printf("Populate cache      : %d\n", int{FLAGS_populate_cache});
     printf("Lookup+Insert pct   : %u%%\n", FLAGS_lookup_insert_percent);
     printf("Insert percentage   : %u%%\n", FLAGS_insert_percent);

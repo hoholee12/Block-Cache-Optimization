@@ -108,7 +108,7 @@ long keyrangecounter_size;
 
 void init_latestgen(long init_val);
 long next_value_latestgen();
-void init_zipf_generator(long min, long max);
+void init_zipf_generator(long min, long max, double customtheta = 0.99);
 double zeta(long st, long n, double initialsum);
 double zetastatic(long st, long n, double initialsum);
 long nextLong(long itemcount);
@@ -138,11 +138,11 @@ double zeta2theta; //initialized in init_zipf_generator function
 long countforzeta; //initialized in init_zipf_generator function
 long lastVal; //initialized in setLastValue
 
-void init_zipf_generator(long min, long max){
+void init_zipf_generator(long min, long max, double customtheta){
   //fprintf(stderr, "****INIT_ZIPF_GENERATOR: min %d, max %d", min, max);
 	items = max-min+1;
 	base = min;
-	zipfianconstant = 0.99;  //very skewed
+	zipfianconstant = customtheta;  //very skewed
 	theta = zipfianconstant;
 	zeta2theta = zeta(0, 2, 0);
 	alpha = 1.0/(1.0-theta);
@@ -399,6 +399,8 @@ IF_ROCKSDB_LITE("",
 
 DEFINE_bool(enableshardfix, false, "enableshardfix");
 
+DEFINE_double(customtheta, 0.99, "Zipfian custom theta(zipfian constant)");
+
 DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
@@ -407,7 +409,7 @@ DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capaci
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
-DEFINE_uint32(dcaflush, 20, "DCA flush Hit Percentage");
+DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -2516,11 +2518,10 @@ class Stats {
   }
 
   void Report(const Slice& name) {
-    
+    printf("Zipf Constant       : %lf\n", FLAGS_customtheta);
     printf("dca nlimit          : %d\n", FLAGS_nlimit);
     printf("dca size limit      : %d\n", FLAGS_dcasizelimit);
     printf("dca skip miss perce : %u%%\n", FLAGS_cbhtturnoff);
-    printf("dca flush hit perce : %u%%\n", FLAGS_dcaflush);
     
     printf("\n\n how much is DCA update called: %d\n\n", called + called_refill);
 
@@ -3362,10 +3363,9 @@ class Benchmark {
 
       //CBHT internals
       N[i] = 0;
-      NLIMIT[i] = FLAGS_nlimit;
+      NLIMIT[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       NLIMIT_N[i] = 1;
-      int nlimtmp = (int)FLAGS_nlimit * (100 - (int)FLAGS_dcaflush * 2) / 100;
-      Nsupple[i] = (nlimtmp > 0) ? nlimtmp : 0;
+      Nsupple[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;
@@ -3373,7 +3373,8 @@ class Benchmark {
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
       sortarr[i] = 50;
-      compactiontrigger[i] = 0;
+      DCAskip_hit[i] = 0;
+      DCAskip_n[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_cache_numshardbits;
@@ -3386,7 +3387,7 @@ class Benchmark {
     DCAsizelimit = FLAGS_dcasizelimit;
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
-    DCAflush = FLAGS_dcaflush; //hitrate
+    DCAprefetch = FLAGS_dcaprefetch;
     
     called = 0;
     called_refill = 0;
@@ -3694,7 +3695,7 @@ class Benchmark {
     std::unique_ptr<ExpiredTimeFilter> filter;
 
     //and then we init zipf
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
     init_latestgen(FLAGS_num);
 
     while (std::getline(benchmark_stream, name, ',')) {
@@ -8219,7 +8220,7 @@ class Benchmark {
 		ReadOptions options(FLAGS_verify_checksum, true);
 		RandomGenerator gen;
 		//init_latestgen(FLAGS_num);
-		init_zipf_generator(0, FLAGS_num);
+		init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
 		std::string value;
 		int64_t found = 0;
@@ -8302,7 +8303,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;
@@ -8388,7 +8389,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;
@@ -8460,7 +8461,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;
@@ -8526,7 +8527,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;
@@ -8612,7 +8613,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;
@@ -8696,7 +8697,7 @@ class Benchmark {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    init_zipf_generator(0, FLAGS_num, FLAGS_customtheta);
 
     std::string value;
     int64_t found = 0;

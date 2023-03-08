@@ -112,11 +112,12 @@ extern int virtual_totalhit[SHARDCOUNT * PADDING];
 extern int sortarr[SHARDCOUNT * PADDING];
 extern int NLIMIT[SHARDCOUNT * PADDING];
 extern int NLIMIT_N[SHARDCOUNT * PADDING];
-extern int compactiontrigger[SHARDCOUNT * PADDING];
+extern int DCAskip_hit[SHARDCOUNT * PADDING];
+extern int DCAskip_n[SHARDCOUNT * PADDING];
 //unified as hitrates
 extern int NDEFAULT;
 extern int CBHTturnoff;
-extern int DCAflush;
+extern bool DCAprefetch;
 extern uint32_t DCAsizelimit;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
