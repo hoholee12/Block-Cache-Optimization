@@ -70,7 +70,6 @@ alignas(PADDING) int NLIMIT_N[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
 alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
-alignas(PADDING) int skiptrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
 alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int NDEFAULT = 20000;

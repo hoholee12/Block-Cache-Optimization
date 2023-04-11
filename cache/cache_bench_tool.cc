@@ -394,7 +394,6 @@ class CacheBench {
       NLIMIT_N[i] = 1;
       Nsupple[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       compactiontrigger[i] = 0;
-      skiptrigger[i] = 0;
       CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;

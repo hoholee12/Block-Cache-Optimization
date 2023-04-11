@@ -115,7 +115,6 @@ extern int NLIMIT_N[SHARDCOUNT * PADDING];
 extern int DCAskip_hit[SHARDCOUNT * PADDING];
 extern int DCAskip_n[SHARDCOUNT * PADDING];
 extern int compactiontrigger[SHARDCOUNT * PADDING];
-extern int skiptrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
 extern bool compactioninprogress;
 extern int NDEFAULT;
