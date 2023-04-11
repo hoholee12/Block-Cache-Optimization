@@ -72,6 +72,8 @@ extern uint32_t numshardbits;
 extern uint32_t shardnumlimit;
 extern uint32_t lookupblockcount[SHARDCOUNT * PADDING];
 extern bool lockheld[SHARDCOUNT * PADDING];
+extern int hitrate[SHARDCOUNT * PADDING];
+extern int DCAentrycount[SHARDCOUNT * PADDING];
 extern bool enableshardfix;
 extern bool dynaswitch;
 extern int totalDCAcount;
@@ -88,7 +90,6 @@ extern time_t inittime;
 extern time_t prevtime;
 extern int cachehit;
 extern int cachemiss;
-extern bool compactioninprogress;
 extern int evictedfromlrucount;
 extern int freecount_eraseunref;
 extern int freecount_setcapacity;
@@ -106,7 +107,6 @@ extern int Nsupple[SHARDCOUNT * PADDING];
 extern int CBHTState[SHARDCOUNT * PADDING];
 extern int nohit[SHARDCOUNT * PADDING];
 extern int totalhit[SHARDCOUNT * PADDING];
-extern int hitrate[SHARDCOUNT * PADDING];
 extern int virtual_nohit[SHARDCOUNT * PADDING];
 extern int virtual_totalhit[SHARDCOUNT * PADDING];
 extern int sortarr[SHARDCOUNT * PADDING];
@@ -114,14 +114,19 @@ extern int NLIMIT[SHARDCOUNT * PADDING];
 extern int NLIMIT_N[SHARDCOUNT * PADDING];
 extern int DCAskip_hit[SHARDCOUNT * PADDING];
 extern int DCAskip_n[SHARDCOUNT * PADDING];
+extern int compactiontrigger[SHARDCOUNT * PADDING];
+extern int skiptrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
+extern bool compactioninprogress;
 extern int NDEFAULT;
 extern int CBHTturnoff;
 extern bool DCAprefetch;
+extern bool DCAflush;
 extern uint32_t DCAsizelimit;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
 extern int tidincr;
+extern int skip_median;
 //////////////////////////////
 
 

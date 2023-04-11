@@ -19,6 +19,30 @@ shardbit=4
 threads=32
 constant=0.99
 
+for const in 0.0 0.25 0.50 0.75 0.99; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=10 --dcaprefetch=false --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_oldskip_noprefetch_throughput_skew"$const".txt
+done
+exit
+
+for const in 0.0 0.25 0.50 0.75 0.99; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=10 --dcaprefetch=true --cbhtturnoff=100 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_noskip_throughput_skew"$const".txt
+done
+exit
+
+for percent in 100 90 80 70 60 50; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=10 --dcaprefetch=false --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_noprefetch_insertmix_lookup$percent.txt
+done
+exit
+
+
+
+for size in 1 10 20 30 40 50 60 70 80 90 100; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=$size --dcaprefetch=true --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=0.0 --dynaswitch=false --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_sizelimit"$size"_throughput_noskew.txt
+done
+
+
+exit
+
 
 paramnoskip="--nlimit=20000 --cbhtturnoff=100 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"
 paramnoskipnflush="--nlimit=20000 --cbhtturnoff=100 --enableshardfix=false --skewed=true --zipf_const=$constant --dynaswitch=false --resident_ratio=1 --value_bytes=1024 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/32))"

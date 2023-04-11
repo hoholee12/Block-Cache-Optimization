@@ -70,9 +70,11 @@ DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
 DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
 
-DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
+DEFINE_uint32(dcasizelimit, 10, "DCA size limit percentage based on total capacity");
 
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
+
+DEFINE_bool(dcaflush, true, "DCA flush on/off");
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
@@ -384,21 +386,22 @@ class CacheBench {
       shardaccesscount[i] = 0;
       lookupblockcount[i] = 0;
       lockheld[i] = false;
+      DCAentrycount[i] = 0;
 
       //CBHT internals
       N[i] = 0;
       NLIMIT[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       NLIMIT_N[i] = 1;
       Nsupple[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
+      compactiontrigger[i] = 0;
+      skiptrigger[i] = 0;
       CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;
-      hitrate[i] = 50;
+      hitrate[i] = 0;
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
-      sortarr[i] = 50;
-      DCAskip_hit[i] = 0;
-      DCAskip_n[i] = 0;
+      sortarr[i] = 0;
     }
     threadcount = FLAGS_threads;
     numshardbits = FLAGS_num_shard_bits;
@@ -412,6 +415,7 @@ class CacheBench {
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAprefetch = FLAGS_dcaprefetch;
+    DCAflush = FLAGS_dcaflush; //hitrate
 
     called = 0;
     called_refill = 0;
@@ -783,6 +787,34 @@ class CacheBench {
       
       printf("\n\nlargest NLIMIT: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average NLIMIT = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+    }
+
+    //results - DCAentrycount
+    {
+      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+      j = 0;
+      printf("\n\n");
+      int maxphiti = -1;
+      int maxphitcount = 0;
+      int phittotal = 0;
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
+        int NLIMITtmp = DCAentrycount[i];
+        phittotal += NLIMITtmp;
+        if(NLIMITtmp > maxphitcount){
+          maxphiti = i;
+          maxphitcount = NLIMITtmp;
+        }
+        displayarr[j] += (uint64_t)NLIMITtmp;
+        if(i % repeat == repeat - 1){
+          //displayarr[j] /= repeat; //avg
+          j++;
+        }
+      }
+
+      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+      
+      printf("\n\nlargest DCAentrycount: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average DCAentrycount = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
     
 /*

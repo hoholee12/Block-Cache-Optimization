@@ -26,6 +26,8 @@ alignas(PADDING) uint32_t numshardbits;
 alignas(PADDING) uint32_t shardnumlimit;
 alignas(PADDING) uint32_t lookupblockcount[SHARDCOUNT * PADDING];
 alignas(PADDING) bool lockheld[SHARDCOUNT * PADDING];
+alignas(PADDING) int hitrate[SHARDCOUNT * PADDING];
+alignas(PADDING) int DCAentrycount[SHARDCOUNT * PADDING];
 alignas(PADDING) bool enableshardfix;
 alignas(PADDING) bool dynaswitch;
 alignas(PADDING) int totalDCAcount = 0;
@@ -43,7 +45,6 @@ alignas(PADDING) time_t inittime;
 alignas(PADDING) time_t prevtime;
 alignas(PADDING) int cachehit = 0;
 alignas(PADDING) int cachemiss = 0;
-alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int evictedfromlrucount = 0;
 alignas(PADDING) int freecount_eraseunref = 0;
 alignas(PADDING) int freecount_setcapacity = 0;
@@ -61,7 +62,6 @@ alignas(PADDING) int Nsupple[SHARDCOUNT * PADDING];
 alignas(PADDING) int CBHTState[SHARDCOUNT * PADDING]; // all trues
 alignas(PADDING) int nohit[SHARDCOUNT * PADDING]; // all 0s
 alignas(PADDING) int totalhit[SHARDCOUNT * PADDING];
-alignas(PADDING) int hitrate[SHARDCOUNT * PADDING];
 alignas(PADDING) int virtual_nohit[SHARDCOUNT * PADDING];
 alignas(PADDING) int virtual_totalhit[SHARDCOUNT * PADDING];
 alignas(PADDING) int sortarr[SHARDCOUNT * PADDING];
@@ -69,14 +69,19 @@ alignas(PADDING) int NLIMIT[SHARDCOUNT * PADDING];
 alignas(PADDING) int NLIMIT_N[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
+alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
+alignas(PADDING) int skiptrigger[SHARDCOUNT * PADDING];
 //unified as hitrates
+alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int NDEFAULT = 20000;
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
 alignas(PADDING) bool DCAprefetch = true;
-alignas(PADDING) uint32_t DCAsizelimit = 50;
+alignas(PADDING) bool DCAflush = true;
+alignas(PADDING) uint32_t DCAsizelimit = 10;
 alignas(PADDING) int CBHTbitlength = 12;
 alignas(PADDING) uint32_t threadcount = 0;
 alignas(PADDING) int tidincr = 0;
+alignas(PADDING) int skip_median = 0;
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {

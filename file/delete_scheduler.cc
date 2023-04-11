@@ -74,6 +74,11 @@ Status DeleteScheduler::DeleteFile(const std::string& file_path,
     //int level = countlevel[TableFileNameToNumber(file_path.c_str())] - 1;
     //printf("mymsg %s DELETE level:%d\n", file_path.c_str(), level);
     compactioninprogress = true;
+    for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
+      if(compactiontrigger[i] == 0){
+        compactiontrigger[i] = 1;
+      }
+    }
     if (s.IsPathNotFound()) {
       //printf("can't delete!!\n");
       bad_file = Rocks2LevelTableFileName(file_path);

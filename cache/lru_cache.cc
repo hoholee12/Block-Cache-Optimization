@@ -100,7 +100,7 @@ LRUHandle* LRUHandleTable::Remove(const Slice& key, uint32_t hash) {
 }
 
 LRUHandle** LRUHandleTable::FindPointer(const Slice& key, uint32_t hash) {
-  //length_bits is lower, shard bits is higher. we already fixiated on one shard at this point. this is just finding block on list.
+  //length_bits is lower, shard bits is higher.
   LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
   //and this is done when collision
   while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
@@ -150,9 +150,11 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
-        //we don't want destructor to be called while accessing ref pool, so we use malloc.
+        //we don't want destructor to be called while accessing ref pool,
+        //so we use malloc.
         ////[slot availability check], [actual ref slots]
-        DCA_ref_pool = (int*)calloc(((size_t{1} << CBHTbitlength) * threadcount) + (size_t{1} << CBHTbitlength), sizeof(int));
+        DCA_ref_pool = (int*)calloc(((size_t{1} << CBHTbitlength) * threadcount)
+         + (size_t{1} << CBHTbitlength), sizeof(int));
         stampincr = 0;
         availindex = (size_t{1} << CBHTbitlength) * threadcount;
       }
@@ -164,7 +166,8 @@ CBHTable::~CBHTable() {
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
   LRUHandle* ptr = *FindPointer(key, hash);
   if(ptr != nullptr){
-    //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
+    //since its not protected by write lock,
+    //there is a slight chance that the entry may have been de-DCAed.
     int stamptmp = ptr->DCAstamp;
     int stamptmp_tc = ptr->DCAstamp_tc;
     if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
@@ -183,7 +186,8 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   }
 
   //check again
-  //there could be a edge case where stamplist is empty while DCA is available.(probably due to bug)
+  //there could be a edge case where stamplist is empty while DCA is available.
+  //(probably due to bug)
   if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
     //failed
     insertblocked++;
@@ -271,7 +275,8 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
 }
 
 void CBHTable::Unref(LRUHandle *e){
-  //since its not protected by write lock, there is a slight chance that the entry may have been de-DCAed.
+  //since its not protected by write lock,
+  //there is a slight chance that the entry may have been de-DCAed.
   int stamptmp = e->DCAstamp;
   int stamptmp_tc = e->DCAstamp_tc;
   if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
@@ -280,7 +285,7 @@ void CBHTable::Unref(LRUHandle *e){
 }
 
 LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
-  //length_bits is lower, shard bits is higher. we already fixiated on one shard at this point. this is just finding block on list.
+  //length_bits is lower, shard bits is higher.
   LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
   //and this is done when collision
   while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
@@ -690,10 +695,25 @@ int cmpfunc(const void* a, const void* b){
 void copyAndSort(){
   //copy to sortarr
   for(uint32_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-    sortarr[i] = hitrate[i];
+    int misscount = nohit[i] + virtual_nohit[i];
+    int totalcount = totalhit[i] + virtual_totalhit[i];
+
+    //sort by hitrate - not missrate
+    //dont calc hitrate if amount of access is too small
+    if(totalcount > 100){
+      sortarr[i] = 100 - (misscount * 100 / totalcount);
+      hitrate[i] = sortarr[i];
+    }
   }
-  //sort
+  //get median
   qsort(sortarr, shardnumlimit, sizeof(int), cmpfunc);
+  //calc global median
+  //instead of just picking median, add and divide.
+  //this is to make sure skip still happens when all shards are low hitrate.
+  //CBHTturnoff is a suggested percentage for picking median
+  skip_median = (sortarr[(shardnumlimit - 1) * CBHTturnoff / 100]
+   + CBHTturnoff) / 2;
+  //skip_median = CBHTturnoff;
 }
 
 // CBHT is allocated per shard, not as standalone
@@ -719,8 +739,10 @@ Cache::Handle* LRUCacheShard::Lookup(
     //important stats end
 */
     uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
-
-    if(CBHTturnoff){  //if turnoff is 0, always disable CBHT. if 100, always have it enabled
+    
+    //if turnoff is 0, always disable CBHT. if 100, always have it enabled
+    if(CBHTturnoff){ 
+      
       //negative cache check
       //if it doesnt exist in the LRU cache, it doesnt exist in the DCA anyway.
       /*
@@ -786,36 +808,33 @@ Cache::Handle* LRUCacheShard::Lookup(
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
-            //save hitrate
-            hitrate[hashshard] = 100 - ((nohit[hashshard] + virtual_nohit[hashshard]) * 100 /
-             (totalhit[hashshard] + virtual_totalhit[hashshard]));
             
-            //get median
-            /*
+            //get median from all of DCA shards + hitrate telemetry
             copyAndSort();
-            //instead of just picking median, add and divide by 2.
-            //this is to make sure skip still happens when all shards are low hitrate.
-            int skip_median = (sortarr[(shardnumlimit - 1) * CBHTturnoff / 100] + CBHTturnoff) / 2;
-        
-            //set medians
-            DCAskip_hit[hashshard] = skip_median;
-
-            //NLIMIT[hashshard] = 50000 * (hitrate[hashshard]) / 100;
-            
-            //skip faster if lower hitrate
-            //int DCAskip_lasthit = DCAskip_hit[hashshard] / DCAskip_n[hashshard];
-
-            //if the cache is too skewed, update on some shards may not be fast enough.
-            //if the workload is not stable, every median calculation will fluctuate.
-            //avg all of the shard's median for lesser error.
-            //much faster than updating individual shard's median with sma
-            
-            for(uint32_t i = 0; i < shardnumlimit; i++){
-              avg_skip_median += DCAskip_hit[i];
-            }
-            avg_skip_median /= shardnumlimit;
+            //calculate next dca skip
+            Nsupple[hashshard] = NLIMITtmp * skip_median / 100;
+           
+            /*
+            compactiontrigger=0
+            compactiontrigger=1 : compaction just happened. flush DCA
+            compactiontrigger=2 : DCA flush finished. reset to 0
+            DCA prefetch happens immediately after this.
             */
-            
+            //start evicting DCA and reduce NLIMIT when compaction happens.
+            //this is to adapt NLIMIT to compaction cycles.
+            //also, flush DCA when pinned usage is too high.
+            if(DCAflush && (compactiontrigger[hashshard] == 1 || 
+            (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){
+              //evict everything after compaction.
+              LRUHandle* evicted = nullptr;
+              int i = 0;
+              while((evicted = cbhtable_.EvictFIFO()) != nullptr){
+                i++;
+              }
+              //not a full evict. some entries may be left due to existing refs.
+              if(i > 0) fullevictcount++;
+              compactiontrigger[hashshard] = 2; //DCA flush finished
+            }
             
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
@@ -840,22 +859,36 @@ Cache::Handle* LRUCacheShard::Lookup(
               if(i > 0) called_refill++;
             }
             
-            //leave DCA off if no hit exceeded Nsupple
-            if(CBHTState[hashshard] != 0){
-              CBHTState[hashshard] = 1;
+            /*
+            reset compaction flags on all shards.
+            only start checking if my shards flag is 2.
+            while looping for others, break:
+              if there is 0 -> other shard is already checking
+              if there is 1 -> DCA flush not done for other shards yet
+            */
+            if(compactiontrigger[hashshard] == 2){
+              bool failed = false;
+              for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
+                if(compactiontrigger[i] != 2){
+                  failed = true;
+                  break;
+                }
+              }
+              if(!failed){
+                for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
+                  if(compactiontrigger[i] == 2){
+                    compactiontrigger[i] = 0;
+                  }
+                }
+              }
             }
-            else{
-              CBHTState[hashshard] = 0;
-            }
-
-            //calculate next dca skip
-            // 
-            Nsupple[hashshard] = NLIMITtmp * hitrate[hashshard] / 100;
-
             nohit[hashshard] = 0;
             totalhit[hashshard] = 0;
             virtual_nohit[hashshard] = 0;
             virtual_totalhit[hashshard] = 0;
+            CBHTState[hashshard] = 1; //re-enable DCA
+
+            DCAentrycount[hashshard] = cbhtable_.elems_;
           }
         }
       }
@@ -967,7 +1000,7 @@ bool LRUCacheShard::Release(Cache::Handle* handle, bool force_erase) {
         cbhtable_.Unref(e);
         return true;  //never release dca items
       }
-    } 
+    }
 
     last_reference = e->Unref();
     if (last_reference && e->InCache()) {
