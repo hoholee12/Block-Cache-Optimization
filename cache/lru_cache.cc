@@ -724,7 +724,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
-    /*
     //struct timespec telapsed = {0, 0};
     struct timespec tstart = {0, 0};//, tend = {0, 0};
 
@@ -737,7 +736,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       printf("%ld seconds in, pinned_usage: %d%%, lru_usage: %d%%, total: %d%%\n", elapsed, ((int)usage_ - (int)lru_usage_) * 100 / (int)capacity_, (int)lru_usage_ * 100 / (int)capacity_, (int)usage_ * 100 / (int)capacity_);
     }
     //important stats end
-*/
+
     uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
     
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
@@ -820,8 +819,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             compactiontrigger=2 : DCA flush finished. reset to 0
             DCA prefetch happens immediately after this.
             */
-            //start evicting DCA and reduce NLIMIT when compaction happens.
-            //this is to adapt NLIMIT to compaction cycles.
+            //start evicting DCA
             //also, flush DCA when pinned usage is too high.
             if(DCAflush && (compactiontrigger[hashshard] == 1 || 
             (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){

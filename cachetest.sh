@@ -20,7 +20,7 @@ threads=32
 constant=0.99
 
 for const in 0.0 0.25 0.50 0.75 0.99; do
-    ./cache_bench --nlimit=10000 --dcasizelimit=10 --dcaprefetch=true --cbhtturnoff=20 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew"$const".txt
+    ./cache_bench --nlimit=10000 --dcasizelimit=10 --dcaprefetch=true --cbhtturnoff=0 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/default_2023_throughput_skew"$const".txt
 done
 exit
 
