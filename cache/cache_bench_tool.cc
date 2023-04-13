@@ -68,7 +68,7 @@ DEFINE_uint32(dynaswitch_num, 10000, "dynaswitch_num");
 
 DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
-DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
+DEFINE_uint32(cbhtbitlength, 15, "DCA BIT LENGTH");
 
 DEFINE_uint32(dcasizelimit, 10, "DCA size limit percentage based on total capacity");
 

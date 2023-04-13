@@ -729,7 +729,7 @@ Cache::Handle* LRUCacheShard::Lookup(
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
 
-    /*
+    
     //time to print out important stats
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
@@ -737,7 +737,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       printf("%ld seconds in, pinned_usage: %lld%%, lru_usage: %lld%%, total: %lld%%\n", elapsed, ((long long)usage_ - (long long)lru_usage_) * 100 / (long long)capacity_, (long long)lru_usage_ * 100 / (long long)capacity_, (long long)usage_ * 100 / (long long)capacity_);
     }
     //important stats end
-    */
+    
     uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
     
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
