@@ -116,6 +116,7 @@ Status TableCache::GetTableReader(
       compactiontrigger[i] = 1;
     }
   }
+
   //printf("mymsg %s CREATE\n", fname.c_str());
   if (s.ok()) {
     s = ioptions_.fs->NewRandomAccessFile(fname, fopts, &file, nullptr);
