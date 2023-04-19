@@ -11,7 +11,7 @@ while true; do
 		echo maxmemsize $maxmemsize
 		exit;
 	fi
-	memsize=$(ps aux | grep $pname | tail -1 | awk '{print $6}')
+	memsize=$(($(cat /proc/$exist/stat | awk '{print $24}')*4096)) 2>/dev/null
 	if [[ $memsize -gt $maxmemsize ]]; then
 		maxmemsize=$memsize
 	fi

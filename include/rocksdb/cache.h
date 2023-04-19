@@ -84,7 +84,6 @@ extern int called;
 extern int called_refill;
 extern int invalidatedcount;
 extern int evictedcount;
-extern int fullevictcount;
 extern int insertblocked;
 extern time_t inittime;
 extern time_t prevtime;
@@ -107,6 +106,7 @@ extern int Nsupple[SHARDCOUNT * PADDING];
 extern int CBHTState[SHARDCOUNT * PADDING];
 extern int nohit[SHARDCOUNT * PADDING];
 extern int totalhit[SHARDCOUNT * PADDING];
+extern int readlockbypass[SHARDCOUNT * PADDING];
 extern int virtual_nohit[SHARDCOUNT * PADDING];
 extern int virtual_totalhit[SHARDCOUNT * PADDING];
 extern int sortarr[SHARDCOUNT * PADDING];
@@ -115,17 +115,18 @@ extern int NLIMIT_N[SHARDCOUNT * PADDING];
 extern int DCAskip_hit[SHARDCOUNT * PADDING];
 extern int DCAskip_n[SHARDCOUNT * PADDING];
 extern int compactiontrigger[SHARDCOUNT * PADDING];
+extern int compaction_lasthit[SHARDCOUNT * PADDING];
 //unified as hitrates
 extern bool compactioninprogress;
 extern int NDEFAULT;
 extern int CBHTturnoff;
 extern bool DCAprefetch;
-extern bool DCAflush;
 extern uint32_t DCAsizelimit;
 extern int CBHTbitlength;
 extern uint32_t threadcount;
 extern int tidincr;
 extern int skip_median;
+extern uint32_t detected_skew;
 //////////////////////////////
 
 

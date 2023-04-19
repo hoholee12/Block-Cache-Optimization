@@ -21,6 +21,11 @@
 
 namespace ROCKSDB_NAMESPACE {
 
+/*
+Holdvalue class
+
+
+*/
 class Holdvalue{
 private:
   uint32_t myshard;
@@ -178,25 +183,8 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 }
 
 //this replaces to new entry from old entry via same key, and returns old one?
-LRUHandle* CBHTable::Insert(LRUHandle* h) {
-  //start eviction if table is half full
-  //evict 1 at 33, not 32.
-  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
-    EvictFIFO();
-  }
+LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
 
-  //check again
-  //there could be a edge case where stamplist is empty while DCA is available.
-  //(probably due to bug)
-  if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
-    //failed
-    insertblocked++;
-    return h;
-  }
-  else{
-    evictedcount++;
-  }
-  
   //continue
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
@@ -205,9 +193,26 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
 
   if(old == nullptr){
     ++elems_;
+    //start eviction if table is half full
+    //evict 1 at 33, not 32.
+    if ((elems_ >> (length_bits_ - 1)) > 0) {  // elems_ >= length / 2
+      //remove one entry from DCA
+      LRUHandle* rete = EvictFIFO();
+      if(rete == nullptr){
+        //failed
+        insertblocked++;
+        return h;
+      }
+    }
+    if(reverse){
+      //for insignificant prefetched entries
+      hashkeylist.push_front(std::make_pair(h->key(), h->hash));  
+    }
+    else{
+      hashkeylist.push_back(std::make_pair(h->key(), h->hash));
+    }
   }
-  hashkeylist.push_back(std::make_pair(h->key(), h->hash));
-
+  
   h->indca = true;
   
   //get stamp
@@ -232,6 +237,13 @@ LRUHandle* CBHTable::Insert(LRUHandle* h) {
   h->DCAstamp = stamptmp;
   h->DCAstamp_tc = stamptmp * threadcount;
 
+
+  /*
+  may return:
+  -evicted entry (h was inserted. must LRU_Insert this outside)
+  -nullptr (h was inserted)
+  -insert entry itself (insertblocked)
+  */
   return old;
 }
 
@@ -305,13 +317,13 @@ LRUHandle* CBHTable::EvictFIFO(){
     hashkeylist.pop_front();
     e = Lookup(temp.first, temp.second);
     if(e != nullptr){
-      result = Remove(temp.first, temp.second, true);  //true: dont force remove 
-      //(set to false for now because force removing seems to be better for performance)
+      result = Remove(temp.first, temp.second, true);  //true: dont force remove
       if(result == nullptr){  //remove couldnt remove it because it is referenced.
         hashkeylist.push_back(temp);  //insert it back
       }
     }
     if(result != nullptr){  //we will loop until we get one result.
+      evictedcount++;
       break;  //do only one eviction
     }
     //continue if the eviction was invalid(entry didnt exist)
@@ -324,6 +336,34 @@ bool CBHTable::IsTableFull(){
     return true;
   }
   else return false;
+}
+
+void CBHTable::beforeWriteLock(const Slice& key){
+  lockedkey = key;
+  locked = true;
+}
+
+void CBHTable::afterWriteLock(){
+  locked = false;
+}
+
+void CBHTable::beforeMasterLock(){
+  masterlocked = true;
+}
+
+void CBHTable::afterMasterLock(){
+  masterlocked = false;
+}
+
+bool CBHTable::beforeReadLock(const Slice& key){
+  /*
+    return true if readlock is required
+    return false if bypassing is allowed
+  */
+  if(!masterlocked && (!locked || lockedkey != key)){
+    return false;
+  }
+  return true;
 }
 
 LRUCacheShard::LRUCacheShard(
@@ -368,8 +408,9 @@ void LRUCacheShard::EraseUnRefEntries() {
         if(old->indca){
           WriteLock wl(&rwmutex_);
           if(old->indca){
-            cbhtable_.Remove(old->key(), old->hash);
-            invalidatedcount++;
+            if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+              invalidatedcount++;
+            }
           }
         }
       }
@@ -524,8 +565,9 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
       if(old->indca){
         WriteLock wl(&rwmutex_);
         if(old->indca){
-          cbhtable_.Remove(old->key(), old->hash);
-          invalidatedcount++;
+          if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+            invalidatedcount++;
+          }
         }
       }
     }
@@ -617,12 +659,16 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           //remove the entry from dca
           if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
             if(old->indca){
+              cbhtable_.beforeWriteLock(e->key());
               WriteLock wl(&rwmutex_);
               if(old->indca){
                 //update to the new entry
-                cbhtable_.Insert(e);
-                invalidatedcount++;
+                if(cbhtable_.Lookup(e->key(), e->hash) != nullptr){
+                  cbhtable_.Insert(e);
+                  invalidatedcount++;
+                }
               }
+              cbhtable_.afterWriteLock();
             }
           }
         }
@@ -693,17 +739,10 @@ int cmpfunc(const void* a, const void* b){
 }
 
 void copyAndSort(){
+
   //copy to sortarr
   for(uint32_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-    int misscount = nohit[i] + virtual_nohit[i];
-    int totalcount = totalhit[i] + virtual_totalhit[i];
-
-    //sort by hitrate - not missrate
-    //dont calc hitrate if amount of access is too small
-    if(totalcount > 100){
-      sortarr[i] = 100 - (misscount * 100 / totalcount);
-      hitrate[i] = sortarr[i];
-    }
+    sortarr[i] = hitrate[i];
   }
   //get median
   qsort(sortarr, shardnumlimit, sizeof(int), cmpfunc);
@@ -714,6 +753,9 @@ void copyAndSort(){
   skip_median = (sortarr[(shardnumlimit - 1) * CBHTturnoff / 100]
    + CBHTturnoff) / 2;
   //skip_median = CBHTturnoff;
+
+  detected_skew = sortarr[(shardnumlimit - 1) * PADDING] - sortarr[0];
+
 }
 
 // CBHT is allocated per shard, not as standalone
@@ -724,12 +766,13 @@ Cache::Handle* LRUCacheShard::Lookup(
     bool wait, Statistics* stats) {
   LRUHandle* e = nullptr;
   { 
-    //struct timespec telapsed = {0, 0};
-    struct timespec tstart = {0, 0};//, tend = {0, 0};
+    /*
+    struct timespec telapsed = {0, 0};
+    struct timespec tstart = {0, 0}, tend = {0, 0};
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
-
-    
+*/
+    /*
     //time to print out important stats
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
@@ -737,7 +780,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       printf("%ld seconds in, pinned_usage: %lld%%, lru_usage: %lld%%, total: %lld%%\n", elapsed, ((long long)usage_ - (long long)lru_usage_) * 100 / (long long)capacity_, (long long)lru_usage_ * 100 / (long long)capacity_, (long long)usage_ * 100 / (long long)capacity_);
     }
     //important stats end
-    
+    */
     uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
     
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
@@ -753,18 +796,27 @@ Cache::Handle* LRUCacheShard::Lookup(
       */
       if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
-        ReadLock rl(&rwmutex_);
+        if(cbhtable_.beforeReadLock(key)){
+          ReadLock rl(&rwmutex_); //wait until write lock is gone
+        }
+        else{
+          readlockbypass[hashshard]++;
+        }
         e = cbhtable_.Lookup(key, hash);
-        
         totalhit[hashshard]++;
         if(e != nullptr){
           e->SetHit();
+          /*
+          clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+          telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+          telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+          time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+          shardtotaltime[hashshard] += telapsedtotal;
+          shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
+          */
           return reinterpret_cast<Cache::Handle*>(e);
         }
         else{
-          //no hit counter
-          //if there is too much miss, its most likely a very uniform workload.
-          //turn it off.
           nohit[hashshard]++;
           if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
             CBHTState[hashshard] = 0;
@@ -803,41 +855,44 @@ Cache::Handle* LRUCacheShard::Lookup(
         int NLIMITtmp = NLIMIT[hashshard] / NLIMIT_N[hashshard];
 
         if(N[hashshard] > NLIMITtmp){
+          cbhtable_.beforeMasterLock();
           WriteLock wl(&rwmutex_);
           if(N[hashshard] > NLIMITtmp){
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
+            //hitrate telemetry
+            int misscount = nohit[hashshard] + virtual_nohit[hashshard];
+            int totalcount = totalhit[hashshard] + virtual_totalhit[hashshard];
+            if(totalcount > 100){
+              hitrate[hashshard] = 100 - (misscount * 100 / totalcount);
+            }
             
-            //get median from all of DCA shards + hitrate telemetry
+            //get median from all of DCA shards
             copyAndSort();
             //calculate next dca skip
             Nsupple[hashshard] = NLIMITtmp * skip_median / 100;
-           
-            /*
-            compactiontrigger=0
-            compactiontrigger=1 : compaction just happened. flush DCA
-            compactiontrigger=2 : DCA flush finished. reset to 0
-            DCA prefetch happens immediately after this.
-            */
-            //start evicting DCA
-            //also, flush DCA when pinned usage is too high.
-            if(DCAflush && (compactiontrigger[hashshard] == 1 || 
-            (((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit))){
-              //evict everything after compaction.
-              LRUHandle* evicted = nullptr;
-              int i = 0;
-              while((evicted = cbhtable_.EvictFIFO()) != nullptr){
-                i++;
+           /*
+            //remove some entries from DCA when pinned usage is too high
+            while(((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit){
+              LRUHandle* rete = cbhtable_.EvictFIFO();
+              if(rete == nullptr){
+                //no more to evict
+                break;
               }
-              //not a full evict. some entries may be left due to existing refs.
-              if(i > 0) fullevictcount++;
-              compactiontrigger[hashshard] = 2; //DCA flush finished
+              else{
+                //put it back in LRU Cache
+                LRU_Insert(rete);
+              }
             }
-            
+            */
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
-            cbhtable_.Insert(temp);
+
+            LRUHandle* rete = cbhtable_.Insert(temp);
+            if(rete != nullptr && rete != temp){
+              rete->Free(); //free them right away because they are not needed anymore
+            }
             called++;
             temp = lru_.prev;
             //fill the rest of the table that is emptied by invalidated entries
@@ -845,50 +900,37 @@ Cache::Handle* LRUCacheShard::Lookup(
 
             if(DCAprefetch == true){
               int i = 0;
+              //fill only NLIMIT amount, because we only touched those amount.
+              //prefetching more doesnt make sense.
               //dont fill if LRU empty or pinned usage over half
-              while (!cbhtable_.IsTableFull() && lru_.next != &lru_ && 
-              (((usage_ - lru_usage_) * 100 / capacity_) < DCAsizelimit)){
+              //dont care if DCA table is full, always DCA insert so to make
+              //sure DCA has the hottest entries.
+              while (lru_.next != &lru_ && (((usage_ - lru_usage_) * 100 / 
+              capacity_) < DCAsizelimit) && (i < NLIMITtmp)){
                 i++;
-                cbhtable_.Insert(temp);
+                rete = cbhtable_.Insert(temp, true); //prefetched entries shall be evicted first
+                if(rete != nullptr && rete != temp){
+                  rete->Free(); //free them right away because they are not needed anymore
+                }
                 temp2 = temp->prev;
                 //no need to check for ref
-                LRU_Remove(temp); //keep all dca entries out of lru
+                if(rete != temp){ 
+                  LRU_Remove(temp); //keep all dca entries out of lru
+                }
                 temp = temp2;
               }
               if(i > 0) called_refill++;
             }
             
-            /*
-            reset compaction flags on all shards.
-            only start checking if my shards flag is 2.
-            while looping for others, break:
-              if there is 0 -> other shard is already checking
-              if there is 1 -> DCA flush not done for other shards yet
-            */
-            if(compactiontrigger[hashshard] == 2){
-              bool failed = false;
-              for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
-                if(compactiontrigger[i] != 2){
-                  failed = true;
-                  break;
-                }
-              }
-              if(!failed){
-                for(int i = 0; i < SHARDCOUNT * PADDING; i += PADDING){
-                  if(compactiontrigger[i] == 2){
-                    compactiontrigger[i] = 0;
-                  }
-                }
-              }
-            }
             nohit[hashshard] = 0;
             totalhit[hashshard] = 0;
+            readlockbypass[hashshard] = 0;
             virtual_nohit[hashshard] = 0;
             virtual_totalhit[hashshard] = 0;
             CBHTState[hashshard] = 1; //re-enable DCA
-
             DCAentrycount[hashshard] = cbhtable_.elems_;
           }
+          cbhtable_.afterMasterLock();
         }
       }
     }
@@ -1101,9 +1143,10 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
         if(e->indca){
           WriteLock wl(&rwmutex_);
           if(e->indca){
-            cbhtable_.Remove(e->key(), e->hash);
-            last_reference = true; //free the dca entry.
-            invalidatedcount++;
+            if(cbhtable_.Remove(e->key(), e->hash) != nullptr){
+              invalidatedcount++;
+              last_reference = true; //free the dca entry.
+            }
           }
         }
       }

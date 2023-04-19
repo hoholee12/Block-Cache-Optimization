@@ -18,21 +18,21 @@ runbench(){
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
     else
-        cbhtturnoff="-cbhtturnoff=50"
+        cbhtturnoff="-cbhtturnoff=100"
     fi
 
-    if [[ $4 == "noclockcache" ]]; then
-        clockcache="-use_clock_cache=false"
-    else
-        clockcache="-use_clock_cache=true"
-    fi
-
-    if [[ $5 == "nodcaprefetch" ]]; then
+    if [[ $4 == "nodcaprefetch" ]]; then
         dcaprefetch="-dcaprefetch=false"
         prefetchvalue=""
     else
         dcaprefetch="-dcaprefetch=true"
-        prefetchvaule="-dcasizelimit=$6"
+        prefetchvaule="-dcasizelimit=$5"
+    fi
+
+    if [[ $6 == "clockcache" ]]; then
+        clockcache="-use_clock_cache=true"
+    else
+        clockcache="-use_clock_cache=false"
     fi
 
     mkdir results 2>/dev/null
@@ -41,20 +41,19 @@ runbench(){
     sudo time ./db_bench \
     -benchmarks="$2,stats" \
     -num=$dataset \
-    -threads=32 \
+    -threads=16 \
     -histogram \
     -statistics \
     -use_existing_db=true \
     -seed=1000 \
     -db=$mntlocation \
     -nlimit=10000 \
-    -dcasizelimit=50 \
-    -customtheta=1.5 \
     $dcaprefetch \
+    $prefetchvalue \
     $clockcache \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
-    -cache_size=$((1024*1024*256)) \
+    -cache_size=$((1024*1024*1024*2)) \
     $cbhtturnoff \
     $prefetchvalue \
     &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6".txt \
@@ -81,11 +80,11 @@ fillbench(){
     sudo time ./db_bench \
     -benchmarks="ycsbfilldb" \
     -num=$((9039*$1)) \
-    -threads=1 \
+    -threads=16 \
     -histogram \
     -statistics \
     -seed=1000 \
-    -customtheta=0.0 \
+    -zipf_const=0.0 \
     -db=$mntlocation \
     &> results/fillrandom.txt \
 
@@ -105,7 +104,7 @@ initbench(){
 
 if [[ ! -d $baklocation/ycsbfilldb ]]; then
     ./nvme_ext4.sh
-    fillbench 102400
+    fillbench 10240
     mkdir $baklocation/ycsbfilldb/
     cp $mntlocation/* $baklocation/ycsbfilldb/
 fi
@@ -117,102 +116,27 @@ echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
 
-initbench
-runbench 1024 ycsbwklda nocbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklda nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklda yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklda yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwklda yescbht noclockcache yesdcaprefetch 20
-
 
 
 initbench
-runbench 1024 ycsbwkldb nocbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldb nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldb yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldb yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwkldb yescbht noclockcache yesdcaprefetch 20
-
+runbench 1024 ycsbwklda yescbht yesdcaprefetch 50
 
 
 initbench
-runbench 1024 ycsbwkldc nocbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldc nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldc yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldc yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwkldc yescbht noclockcache yesdcaprefetch 20
-
+runbench 1024 ycsbwkldb yescbht yesdcaprefetch 50
 
 
 initbench
-runbench 1024 ycsbwkldd nocbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldd nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldd yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldd yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwkldd yescbht noclockcache yesdcaprefetch 20
-
+runbench 1024 ycsbwkldc yescbht yesdcaprefetch 50
 
 
 initbench
-runbench 1024 ycsbwklde nocbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklde nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklde yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwklde yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwklde yescbht noclockcache yesdcaprefetch 20
-
+runbench 1024 ycsbwkldd yescbht yesdcaprefetch 50
 
 
 initbench
-runbench 1024 ycsbwkldf nocbht noclockcache nodcaprefetch
+runbench 1024 ycsbwklde yescbht yesdcaprefetch 50
+
 
 initbench
-runbench 1024 ycsbwkldf nocbht yesclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldf yescbht noclockcache nodcaprefetch
-
-initbench
-runbench 1024 ycsbwkldf yescbht noclockcache yesdcaprefetch 10
-
-initbench
-runbench 1024 ycsbwkldf yescbht noclockcache yesdcaprefetch 20
+runbench 1024 ycsbwkldf yescbht yesdcaprefetch 50

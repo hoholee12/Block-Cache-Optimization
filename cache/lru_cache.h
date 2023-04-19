@@ -303,7 +303,7 @@ class CBHTable {
   ~CBHTable();
 
   LRUHandle* Lookup(const Slice& key, uint32_t hash);
-  LRUHandle* Insert(LRUHandle* h);
+  LRUHandle* Insert(LRUHandle* h, bool reverse = false);
   LRUHandle* Remove(const Slice& key, uint32_t hash, bool dontforce = false);
   void Unref(LRUHandle* e); //for DCA_ref_pool
 
@@ -325,13 +325,28 @@ class CBHTable {
   
   LRUHandle* EvictFIFO();
   bool IsTableFull();
-
+  /*since DCA is almost immutable in reading
+  (reading just requires 1.read lock 2. hashtable)
+  we can simply bypass write lock by checking if the read is using 
+  different hash.
+  (if hash is different, it won't have problems accessing the hashtable
+  that is being modified)
+  */
+  void beforeWriteLock(const Slice& key);
+  void afterWriteLock();
+  void beforeMasterLock();
+  void afterMasterLock();
+  bool beforeReadLock(const Slice& key);
 
   //DCA ref pool
   int * DCA_ref_pool; //[actual ref slots], [slot avail index]
   int availindex;
   int stampincr;
   
+  bool locked;
+  bool masterlocked;
+  Slice lockedkey;
+
   // ptr of lru_ head
   LRUHandle *lru_;
 

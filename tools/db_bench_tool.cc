@@ -403,15 +403,13 @@ DEFINE_double(zipf_const, 0.99, "Zipfian custom theta(zipfian constant)");
 
 DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
-DEFINE_uint32(cbhtbitlength, 12, "DCA BIT LENGTH");
+DEFINE_uint32(cbhtbitlength, 15, "DCA BIT LENGTH");
 
-DEFINE_uint32(dcasizelimit, 10, "DCA size limit percentage based on total capacity");
+DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
-
-DEFINE_bool(dcaflush, true, "DCA flush on/off");
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -707,7 +705,7 @@ DEFINE_bool(universal_allow_trivial_move, false,
 DEFINE_int64(cache_size, 8 << 20,  // 8MB
              "Number of bytes to use as a cache of uncompressed data");
 
-DEFINE_int32(cache_numshardbits, 6,
+DEFINE_int32(cache_numshardbits, 4,
              "Number of shards for the block cache"
              " is 2 ** cache_numshardbits. Negative means use default settings."
              " This is applied only if FLAGS_cache_size is non-negative.");
@@ -2533,9 +2531,9 @@ class Stats {
 
     printf("\n\n how much DCA eviction happened / blocked: %d / %d\n\n", evictedcount, insertblocked);
 
-    printf("\n\n how much DCA full eviction happened: %d\n\n", fullevictcount);
-
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
+
+    printf("\n\n detected skew rate: %d\n\n", detected_skew);
 
     printf("\n\n freecount_eraseunref: %d, freecount_setcapacity: %d, freecount_insertitem: %d, freecount_secondarycache: %d, "
     "freecount_release: %d, freecount_erase: %d \n\n", freecount_eraseunref, freecount_setcapacity, freecount_insertitem, 
@@ -2785,6 +2783,34 @@ class Stats {
       
       printf("\n\nlargest DCAentrycount: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average DCAentrycount = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
+    }
+
+    //results - readlock bypass percentage
+    {
+      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
+      j = 0;
+      printf("\n\n");
+      int maxphiti = -1;
+      int maxphitcount = 0;
+      int phittotal = 0;
+      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
+        int NLIMITtmp = readlockbypass[i] / totalhit[i];
+        phittotal += NLIMITtmp;
+        if(NLIMITtmp > maxphitcount){
+          maxphiti = i;
+          maxphitcount = NLIMITtmp;
+        }
+        displayarr[j] += (uint64_t)NLIMITtmp;
+        if(i % repeat == repeat - 1){
+          //displayarr[j] /= repeat; //avg
+          j++;
+        }
+      }
+
+      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
+      
+      printf("\n\nlargest readlock bypass: shard=%d with %d %%\n", maxphiti, maxphitcount);
+      printf("average readlock bypass = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
 /*
@@ -3396,10 +3422,12 @@ class Benchmark {
       NLIMIT[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
       NLIMIT_N[i] = 1;
       Nsupple[i] = (FLAGS_nlimit > 0) ? FLAGS_nlimit : 0;
-      compactiontrigger[i] = 0;
+      compactiontrigger[i] = 1; //forces DCA Prefetch at start
+      compaction_lasthit[i] = 0;
       CBHTState[i] = 1;
       nohit[i] = 0;
       totalhit[i] = 0;
+      readlockbypass[i] = 0;
       hitrate[i] = 0;
       virtual_nohit[i] = 0;
       virtual_totalhit[i] = 0;
@@ -3417,13 +3445,11 @@ class Benchmark {
     CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAprefetch = FLAGS_dcaprefetch;
-    DCAflush = FLAGS_dcaflush; //hitrate
     
     called = 0;
     called_refill = 0;
     invalidatedcount = 0;
     evictedcount = 0;
-    fullevictcount = 0;
     insertblocked = 0;
 
     

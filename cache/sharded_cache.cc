@@ -38,7 +38,6 @@ alignas(PADDING) int called = 0;
 alignas(PADDING) int called_refill = 0;
 alignas(PADDING) int invalidatedcount = 0;
 alignas(PADDING) int evictedcount = 0;
-alignas(PADDING) int fullevictcount = 0;
 alignas(PADDING) int DCAentriesfreed = 0;
 alignas(PADDING) int insertblocked = 0;
 alignas(PADDING) time_t inittime;
@@ -62,6 +61,7 @@ alignas(PADDING) int Nsupple[SHARDCOUNT * PADDING];
 alignas(PADDING) int CBHTState[SHARDCOUNT * PADDING]; // all trues
 alignas(PADDING) int nohit[SHARDCOUNT * PADDING]; // all 0s
 alignas(PADDING) int totalhit[SHARDCOUNT * PADDING];
+alignas(PADDING) int readlockbypass[SHARDCOUNT * PADDING];
 alignas(PADDING) int virtual_nohit[SHARDCOUNT * PADDING];
 alignas(PADDING) int virtual_totalhit[SHARDCOUNT * PADDING];
 alignas(PADDING) int sortarr[SHARDCOUNT * PADDING];
@@ -70,17 +70,18 @@ alignas(PADDING) int NLIMIT_N[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
 alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
 alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
+alignas(PADDING) int compaction_lasthit[SHARDCOUNT * PADDING];
 //unified as hitrates
 alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int NDEFAULT = 20000;
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
 alignas(PADDING) bool DCAprefetch = true;
-alignas(PADDING) bool DCAflush = true;
 alignas(PADDING) uint32_t DCAsizelimit = 10;
 alignas(PADDING) int CBHTbitlength = 15;
 alignas(PADDING) uint32_t threadcount = 0;
 alignas(PADDING) int tidincr = 0;
 alignas(PADDING) int skip_median = 0;
+alignas(PADDING) uint32_t detected_skew = 0; //highest shard hitrate - lowest shard hitrate
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {
@@ -171,7 +172,17 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
       std::map<pthread_t, int>::iterator tidit = tids.find(tmp);
       if(tidit == tids.end()){
         //printf("thread #%d registered.\n", tidincr);
-        tids[tmp] = tidincr++;
+        tids[tmp] = tidincr;
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        //testing with one socket for NUMA for now.
+        for(int i = 0; i < 8; i++){
+          CPU_SET(i, &cpuset);
+          CPU_SET(i + 16, &cpuset);
+        }
+        
+        pthread_setaffinity_np(tmp, sizeof(cpuset), &cpuset);
+        tidincr++;
       }
     }
   }
