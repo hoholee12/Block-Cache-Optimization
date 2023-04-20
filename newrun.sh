@@ -26,7 +26,7 @@ runbench(){
         prefetchvalue=""
     else
         dcaprefetch="-dcaprefetch=true"
-        prefetchvaule="-dcasizelimit=$5"
+        prefetchvalue="-dcasizelimit=$5"
     fi
 
     if [[ $6 == "clockcache" ]]; then
@@ -119,24 +119,24 @@ echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
 
 initbench
-runbench 1024 ycsbwklda yescbht yesdcaprefetch 50
+runbench 1024 ycsbwklda yescbht yesdcaprefetch 5
 
 
 initbench
-runbench 1024 ycsbwkldb yescbht yesdcaprefetch 50
+runbench 1024 ycsbwkldb yescbht yesdcaprefetch 5
 
 
 initbench
-runbench 1024 ycsbwkldc yescbht yesdcaprefetch 50
+runbench 1024 ycsbwkldc yescbht yesdcaprefetch 5
 
 
 initbench
-runbench 1024 ycsbwkldd yescbht yesdcaprefetch 50
+runbench 1024 ycsbwkldd yescbht yesdcaprefetch 5
 
 
 initbench
-runbench 1024 ycsbwklde yescbht yesdcaprefetch 50
+runbench 1024 ycsbwklde yescbht yesdcaprefetch 5
 
 
 initbench
-runbench 1024 ycsbwkldf yescbht yesdcaprefetch 50
+runbench 1024 ycsbwkldf yescbht yesdcaprefetch 5

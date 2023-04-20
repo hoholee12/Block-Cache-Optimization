@@ -82,6 +82,9 @@ struct LRUHandle {
   // all of dca entries should have 1 as refs to avoid the normal last_reference path
   bool indca;
 
+  // used for evictmedian
+  uint64_t indcafreq;
+
   //for DCA ref pool
   int DCAstamp;
   int DCAstamp_tc;
@@ -323,7 +326,13 @@ class CBHTable {
   int GetLengthBits() const { return length_bits_; }
   int GetLength() const { return size_t{1} << length_bits_; }
   
+  
+  autovector<LRUHandle*> DCA_evicted_list;
+  uint64_t middleval = 0;
+  uint64_t middleval_n = 1;
   LRUHandle* EvictFIFO();
+  void EvictMiddle();
+  
   bool IsTableFull();
   /*since DCA is almost immutable in reading
   (reading just requires 1.read lock 2. hashtable)

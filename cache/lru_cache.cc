@@ -278,6 +278,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       DCA_ref_pool[availindex + stamptmp] = 0;
 
       result->indca = false;
+      result->indcafreq = 0;
       //remove from dca
       *ptr = result->next_hash_cbht;
       --elems_;
@@ -306,6 +307,37 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   return ptr;
 }
 
+//garbage collector for dca
+void CBHTable::EvictMiddle(){
+  std::pair<Slice, uint32_t> temp;
+  LRUHandle* e = nullptr;
+  LRUHandle* result = nullptr;
+  auto iter = hashkeylist.begin();
+  while(iter != hashkeylist.end()){
+    e = Lookup(iter->first, iter->second);
+    if(e != nullptr){
+      middleval += e->indcafreq;
+      middleval_n++;
+
+      //lock-free semi-LFU algo
+      if(e->indcafreq < (middleval / middleval_n * DCAclear_rate / 100)){
+        result = Remove(e->key(), e->hash, true);
+        if(result != nullptr){  //remove successful
+          evictedfromclear++;
+          DCA_evicted_list.push_back(e);
+          iter = hashkeylist.erase(iter); //delete and get new iter
+          continue; //start from iter, not iter+1
+        }
+      }
+    }
+    iter++;
+  }
+  //prevent overflow
+  middleval = middleval / middleval_n;
+  middleval_n = 1;
+}
+
+//only for evicting single element
 LRUHandle* CBHTable::EvictFIFO(){
   std::pair<Slice, uint32_t> temp;
   LRUHandle* e = nullptr;
@@ -806,6 +838,8 @@ Cache::Handle* LRUCacheShard::Lookup(
         totalhit[hashshard]++;
         if(e != nullptr){
           e->SetHit();
+          e->indcafreq++;
+
           /*
           clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
           telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
@@ -888,10 +922,18 @@ Cache::Handle* LRUCacheShard::Lookup(
             */
             //DCAskip_hit[hashshard] += hitrate;
             //DCAskip_n[hashshard]++;
+            if(DCAclear_rate > 0){
+              cbhtable_.EvictMiddle();
+              for(auto elem : cbhtable_.DCA_evicted_list){
+                LRU_Insert(elem);
+              }
+              cbhtable_.DCA_evicted_list.clear();
+              evictmiddlecount[hashshard] = cbhtable_.middleval;
+            }
 
             LRUHandle* rete = cbhtable_.Insert(temp);
             if(rete != nullptr && rete != temp){
-              rete->Free(); //free them right away because they are not needed anymore
+              LRU_Insert(rete);
             }
             called++;
             temp = lru_.prev;
@@ -910,7 +952,7 @@ Cache::Handle* LRUCacheShard::Lookup(
                 i++;
                 rete = cbhtable_.Insert(temp, true); //prefetched entries shall be evicted first
                 if(rete != nullptr && rete != temp){
-                  rete->Free(); //free them right away because they are not needed anymore
+                  LRU_Insert(rete);
                 }
                 temp2 = temp->prev;
                 //no need to check for ref
@@ -1114,6 +1156,7 @@ Status LRUCacheShard::Insert(const Slice& key, uint32_t hash, void* value,
   e->SetPriority(priority);
   memcpy(e->key_data, key.data(), key.size());
   e->indca = false;
+  e->indcafreq = 0;
 
   return InsertItem(e, handle, /* free_handle_on_fail */ true);
 }
