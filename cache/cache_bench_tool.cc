@@ -72,7 +72,7 @@ DEFINE_uint32(cbhtbitlength, 15, "DCA BIT LENGTH");
 
 DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
-DEFINE_uint32(dcaclear_rate, 100, "DCA Clear rate (100 is 50%)");
+DEFINE_uint32(dcaclear_rate, 50, "DCA Clear rate (default 50%)");
 
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
@@ -773,7 +773,7 @@ class CacheBench {
       int maxphitcount = 0;
       int phittotal = 0;
       for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        int NLIMITtmp = NLIMIT[i] / NLIMIT_N[i];
+        int NLIMITtmp = NLIMIT_N[i];
         phittotal += NLIMITtmp;
         if(NLIMITtmp > maxphitcount){
           maxphiti = i;
@@ -846,34 +846,6 @@ class CacheBench {
       
       printf("\n\nlargest DCAentrycount: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average DCAentrycount = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
-    //results - readlock bypass percentage
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        int NLIMITtmp = readlockbypass[i] / totalhit[i];
-        phittotal += NLIMITtmp;
-        if(NLIMITtmp > maxphitcount){
-          maxphiti = i;
-          maxphitcount = NLIMITtmp;
-        }
-        displayarr[j] += (uint64_t)NLIMITtmp;
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest readlock bypass: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average readlock bypass = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
 
     //results - evictmiddlecount

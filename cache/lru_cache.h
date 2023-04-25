@@ -328,10 +328,8 @@ class CBHTable {
   
   
   autovector<LRUHandle*> DCA_evicted_list;
-  uint64_t middleval = 0;
-  uint64_t middleval_n = 1;
   LRUHandle* EvictFIFO();
-  void EvictMiddle();
+  void LRU_GC();
   
   bool IsTableFull();
   /*since DCA is almost immutable in reading
@@ -341,11 +339,11 @@ class CBHTable {
   (if hash is different, it won't have problems accessing the hashtable
   that is being modified)
   */
-  void beforeWriteLock(const Slice& key);
+  void beforeWriteLock(uint32_t& hash);
   void afterWriteLock();
   void beforeMasterLock();
   void afterMasterLock();
-  bool beforeReadLock(const Slice& key);
+  bool beforeReadLock(uint32_t& hash);
 
   //DCA ref pool
   int * DCA_ref_pool; //[actual ref slots], [slot avail index]
@@ -354,7 +352,7 @@ class CBHTable {
   
   bool locked;
   bool masterlocked;
-  Slice lockedkey;
+  uint32_t lockedhash;
 
   // ptr of lru_ head
   LRUHandle *lru_;
@@ -363,6 +361,12 @@ class CBHTable {
   // Number of elements currently in the table
   uint32_t elems_;
 
+  
+  uint64_t accessstamp = 0; //not locksafe.
+
+  //lookup / insert ratio
+  uint64_t lookupcount = 0;
+  uint64_t insertcount = 0;
  private:
   // Return a pointer to slot that points to a cache entry that
   // matches key/hash.  If there is no such cache entry, return a
@@ -380,8 +384,10 @@ class CBHTable {
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
 
-  //for EvictFIFO
+  //for eviction
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;
+  std::vector<LRUHandle*> hashkeytemp;
+
 
 };
 
