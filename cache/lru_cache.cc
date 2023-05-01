@@ -823,6 +823,8 @@ int cmpfunc(const void* a, const void* b){
   return (*(int*)a - *(int*)b);
 }
 
+//try to change other shard's count limit while running.
+//we need to make DCA update much faster for shards that dont get access as much.
 void copyAndSort(){
 
   //copy to sortarr
@@ -832,12 +834,15 @@ void copyAndSort(){
   //get median
   qsort(sortarr, shardnumlimit, sizeof(int), cmpfunc);
   //calc global median
-  //instead of just picking median, add and divide.
-  //this is to make sure skip still happens when all shards are low hitrate.
   //CBHTturnoff is a suggested percentage for picking median
-  skip_median = (sortarr[(shardnumlimit - 1) * CBHTturnoff / 100]
-   + CBHTturnoff) / 2;
+  skip_median = sortarr[(shardnumlimit - 1) * CBHTturnoff / 100];
   //skip_median = CBHTturnoff;
+
+  for(uint32_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
+    if(hitrate[i] < skip_median){
+      CBHTState[i] = 0; //skip others right away
+    }
+  }
 
   detected_skew = sortarr[(shardnumlimit - 1) * PADDING] - sortarr[0];
 
@@ -849,14 +854,17 @@ Cache::Handle* LRUCacheShard::Lookup(
     const ShardedCache::CacheItemHelper* helper,
     const ShardedCache::CreateCallback& create_cb, Cache::Priority priority,
     bool wait, Statistics* stats) {
-  LRUHandle* e = nullptr;
-  { 
-    /*
-    struct timespec telapsed = {0, 0};
-    struct timespec tstart = {0, 0}, tend = {0, 0};
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
+/*
+  struct timespec telapsed = {0, 0};
+  struct timespec tstart = {0, 0}, tend = {0, 0};
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tstart);
 */
+  
+  uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
+
+  LRUHandle* e = nullptr;
+  {
+
     /*
     //time to print out important stats
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
@@ -866,7 +874,6 @@ Cache::Handle* LRUCacheShard::Lookup(
     }
     //important stats end
     */
-    uint32_t hashshard = Shard(hash) * PADDING; //add cacheline padding.
     
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
     if(CBHTturnoff){
@@ -882,8 +889,11 @@ Cache::Handle* LRUCacheShard::Lookup(
       */
       if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
+        int inside = 0;
         if(cbhtable_.beforeReadLock(hash) || !DCAwritebypass){
-          ReadLock rl(&rwmutex_);
+          inside = 1;
+          //ReadLock rl(&rwmutex_);
+          rwmutex_.ReadLock();
         }
         else{
           readlockbypass[hashshard]++;
@@ -894,6 +904,12 @@ Cache::Handle* LRUCacheShard::Lookup(
           e->SetHit();
           e->indcafreq = cbhtable_.accessstamp++;
 
+          
+          
+          
+          if(inside == 1){
+            rwmutex_.ReadUnlock();
+          }
           /*
           clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
           telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
@@ -909,6 +925,9 @@ Cache::Handle* LRUCacheShard::Lookup(
           if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
             CBHTState[hashshard] = 0;
           }
+        }
+        if(inside == 1){
+          rwmutex_.ReadUnlock();
         }
       }
     }
@@ -967,7 +986,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             //get median from all of DCA shards
             copyAndSort();
             //calculate next dca skip
-            Nsupple[hashshard] = NLIMITtmp * skip_median / 100;
+            //Nsupple[hashshard] = NLIMITtmp * skip_median / 100;
            /*
             //remove some entries from DCA when pinned usage is too high
             while(((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit){
@@ -1052,16 +1071,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         }
       }
     }
-    shardaccesscount[hashshard] += 1;
-
-    /*
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
-    telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
-    telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
-    time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
-    shardtotaltime[hashshard] += telapsedtotal;
-    shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
-    */
+    shardaccesscount[hashshard] += 1;    
   }
 
   // If handle table lookup failed, then allocate a handle outside the
@@ -1117,6 +1127,14 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
     }
   }
+  /*
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
+  telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
+  telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
+  time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
+  shardtotaltime[hashshard] += telapsedtotal;
+  shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
+  */
   return reinterpret_cast<Cache::Handle*>(e);
 }
 
