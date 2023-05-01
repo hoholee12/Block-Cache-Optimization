@@ -41,6 +41,7 @@ alignas(PADDING) int invalidatedcount = 0;
 alignas(PADDING) int evictedcount = 0;
 alignas(PADDING) int DCAentriesfreed = 0;
 alignas(PADDING) int insertblocked = 0;
+alignas(PADDING) int buildheapcnt = 0;
 alignas(PADDING) time_t inittime;
 alignas(PADDING) time_t prevtime;
 alignas(PADDING) int cachehit = 0;
@@ -85,6 +86,8 @@ alignas(PADDING) uint32_t threadcount = 0;
 alignas(PADDING) int tidincr = 0;
 alignas(PADDING) int skip_median = 0;
 alignas(PADDING) uint32_t detected_skew = 0; //highest shard hitrate - lowest shard hitrate
+alignas(PADDING) bool DCAwritebypass = true;
+alignas(PADDING) int DCAhardlimit = 1;  // # of elems = 2 ^ (length_bits - DCAhardlimit)
 //////////////////////////////
 
 namespace ROCKSDB_NAMESPACE {
@@ -184,7 +187,7 @@ Cache::Handle* ShardedCache::Lookup(const Slice& key,
           CPU_SET(i + 16, &cpuset);
         }
         
-        pthread_setaffinity_np(tmp, sizeof(cpuset), &cpuset);
+        //pthread_setaffinity_np(tmp, sizeof(cpuset), &cpuset);
         tidincr++;
       }
     }

@@ -86,6 +86,7 @@ extern int called_refill;
 extern int invalidatedcount;
 extern int evictedcount;
 extern int insertblocked;
+extern int buildheapcnt;
 extern time_t inittime;
 extern time_t prevtime;
 extern int cachehit;
@@ -130,6 +131,8 @@ extern uint32_t threadcount;
 extern int tidincr;
 extern int skip_median;
 extern uint32_t detected_skew;
+extern bool DCAwritebypass;
+extern int DCAhardlimit;
 //////////////////////////////
 
 

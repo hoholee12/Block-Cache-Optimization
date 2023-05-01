@@ -403,8 +403,6 @@ DEFINE_double(zipf_const, 0.99, "Zipfian custom theta(zipfian constant)");
 
 DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
-DEFINE_uint32(cbhtbitlength, 15, "DCA BIT LENGTH");
-
 DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
@@ -412,6 +410,10 @@ DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 DEFINE_uint32(dcaclear_rate, 50, "DCA Clear rate (default 50%)");
 
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
+
+DEFINE_bool(dcawritebypass, true, "DCA Write Bypass on/off");
+
+DEFINE_int32(dcahardlimit, 1, "DCA hardlimit: # of elems = 2 ^ (length_bits - DCAhardlimit) (default:1)");
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -2533,6 +2535,8 @@ class Stats {
 
     printf("\n\n how much DCA eviction happened / blocked: %d / %d\n\n", evictedcount, insertblocked);
 
+    printf("\n\n how many times buildheap happened: %d\n\n", buildheapcnt);
+
     printf("\n\n how much DCA eviction happened from clear: %d\n\n", evictedfromclear);
 
     printf("\n\n no DCA at all / All DCA / total measure: %d / %d / %d\n\n", noDCAcount, fullDCAcount, totalDCAcount);
@@ -3475,16 +3479,18 @@ class Benchmark {
     NDEFAULT = FLAGS_nlimit;
     enableshardfix = FLAGS_enableshardfix;
     DCAsizelimit = FLAGS_dcasizelimit;
-    CBHTbitlength = FLAGS_cbhtbitlength;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAprefetch = FLAGS_dcaprefetch;
     DCAclear_rate = FLAGS_dcaclear_rate;
+    DCAwritebypass = FLAGS_dcawritebypass;
+    DCAhardlimit = FLAGS_dcahardlimit;
     
     called = 0;
     called_refill = 0;
     invalidatedcount = 0;
     evictedcount = 0;
     insertblocked = 0;
+    buildheapcnt = 0;
 
     
     keyrangecounter_size = FLAGS_num;

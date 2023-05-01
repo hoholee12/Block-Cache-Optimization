@@ -329,7 +329,9 @@ class CBHTable {
   
   autovector<LRUHandle*> DCA_evicted_list;
   LRUHandle* EvictFIFO();
+  void BuildHeap(int); // frequency is same as DCA Update
   void LRU_GC();
+  LRUHandle* EvictHeap();
   
   bool IsTableFull();
   /*since DCA is almost immutable in reading

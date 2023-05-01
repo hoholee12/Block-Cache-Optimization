@@ -7,7 +7,7 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
@@ -17,8 +17,10 @@ runbench(){
 
     if [[ $3 == "nocbht" ]]; then
         cbhtturnoff="-cbhtturnoff=0"
-    else
+    elif [[ $3 == "yescbht" ]]; then
         cbhtturnoff="-cbhtturnoff=100"
+    elif [[ $3 == "clock" ]]; then
+        cbhtturnoff="-use_clock_cache=true"
     fi
 
     if [[ $4 == "nodcaprefetch" ]]; then
@@ -27,12 +29,6 @@ runbench(){
     else
         dcaprefetch="-dcaprefetch=true"
         prefetchvalue="-dcasizelimit=$5"
-    fi
-
-    if [[ $6 == "clockcache" ]]; then
-        clockcache="-use_clock_cache=true"
-    else
-        clockcache="-use_clock_cache=false"
     fi
 
     mkdir results 2>/dev/null
@@ -50,13 +46,12 @@ runbench(){
     -nlimit=10000 \
     $dcaprefetch \
     $prefetchvalue \
-    $clockcache \
     -use_direct_io_for_flush_and_compaction=true \
     -use_direct_reads=true \
     -cache_size=$((1024*1024*1024*2)) \
     $cbhtturnoff \
     $prefetchvalue \
-    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6".txt \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5".txt \
     
     echo after run...
     df -T | grep mnt
@@ -115,7 +110,13 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
+initbench
+runbench 1024 ycsbwkldc nocbht yesdcaprefetch 50
 
+initbench
+runbench 1024 ycsbwkldc clock yesdcaprefetch 50
+
+exit
 
 
 initbench
