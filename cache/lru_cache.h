@@ -330,6 +330,7 @@ class CBHTable {
   autovector<LRUHandle*> DCA_evicted_list;
   LRUHandle* EvictFIFO();
   void BuildHeap(int); // frequency is same as DCA Update
+  LRUHandle* LeastRecentlyAccessedElem();
   void LRU_GC();
   LRUHandle* EvictHeap();
   
@@ -356,6 +357,8 @@ class CBHTable {
   bool masterlocked;
   uint32_t lockedhash;
 
+  uint64_t indcafreqmin;
+
   // ptr of lru_ head
   LRUHandle *lru_;
 
@@ -369,6 +372,12 @@ class CBHTable {
   //lookup / insert ratio
   uint64_t lookupcount = 0;
   uint64_t insertcount = 0;
+
+  
+  //for eviction
+  std::deque<std::pair<Slice, uint32_t>> hashkeylist;
+  std::vector<LRUHandle*> hashkeytemp;
+
  private:
   // Return a pointer to slot that points to a cache entry that
   // matches key/hash.  If there is no such cache entry, return a
@@ -385,10 +394,6 @@ class CBHTable {
 
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
-
-  //for eviction
-  std::deque<std::pair<Slice, uint32_t>> hashkeylist;
-  std::vector<LRUHandle*> hashkeytemp;
 
 
 };

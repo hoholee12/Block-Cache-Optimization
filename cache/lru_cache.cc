@@ -185,10 +185,16 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 //this replaces to new entry from old entry via same key, and returns old one?
 LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   LRUHandle* rete = nullptr;
-
+  
   //pre check if its a new element
   if(Lookup(h->key(), h->hash) == nullptr){
-    //start eviction if table is half full
+    //dont insert if h is older than DCA
+    if(h->indcafreq < indcafreqmin){
+      insertblocked++;
+      return h;
+    }
+
+    //start eviction if table is half full    
     if (elems_ + 1 > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
       //remove one entry from DCA
       rete = EvictHeap();
@@ -346,6 +352,11 @@ void CBHTable::BuildHeap(int suggestedElems){
       iter = hashkeylist.erase(iter);
     }
   }
+
+  //get the least access timestamp for DCA
+  std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+  indcafreqmin = hashkeytemp.back()->indcafreq;
+  std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
 }
 
 //loose LRU garbage collector for DCA
@@ -385,6 +396,16 @@ LRUHandle* CBHTable::EvictHeap(){
       evictedcount++;
       break;  //do only one eviction
     }
+  }
+  return result;
+}
+
+LRUHandle* CBHTable::LeastRecentlyAccessedElem(){
+  LRUHandle* result = nullptr;
+  if(!hashkeytemp.empty()){
+    std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+    result = hashkeytemp.back();
+    std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
   }
   return result;
 }
@@ -944,6 +965,7 @@ Cache::Handle* LRUCacheShard::Lookup(
     //sanity check
     if (e != nullptr) {
       e->SetHit();
+      e->indcafreq = cbhtable_.accessstamp++;
 
       //identify DCA hitrate without actually using DCA
       virtual_totalhit[hashshard]++;

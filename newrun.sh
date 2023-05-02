@@ -7,7 +7,7 @@ runbench(){
     echo dataset $((9039*$1))
     dataset=$((9039*$1))
 
-    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"
+    echo "$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6"
     
     sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 
@@ -51,7 +51,8 @@ runbench(){
     -cache_size=$((1024*1024*1024*2)) \
     $cbhtturnoff \
     $prefetchvalue \
-    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5".txt \
+    -zipf_const=$6 \
+    &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6".txt \
     
     echo after run...
     df -T | grep mnt
@@ -110,11 +111,16 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
-initbench
-runbench 1024 ycsbwkldc nocbht yesdcaprefetch 50
+for meskew in 0.0 0.25 0.5 0.75 0.99; do
+    initbench
+    runbench 128 ycsbwkldc nocbht yesdcaprefetch 50 $meskew
 
-initbench
-runbench 1024 ycsbwkldc clock yesdcaprefetch 50
+    initbench
+    runbench 128 ycsbwkldc yescbht yesdcaprefetch 50 $meskew
+
+    initbench
+    runbench 128 ycsbwkldc clock yesdcaprefetch 50 $meskew
+done
 
 exit
 
