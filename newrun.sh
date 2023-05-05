@@ -52,6 +52,10 @@ runbench(){
     $cbhtturnoff \
     $prefetchvalue \
     -zipf_const=$6 \
+    -level0_slowdown_writes_trigger=1000 \
+    -level0_stop_writes_trigger=1000 \
+    -level0_file_num_compaction_trigger=1000 \
+    -max_bytes_for_level_base=10485760000 \
     &> results/"$2"_on_"$(($1/1024))GB"_"$3"_"$4"_"$5"_"$6".txt \
     
     echo after run...
@@ -111,12 +115,15 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
-for meskew in 0.0 0.25 0.5 0.75 0.99; do
-    initbench
-    runbench 128 ycsbwkldc nocbht yesdcaprefetch 50 $meskew
-
+initbench
+runbench 32 ycsbwkldc yescbht yesdcaprefetch 50 0.99
+exit
+for meskew in 0.99; do
     initbench
     runbench 128 ycsbwkldc yescbht yesdcaprefetch 50 $meskew
+
+    initbench
+    runbench 128 ycsbwkldc nocbht yesdcaprefetch 50 $meskew
 
     initbench
     runbench 128 ycsbwkldc clock yesdcaprefetch 50 $meskew

@@ -99,6 +99,8 @@ extern int freecount_insertitem;
 extern int freecount_secondarycache;
 extern int freecount_release;
 extern int freecount_erase;
+extern uint64_t maxchain;
+extern uint64_t fullchain;
 //////////////////
 
 //////////////////////////////

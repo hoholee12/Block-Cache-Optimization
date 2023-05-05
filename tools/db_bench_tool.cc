@@ -2527,6 +2527,8 @@ class Stats {
     printf("dca size limit      : %d\n", FLAGS_dcasizelimit);
     printf("dca skip miss perce : %u%%\n", FLAGS_cbhtturnoff);
         
+    printf("\n\n fullchain: %lu, maxchain: %lu\n\n", fullchain, maxchain);
+
     printf("\n\n how much is DCA update called: %d\n\n", called + called_refill);
 
     printf("\n\n count DCA update self/prefetch from lru: %d/%d\n\n", called, called_refill);

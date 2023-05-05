@@ -185,7 +185,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 //this replaces to new entry from old entry via same key, and returns old one?
 LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   LRUHandle* rete = nullptr;
-  
+
   //pre check if its a new element
   if(Lookup(h->key(), h->hash) == nullptr){
     //dont insert if h is older than DCA
@@ -314,9 +314,15 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   //length_bits is lower, shard bits is higher.
   LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
   //and this is done when collision
+  uint64_t i = 0;
   while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
     ptr = &(*ptr)->next_hash_cbht;
+    i++;
   }
+  if(maxchain < i){
+    maxchain = i;
+  }
+  fullchain += i;
   return ptr;
 }
 
