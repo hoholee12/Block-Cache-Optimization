@@ -663,8 +663,9 @@ void LRUCacheShard::MaintainPoolSize() {
   }
 }
 
-void LRUCacheShard::EvictFromLRU(size_t charge,
+bool LRUCacheShard::EvictFromLRU(size_t charge,
                                  autovector<LRUHandle*>* deleted) {
+  bool evicted = false;
   while ((usage_ + charge) > capacity_ && lru_.next != &lru_) {
     evictedfromlrucount++;
     LRUHandle* old = lru_.next;
@@ -689,7 +690,9 @@ void LRUCacheShard::EvictFromLRU(size_t charge,
     assert(usage_ >= old_total_charge);
     usage_ -= old_total_charge;
     deleted->push_back(old);
+    evicted = true;
   }
+  return evicted;
 }
 
 void LRUCacheShard::SetCapacity(size_t capacity) {
@@ -733,8 +736,20 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
 
     // Free the space following strict LRU policy until enough space
     // is freed or the lru list is empty
-    EvictFromLRU(total_charge, &last_reference_list);
 
+    //if LRU is empty, check DCA
+    bool evicted = false;
+    evicted = EvictFromLRU(total_charge, &last_reference_list);
+    if(!evicted){
+      LRUHandle* temp = cbhtable_.EvictHeap();
+      if(temp != nullptr){
+        temp->SetInCache(false);
+        size_t old_total_charge = temp->CalcTotalCharge(metadata_charge_policy_);
+        assert(usage_ >= old_total_charge);
+        usage_ -= old_total_charge;
+        last_reference_list.push_back(temp);
+      }
+    }
 
     if ((usage_ + total_charge) > capacity_ &&
         (strict_capacity_limit_ || handle == nullptr)) {

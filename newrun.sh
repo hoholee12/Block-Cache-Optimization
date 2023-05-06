@@ -115,8 +115,11 @@ fi
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 100 | sudo tee /sys/devices/system/cpu/intel_pstate/min_perf_pct
 
-initbench
-runbench 32 ycsbwkldc yescbht yesdcaprefetch 50 0.99
+for meskew in 0.0 0.25 0.5 0.75 0.99; do
+    initbench
+    runbench 32 ycsbwkldc yescbht yesdcaprefetch 50 $meskew
+done
+
 exit
 for meskew in 0.99; do
     initbench
