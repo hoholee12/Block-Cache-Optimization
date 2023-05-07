@@ -153,15 +153,15 @@ CBHTable::CBHTable(int max_upper_hash_bits)
     : elems_(0),
       length_bits_(CBHTbitlength),
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
+      //rlist_(new uint32_t [threadcount] {}),
+      //DCA_ref_pool(new int [((size_t{1} << length_bits_) * threadcount) + (size_t{1} << length_bits_)] {}),
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
-        //we don't want destructor to be called while accessing ref pool,
-        //so we use malloc.
-        ////[slot availability check], [actual ref slots]
+        rlist_ = (uint32_t*)calloc(threadcount, sizeof(uint32_t));
         DCA_ref_pool = (int*)calloc(((size_t{1} << CBHTbitlength) * threadcount)
          + (size_t{1} << CBHTbitlength), sizeof(int));
         stampincr = 0;
-        availindex = (size_t{1} << CBHTbitlength) * threadcount;
+        availindex = (size_t{1} << length_bits_) * threadcount;
       }
 
 CBHTable::~CBHTable() {
@@ -169,7 +169,9 @@ CBHTable::~CBHTable() {
 }
 
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
+  beforeReadLock(hash);
   LRUHandle* ptr = *FindPointer(key, hash);
+  afterReadLock();
   if(ptr != nullptr){
     //since its not protected by write lock,
     //there is a slight chance that the entry may have been de-DCAed.
@@ -207,6 +209,8 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   }
 
   //insert
+  //before insert, hash lock
+  beforeWriteLock(h->hash);
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
@@ -257,10 +261,12 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   -nullptr (h was inserted)
   -old entry (also must LRU_Insert this outside)
   */
+  afterWriteLock();
   return old;
 }
 
 LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
+  beforeWriteLock(hash);
   LRUHandle** ptr = FindPointer(key, hash);
   LRUHandle* result = *ptr;
   if (result != nullptr) {
@@ -277,6 +283,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       //don't force. return nullptr if it is still referenced.
       if(dontforce){
         if(refstmp != 0){
+          afterWriteLock();
           return nullptr;
         }
       }
@@ -297,6 +304,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       --elems_;
     }
   }
+  afterWriteLock();
   return result;
 }
 
@@ -314,15 +322,9 @@ LRUHandle** CBHTable::FindPointer(const Slice& key, uint32_t hash) {
   //length_bits is lower, shard bits is higher.
   LRUHandle** ptr = &list_[hash >> (32 - length_bits_)];
   //and this is done when collision
-  uint64_t i = 0;
   while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
     ptr = &(*ptr)->next_hash_cbht;
-    i++;
   }
-  if(maxchain < i){
-    maxchain = i;
-  }
-  fullchain += i;
   return ptr;
 }
 
@@ -450,31 +452,36 @@ bool CBHTable::IsTableFull(){
 }
 
 void CBHTable::beforeWriteLock(uint32_t& hash){
-  lockedhash = hash;
-  locked = true;
+  while(1){
+    uint32_t i = 0;
+    for(; i < threadcount; i++){
+      if(rlist_[i] == hash){
+        break;
+      }
+    }
+    //none of the readers use this hash
+    if(i == threadcount){
+      htl.WriteLock();
+      whash = hash;
+      return;
+    }
+  }
 }
 
 void CBHTable::afterWriteLock(){
-  locked = false;
+  whash = 0;
+  htl.WriteUnlock();
 }
 
-void CBHTable::beforeMasterLock(){
-  masterlocked = true;
-}
-
-void CBHTable::afterMasterLock(){
-  masterlocked = false;
-}
-
-bool CBHTable::beforeReadLock(uint32_t& hash){
-  /*
-    return true if readlock is required
-    return false if bypassing is allowed
-  */
-  if(!masterlocked && (!locked || lockedhash != hash)){
-    return false;
+void CBHTable::beforeReadLock(uint32_t& hash){
+  if(whash == hash || !DCAwritebypass){
+    ReadLock rl(&htl);  //only for stopping when writelock
   }
-  return true;
+  rlist_[getmytid()] = hash;
+}
+
+void CBHTable::afterReadLock(){
+  rlist_[getmytid()] = 0;
 }
 
 LRUCacheShard::LRUCacheShard(
@@ -517,11 +524,8 @@ void LRUCacheShard::EraseUnRefEntries() {
       table_.Remove(old->key(), old->hash);
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         if(old->indca){
-          WriteLock wl(&rwmutex_);
-          if(old->indca){
-            if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
-              invalidatedcount++;
-            }
+          if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+            invalidatedcount++;
           }
         }
       }
@@ -675,11 +679,8 @@ bool LRUCacheShard::EvictFromLRU(size_t charge,
     LRU_Remove(old);
     if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
       if(old->indca){
-        WriteLock wl(&rwmutex_);
-        if(old->indca){
-          if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
-            invalidatedcount++;
-          }
+        if(cbhtable_.Remove(old->key(), old->hash) != nullptr){
+          invalidatedcount++;
         }
       }
     }
@@ -786,16 +787,11 @@ Status LRUCacheShard::InsertItem(LRUHandle* e, Cache::Handle** handle,
           if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
             cbhtable_.insertcount++;
             if(old->indca){
-              cbhtable_.beforeWriteLock(e->hash);
-              WriteLock wl(&rwmutex_);
-              if(old->indca){
-                //update to the new entry
-                if(cbhtable_.Lookup(e->key(), e->hash) != nullptr){
-                  cbhtable_.Insert(e);
-                  invalidatedcount++;
-                }
+              //update to the new entry
+              if(cbhtable_.Lookup(e->key(), e->hash) != nullptr){
+                cbhtable_.Insert(e);
+                invalidatedcount++;
               }
-              cbhtable_.afterWriteLock();
             }
           }
         }
@@ -921,37 +917,15 @@ Cache::Handle* LRUCacheShard::Lookup(
     if(CBHTturnoff){
       cbhtable_.lookupcount++;
       
-      //negative cache check
-      //if it doesnt exist in the LRU cache, it doesnt exist in the DCA anyway.
-      /*
-      e = table_.Lookup(key, hash);
-      if(e == nullptr){
-        return nullptr;
-      }
-      */
       if(CBHTState[hashshard] || CBHTturnoff == 100)
       {
-        int inside = 0;
-        if(cbhtable_.beforeReadLock(hash) || !DCAwritebypass){
-          inside = 1;
-          //ReadLock rl(&rwmutex_);
-          rwmutex_.ReadLock();
-        }
-        else{
-          readlockbypass[hashshard]++;
-        }
+        //internal readlock
         e = cbhtable_.Lookup(key, hash);
         totalhit[hashshard]++;
         if(e != nullptr){
           e->SetHit();
           e->indcafreq = cbhtable_.accessstamp++;
 
-          
-          
-          
-          if(inside == 1){
-            rwmutex_.ReadUnlock();
-          }
           /*
           clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
           telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
@@ -967,9 +941,6 @@ Cache::Handle* LRUCacheShard::Lookup(
           if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
             CBHTState[hashshard] = 0;
           }
-        }
-        if(inside == 1){
-          rwmutex_.ReadUnlock();
         }
       }
     }
@@ -1013,8 +984,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         NLIMIT_N[hashshard] = nlimtmp;  //for telemetry
 
         if(N[hashshard] > NLIMITtmp){
-          cbhtable_.beforeMasterLock();
-          WriteLock wl(&rwmutex_);
+          MutexLock m(&dcamaster_); //this is to make sure DCA update doesnt happen repeatedly
           if(N[hashshard] > NLIMITtmp){
             N[hashshard] = 0;
 
@@ -1110,7 +1080,6 @@ Cache::Handle* LRUCacheShard::Lookup(
             CBHTState[hashshard] = 1; //re-enable DCA
             DCAentrycount[hashshard] = cbhtable_.elems_;
           }
-          cbhtable_.afterMasterLock();
         }
       }
     }
@@ -1322,15 +1291,10 @@ void LRUCacheShard::Erase(const Slice& key, uint32_t hash) {
       if(CBHTturnoff){  //if turnoff is 0, always disable CBHT
         cbhtable_.insertcount++;
         if(e->indca){
-          cbhtable_.beforeWriteLock(e->hash);
-          WriteLock wl(&rwmutex_);
-          if(e->indca){
-            if(cbhtable_.Remove(e->key(), e->hash) != nullptr){
-              invalidatedcount++;
-              last_reference = true; //free the dca entry.
-            }
+          if(cbhtable_.Remove(e->key(), e->hash) != nullptr){
+            invalidatedcount++;
+            last_reference = true; //free the dca entry.
           }
-          cbhtable_.afterWriteLock();
         }
       }
     }

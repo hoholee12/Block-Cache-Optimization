@@ -76,7 +76,7 @@ DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
 DEFINE_bool(dcawritebypass, true, "DCA Write Bypass on/off");
 
-DEFINE_int32(dcahardlimit, 1, "DCA hardlimit: # of elems = 2 ^ (length_bits - DCAhardlimit) (default:1)");
+DEFINE_int32(dcahardlimit, 0, "DCA hardlimit: # of elems = 2 ^ (length_bits - DCAhardlimit) (default:1)");
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 

@@ -336,27 +336,18 @@ class CBHTable {
   LRUHandle* EvictHeap();
   
   bool IsTableFull();
-  /*since DCA is almost immutable in reading
-  (reading just requires 1.read lock 2. hashtable)
-  we can simply bypass write lock by checking if the read is using 
-  different hash.
-  (if hash is different, it won't have problems accessing the hashtable
-  that is being modified)
+  
+  /*
+  for DCA fine-grained locking
+
+  since DCA uses separate chaining for hashtable,
+  if hash is different, it won't have problems accessing the hashtable
+  that is being modified.
   */
   void beforeWriteLock(uint32_t& hash);
   void afterWriteLock();
-  void beforeMasterLock();
-  void afterMasterLock();
-  bool beforeReadLock(uint32_t& hash);
-
-  //DCA ref pool
-  int * DCA_ref_pool; //[actual ref slots], [slot avail index]
-  int availindex;
-  int stampincr;
-  
-  bool locked;
-  bool masterlocked;
-  uint32_t lockedhash;
+  void beforeReadLock(uint32_t& hash);
+  void afterReadLock();
 
   uint64_t indcafreqmin;
 
@@ -393,10 +384,32 @@ class CBHTable {
   // a linked list of cache entries that hash into the bucket.
   std::unique_ptr<LRUHandle*[]> list_;
 
+
+  /*
+  for DCA fine-grained locking
+
+  since DCA uses separate chaining for hashtable,
+  if hash is different, it won't have problems accessing the hashtable
+  that is being modified.
+  */
+  port::RWMutex htl;    //wait for write lock
+  uint32_t whash; //for write lock hash
+  //std::unique_ptr<uint32_t[]> rlist_; //for read lock hash
+  uint32_t* rlist_;
+  
+  //DCA ref pool
+  //std::unique_ptr<int[]> DCA_ref_pool; //[actual ref slots], [slot avail index]
+  int* DCA_ref_pool;
+  int availindex;
+  int stampincr;
+  
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
 
+  // for findpointer mode
+  enum{FPlookup, FPinsert};
 
+  
 };
 
 // A single shard of sharded cache.
@@ -549,10 +562,10 @@ class ALIGN_AS(CACHE_LINE_SIZE) LRUCacheShard final : public CacheShard {
   // ------------vvvvvvvvvvvvv-----------
   LRUHandleTable table_;
 
-  //CBH
+  //DCA
   CBHTable cbhtable_;
-  //rwlock for cbt
-  mutable port::RWMutex rwmutex_;
+  //master lock for DCA
+  mutable port::Mutex dcamaster_;
 
   // Memory size for entries residing in the cache
   size_t usage_;

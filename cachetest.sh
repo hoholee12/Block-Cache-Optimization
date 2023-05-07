@@ -18,8 +18,31 @@ i=4
 shardbit=4
 threads=32
 constant=0.99
-for size in 100; do
-    ./cache_bench --nlimit=10000 --dcasizelimit=$size --dcahardlimit=0 --cbhtturnoff=100 --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=80 --insert_percent=20 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_mix_size"$size"_throughput_skew.txt
+
+
+
+for const in 0.0 0.25 0.50 0.75 1.0; do
+    ./memcheck.sh > results_cache/2023_nobypass_throughput_skew"$const"_memusage.txt &
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcawritebypass=false --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_nobypass_throughput_skew"$const".txt
+    sleep 5
+done
+
+exit
+
+
+
+
+
+name=s8
+./memcheck.sh > results_cache/"$name"_memusage.txt &
+./cache_bench --nlimit=10000 --dcasizelimit=50 --use_clock_cache=true --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=80 --insert_percent=20 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/"$name".txt
+sleep 5
+
+
+exit
+
+for size in 1 25 50 75 100; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=$size --dcahardlimit=0 --cbhtturnoff=100 --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=0.0 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=80 --insert_percent=20 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_mix_size"$size"_throughput_skew.txt
 done
 
 exit
@@ -39,13 +62,7 @@ for percent in 90 80 70 60 50; do
 done
 exit
 
-for const in 0.0 0.25 0.50 0.75 1.0; do
-    ./memcheck.sh > results_cache/2023_throughput_skew"$const"_memusage.txt &
-    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew"$const".txt
-    sleep 5
-done
 
-exit
 
 ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=50 --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew.txt
 
