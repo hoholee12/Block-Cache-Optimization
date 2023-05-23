@@ -18,13 +18,28 @@ i=4
 shardbit=4
 threads=32
 constant=0.99
-
-
-
+for percent in 90 80 70 60 50; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --dcawritebypass=true --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_bypass_insertmix_lookup$percent.txt
+done
+exit
 for const in 0.0 0.25 0.50 0.75 1.0; do
-    ./memcheck.sh > results_cache/2023_nobypass_throughput_skew"$const"_memusage.txt &
-    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcawritebypass=false --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_nobypass_throughput_skew"$const".txt
+    ./memcheck.sh > results_cache/2023_throughput_skew"$const"_memusage.txt &
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew"$const".txt
     sleep 5
+done
+exit
+
+for percent in 90 80 70 60 50; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --dcawritebypass=false --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_nobypass_insertmix_lookup$percent.txt
+done
+exit
+
+for shardbit in 0; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=0 --dcawritebypass=false --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=0.0 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_unif_throughput_shard"$shardbit".txt
+done
+
+for shardbit in 0; do
+    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=0 --dcawritebypass=false --dcaclear_rate=0 --enableshardfix=false --skewed=true --zipf_const=1.0 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_skew_throughput_shard"$shardbit".txt
 done
 
 exit
@@ -71,9 +86,7 @@ exit
 exit
 
 
-for percent in 90 80 70 60 50; do
-    ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --dcawritebypass=true --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_bypass_insertmix_lookup$percent.txt
-done
+
 for percent in 90 80 70 60 50; do
     ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=0 --dcawritebypass=false --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_nobypass_insertmix_lookup$percent.txt
 done
