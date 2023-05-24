@@ -460,17 +460,17 @@ void CBHTable::beforeWriteLock(uint32_t& hash){
       }
     }
     //none of the readers use this hash
-    if(i == threadcount && whash != hash){
-      whash = hash;
+    if(i == threadcount){
       htl.WriteLock();
+      whash = hash;
       return;
     }
   }
 }
 
 void CBHTable::afterWriteLock(){
-  htl.WriteUnlock();
   whash = 0;
+  htl.WriteUnlock();
 }
 
 void CBHTable::beforeReadLock(uint32_t& hash){
