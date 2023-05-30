@@ -307,7 +307,7 @@ class CBHTable {
   ~CBHTable();
 
   LRUHandle* Lookup(const Slice& key, uint32_t hash);
-  LRUHandle* Insert(LRUHandle* h, bool reverse = false);
+  LRUHandle* Insert(LRUHandle* h, bool reverse = false, bool forceinsert = false);
   LRUHandle* Remove(const Slice& key, uint32_t hash, bool dontforce = false);
   void Unref(LRUHandle* e); //for DCA_ref_pool
 
@@ -337,7 +337,7 @@ class CBHTable {
   
   bool IsTableFull();
 
-  void Resize();
+  bool Resize();
   
   /*
   for DCA fine-grained locking
@@ -375,13 +375,9 @@ class CBHTable {
   int totalhit = 0;
   int virtual_nohit = 0;
   int virtual_totalhit = 0;
-
-  //N counter
-  int N = 0;
-  int NLIMIT;
-
   
   //for eviction
+  int dcaevictlim;
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;
   std::vector<LRUHandle*> hashkeytemp;
 

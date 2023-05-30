@@ -158,6 +158,8 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       //rlist_(new uint32_t [threadcount] {}),
       //DCA_ref_pool(new int [((size_t{1} << length_bits_) * threadcount) + (size_t{1} << length_bits_)] {}),
       max_length_bits_(max_upper_hash_bits) {
+        dcaevictlim = DCAsizelimit;
+
         //for DCA ref pool
         rlist_ = (uint32_t*)calloc(threadcount, sizeof(uint32_t));
         DCA_ref_pool = (int*)calloc(((size_t{1} << max_length_bits_) * threadcount)
@@ -170,16 +172,16 @@ CBHTable::~CBHTable() {
   //CBHT entries are linked to HT. dont free them here.
 }
 
-void CBHTable::Resize() {
+bool CBHTable::Resize() {
   if (length_bits_ >= max_length_bits_) {
     // Due to reaching limit of hash information, if we made the table
     // bigger, we would allocate more addresses but only the same
     // number would be used.
-    return;
+    return false;
   }
   if (length_bits_ >= 31) {
     // Avoid undefined behavior shifting uint32_t by 32
-    return;
+    return false;
   }
 
   //printf("DCA Resize initiated: %d -> %d bits\n", length_bits_, length_bits_ + 1);
@@ -190,8 +192,6 @@ void CBHTable::Resize() {
     new LRUHandle* [size_t{1} << new_length_bits] {}
   };
 
-  //this is where move starts
-  beforeMasterLock();
   uint32_t count = 0;
   for (uint32_t i = 0; i < old_length; i++) {
     LRUHandle* h = list_[i];
@@ -208,7 +208,8 @@ void CBHTable::Resize() {
   assert(elems_ == count);
   list_ = std::move(new_list);
   length_bits_ = new_length_bits;
-  afterMasterLock();
+
+  return true;
 }
 
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
@@ -228,9 +229,9 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 }
 
 //this replaces to new entry from old entry via same key, and returns old one?
-LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
+LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse, bool forceinsert) {
   LRUHandle* rete = nullptr;
-
+  bool must_resize = false;
   //pre check if its a new element
   if(Lookup(h->key(), h->hash) == nullptr){
     //dont insert if h is older than DCA
@@ -239,13 +240,17 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
       return h;
     }
 
-    elems_++;
-    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {
-      Resize();
+    if (elems_ + 1 > (size_t{1} << (length_bits_ - DCAhardlimit))) {
+      must_resize = true;
     }
+  }
 
-    //start eviction if table is half full    
-    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
+  //insert
+  //before insert, hash lock
+  beforeWriteLock(h->hash);
+  if(must_resize){
+    if(Resize() == false || forceinsert){
+      //if resizing failed
       //remove one entry from DCA
       rete = EvictHeap();
       if(rete == nullptr){
@@ -256,9 +261,6 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
     }
   }
 
-  //insert
-  //before insert, hash lock
-  beforeWriteLock(h->hash);
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
@@ -425,7 +427,7 @@ void CBHTable::LRU_GC(){
   //BuildHeap(); //already done outside
 
   //LRU based eviction
-  uint64_t hardlimit = (size_t{1} << (length_bits_ - DCAhardlimit)) * DCAclear_rate / 100;
+  uint64_t hardlimit = (size_t{1} << (length_bits_ - DCAhardlimit)) * DCAsizelimit / 100;
 
   while(!hashkeytemp.empty() && hardlimit-- > 0){ 
     std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
@@ -1079,9 +1081,9 @@ Cache::Handle* LRUCacheShard::Lookup(
               cbhtable_.BuildHeap(1);
             }
 
-
+/*
             if(DCAclear_rate > 0){
-              cbhtable_.LRU_GC();
+              //cbhtable_.LRU_GC();
               for(auto elem : cbhtable_.DCA_evicted_list){
                 if(elem->refs == 0){
                   LRU_Insert(elem);
@@ -1090,7 +1092,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               evictmiddlecount[hashshard] += cbhtable_.DCA_evicted_list.size();
               cbhtable_.DCA_evicted_list.clear();
             }
-
+*/
             LRUHandle* rete = cbhtable_.Insert(temp);
             if(rete != nullptr && rete != temp){
               if(rete->refs == 0){
@@ -1109,13 +1111,18 @@ Cache::Handle* LRUCacheShard::Lookup(
               //dont fill if LRU empty or pinned usage over half
               //dont care if DCA table is full, always DCA insert so to make
               //sure DCA has the hottest entries.
-              while (lru_.next != &lru_ && ((((usage_ - lru_usage_) * 100 / 
-              capacity_) < DCAsizelimit) || DCAsizelimit == 100) && 
-              (i < NLIMITtmp - 1)){
+              while ((lru_.next != &lru_) && (i < NLIMITtmp - 1)){
                 i++;
                 temp2 = temp->prev;
+                if(temp->indcafreq < cbhtable_.indcafreqmin){
+                  break;  //dont try to evict anything if LRU is older than DCA
+                }
                 LRU_Remove(temp); //keep all dca entries out of lru
-                rete = cbhtable_.Insert(temp, true); //prefetched entries shall be evicted first
+                bool forceinsert = false;
+                if((((usage_ - lru_usage_) * 100 / capacity_) >= DCAsizelimit) && DCAsizelimit != 100){
+                  forceinsert = true;
+                }
+                rete = cbhtable_.Insert(temp, true, forceinsert); //prefetched entries shall be evicted first
                 if(rete != nullptr && rete != temp){
                   if(rete->refs == 0){
                     LRU_Insert(rete);

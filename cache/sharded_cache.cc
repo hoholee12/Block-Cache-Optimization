@@ -74,9 +74,8 @@ alignas(PADDING) int compaction_lasthit[SHARDCOUNT * PADDING];
 alignas(PADDING) bool compactioninprogress = false;
 alignas(PADDING) int NDEFAULT = 20000;
 alignas(PADDING) int CBHTturnoff = 20; //MISSRATE
-alignas(PADDING) int DCAclear_rate = 50;
 alignas(PADDING) bool DCAprefetch = true;
-alignas(PADDING) uint32_t DCAsizelimit = 10;
+alignas(PADDING) uint32_t DCAsizelimit = 50;
 alignas(PADDING) uint32_t threadcount = 0;
 alignas(PADDING) int tidincr = 0;
 alignas(PADDING) int skip_median = 0;
