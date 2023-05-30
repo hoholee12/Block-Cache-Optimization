@@ -370,6 +370,16 @@ class CBHTable {
   uint64_t lookupcount = 0;
   uint64_t insertcount = 0;
 
+  //hitrate counters
+  int nohit = 0;
+  int totalhit = 0;
+  int virtual_nohit = 0;
+  int virtual_totalhit = 0;
+
+  //N counter
+  int N = 0;
+  int NLIMIT;
+
   
   //for eviction
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;

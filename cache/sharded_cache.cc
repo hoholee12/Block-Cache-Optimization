@@ -64,16 +64,10 @@ alignas(PADDING) std::map<pthread_t, int> tids;
 alignas(PADDING) int N[SHARDCOUNT * PADDING];  // all 0s
 alignas(PADDING) int Nsupple[SHARDCOUNT * PADDING];
 alignas(PADDING) int CBHTState[SHARDCOUNT * PADDING]; // all trues
-alignas(PADDING) int nohit[SHARDCOUNT * PADDING]; // all 0s
-alignas(PADDING) int totalhit[SHARDCOUNT * PADDING];
 alignas(PADDING) int readlockbypass[SHARDCOUNT * PADDING];
-alignas(PADDING) int virtual_nohit[SHARDCOUNT * PADDING];
-alignas(PADDING) int virtual_totalhit[SHARDCOUNT * PADDING];
 alignas(PADDING) int sortarr[SHARDCOUNT * PADDING];
 alignas(PADDING) int NLIMIT[SHARDCOUNT * PADDING];
 alignas(PADDING) int NLIMIT_N[SHARDCOUNT * PADDING];
-alignas(PADDING) int DCAskip_hit[SHARDCOUNT * PADDING];
-alignas(PADDING) int DCAskip_n[SHARDCOUNT * PADDING];
 alignas(PADDING) int compactiontrigger[SHARDCOUNT * PADDING];
 alignas(PADDING) int compaction_lasthit[SHARDCOUNT * PADDING];
 //unified as hitrates

@@ -109,16 +109,10 @@ extern std::map<pthread_t, int> tids;
 extern int N[SHARDCOUNT * PADDING];
 extern int Nsupple[SHARDCOUNT * PADDING];
 extern int CBHTState[SHARDCOUNT * PADDING];
-extern int nohit[SHARDCOUNT * PADDING];
-extern int totalhit[SHARDCOUNT * PADDING];
 extern int readlockbypass[SHARDCOUNT * PADDING];
-extern int virtual_nohit[SHARDCOUNT * PADDING];
-extern int virtual_totalhit[SHARDCOUNT * PADDING];
 extern int sortarr[SHARDCOUNT * PADDING];
 extern int NLIMIT[SHARDCOUNT * PADDING];
 extern int NLIMIT_N[SHARDCOUNT * PADDING];
-extern int DCAskip_hit[SHARDCOUNT * PADDING];
-extern int DCAskip_n[SHARDCOUNT * PADDING];
 extern int compactiontrigger[SHARDCOUNT * PADDING];
 extern int compaction_lasthit[SHARDCOUNT * PADDING];
 //unified as hitrates

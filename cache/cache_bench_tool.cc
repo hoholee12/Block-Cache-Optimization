@@ -399,12 +399,8 @@ class CacheBench {
       compactiontrigger[i] = 1; //forces DCA Prefetch at start
       compaction_lasthit[i] = 0;
       CBHTState[i] = 1;
-      nohit[i] = 0;
-      totalhit[i] = 0;
       readlockbypass[i] = 0;
       hitrate[i] = 0;
-      virtual_nohit[i] = 0;
-      virtual_totalhit[i] = 0;
       sortarr[i] = 0;
     }
     threadcount = FLAGS_threads;
@@ -799,35 +795,7 @@ class CacheBench {
       printf("\n\nlargest NLIMIT: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average NLIMIT = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
-
-    //results - readlock bypass percentage
-    {
-      memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);
-      j = 0;
-      printf("\n\n");
-      int maxphiti = -1;
-      int maxphitcount = 0;
-      int phittotal = 0;
-      for(uint64_t i = 0; i < shardnumlimit * PADDING; i += PADDING){
-        int NLIMITtmp = readlockbypass[i] / (totalhit[i] + 1);
-        phittotal += NLIMITtmp;
-        if(NLIMITtmp > maxphitcount){
-          maxphiti = i;
-          maxphitcount = NLIMITtmp;
-        }
-        displayarr[j] += (uint64_t)NLIMITtmp;
-        if(i % repeat == repeat - 1){
-          //displayarr[j] /= repeat; //avg
-          j++;
-        }
-      }
-
-      for(uint64_t i = 0; i < shardlimit; i++) printf("%ld\n", displayarr[i]);
-      
-      printf("\n\nlargest readlock bypass: shard=%d with %d %%\n", maxphiti, maxphitcount);
-      printf("average readlock bypass = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
-    }
-
+    
     //results - DCAentrycount
     {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);

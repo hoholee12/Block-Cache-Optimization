@@ -126,6 +126,8 @@ void LRUHandleTable::Resize() {
     return;
   }
 
+  //printf("Resize initiated: %d -> %d bits\n", length_bits_, length_bits_ + 1);
+
   uint32_t old_length = uint32_t{1} << length_bits_;
   int new_length_bits = length_bits_ + 1;
   std::unique_ptr<LRUHandle* []> new_list {
@@ -238,9 +240,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
     }
 
     elems_++;
-    if ((elems_ >> length_bits_) > 0) {  // elems_ >= length
-      // Since each cache entry is fairly large, we aim for a small
-      // average linked list length (<= 1).
+    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {
       Resize();
     }
 
@@ -411,7 +411,7 @@ void CBHTable::BuildHeap(int suggestedElems){
   // hashkeylist.size(), hashkeytemp.size());
 
   //get the least access timestamp for DCA
-  if(hashkeytemp.size() > 0){
+  if(!hashkeytemp.empty()){
     std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
     indcafreqmin = hashkeytemp.back()->indcafreq;
     std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
@@ -437,7 +437,6 @@ void CBHTable::LRU_GC(){
       DCA_evicted_list.push_back(min);
     }
   }
-
 }
 
 //only for evicting single element
@@ -994,7 +993,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       {
         //internal readlock
         e = cbhtable_.Lookup(key, hash);
-        totalhit[hashshard]++;
+        cbhtable_.totalhit++;
         if(e != nullptr){
           e->SetHit();
           e->indcafreq = cbhtable_.accessstamp++;
@@ -1010,8 +1009,8 @@ Cache::Handle* LRUCacheShard::Lookup(
           return reinterpret_cast<Cache::Handle*>(e);
         }
         else{
-          nohit[hashshard]++;
-          if((CBHTturnoff != 100)&&(nohit[hashshard] > Nsupple[hashshard])){
+          cbhtable_.nohit++;
+          if((CBHTturnoff != 100)&&(cbhtable_.nohit > Nsupple[hashshard])){
             CBHTState[hashshard] = 0;
           }
         }
@@ -1033,8 +1032,8 @@ Cache::Handle* LRUCacheShard::Lookup(
       e->indcafreq = cbhtable_.accessstamp++;
 
       //identify DCA hitrate without actually using DCA
-      virtual_totalhit[hashshard]++;
-      if(!e->indca) virtual_nohit[hashshard]++;
+      cbhtable_.virtual_totalhit++;
+      if(!e->indca) cbhtable_.virtual_nohit++;
 
       assert(e->InCache());
       // The entry is in LRU since it's in hash and has no external references
@@ -1063,32 +1062,14 @@ Cache::Handle* LRUCacheShard::Lookup(
 
             LRUHandle* temp = e;
             //hitrate telemetry
-            int misscount = nohit[hashshard] + virtual_nohit[hashshard];
-            int totalcount = totalhit[hashshard] + virtual_totalhit[hashshard];
+            int misscount = cbhtable_.nohit + cbhtable_.virtual_nohit;
+            int totalcount = cbhtable_.totalhit + cbhtable_.virtual_totalhit;
             if(totalcount > 100){
               hitrate[hashshard] = 100 - (misscount * 100 / totalcount);
             }
             
             //get median from all of DCA shards
             copyAndSort();
-            //calculate next dca skip
-            //Nsupple[hashshard] = NLIMITtmp * skip_median / 100;
-           /*
-            //remove some entries from DCA when pinned usage is too high
-            while(((usage_ - lru_usage_) * 100 / capacity_) > DCAsizelimit){
-              LRUHandle* rete = cbhtable_.EvictFIFO();
-              if(rete == nullptr){
-                //no more to evict
-                break;
-              }
-              else{
-                //put it back in LRU Cache
-                LRU_Insert(rete);
-              }
-            }
-            */
-            //DCAskip_hit[hashshard] += hitrate;
-            //DCAskip_n[hashshard]++;
 
             //suggestion to build heap or not to reduce overhead
             if(DCAprefetch == true){
@@ -1145,11 +1126,11 @@ Cache::Handle* LRUCacheShard::Lookup(
               if(i > 0) called_refill++;
             }
             
-            nohit[hashshard] = 0;
-            totalhit[hashshard] = 0;
+            cbhtable_.nohit = 0;
+            cbhtable_.totalhit = 0;
             readlockbypass[hashshard] = 0;
-            virtual_nohit[hashshard] = 0;
-            virtual_totalhit[hashshard] = 0;
+            cbhtable_.virtual_nohit = 0;
+            cbhtable_.virtual_totalhit = 0;
             CBHTState[hashshard] = 1; //re-enable DCA
             DCAentrycount[hashshard] = cbhtable_.elems_;
           }
