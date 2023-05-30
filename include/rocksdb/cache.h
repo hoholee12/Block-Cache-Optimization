@@ -128,7 +128,6 @@ extern int CBHTturnoff;
 extern int DCAclear_rate;
 extern bool DCAprefetch;
 extern uint32_t DCAsizelimit;
-extern int CBHTbitlength;
 extern uint32_t threadcount;
 extern int tidincr;
 extern int skip_median;

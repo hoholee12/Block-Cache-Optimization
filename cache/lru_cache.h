@@ -336,6 +336,8 @@ class CBHTable {
   LRUHandle* EvictHeap();
   
   bool IsTableFull();
+
+  void Resize();
   
   /*
   for DCA fine-grained locking
@@ -348,6 +350,9 @@ class CBHTable {
   void afterWriteLock();
   void beforeReadLock(uint32_t& hash);
   void afterReadLock();
+  //simple writelock but all readers will be blocked regardless of hash
+  void beforeMasterLock();
+  void afterMasterLock();
 
   uint64_t indcafreqmin;
 
@@ -396,7 +401,8 @@ class CBHTable {
   uint32_t whash; //for write lock hash
   //std::unique_ptr<uint32_t[]> rlist_; //for read lock hash
   uint32_t* rlist_;
-  
+  bool masterlock;
+
   //DCA ref pool
   //std::unique_ptr<int[]> DCA_ref_pool; //[actual ref slots], [slot avail index]
   int* DCA_ref_pool;
@@ -405,11 +411,6 @@ class CBHTable {
   
   // Set from max_upper_hash_bits (see constructor)
   const int max_length_bits_;
-
-  // for findpointer mode
-  enum{FPlookup, FPinsert};
-
-  
 };
 
 // A single shard of sharded cache.

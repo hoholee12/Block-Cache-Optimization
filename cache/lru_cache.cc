@@ -151,21 +151,62 @@ void LRUHandleTable::Resize() {
 
 CBHTable::CBHTable(int max_upper_hash_bits)
     : elems_(0),
-      length_bits_(CBHTbitlength),
+      length_bits_(4),
       list_(new LRUHandle* [size_t{1} << length_bits_] {}),
       //rlist_(new uint32_t [threadcount] {}),
       //DCA_ref_pool(new int [((size_t{1} << length_bits_) * threadcount) + (size_t{1} << length_bits_)] {}),
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
         rlist_ = (uint32_t*)calloc(threadcount, sizeof(uint32_t));
-        DCA_ref_pool = (int*)calloc(((size_t{1} << CBHTbitlength) * threadcount)
-         + (size_t{1} << CBHTbitlength), sizeof(int));
+        DCA_ref_pool = (int*)calloc(((size_t{1} << max_length_bits_) * threadcount)
+         + (size_t{1} << max_length_bits_), sizeof(int));
         stampincr = 0;
-        availindex = (size_t{1} << length_bits_) * threadcount;
+        availindex = (size_t{1} << max_length_bits_) * threadcount;
       }
 
 CBHTable::~CBHTable() {
   //CBHT entries are linked to HT. dont free them here.
+}
+
+void CBHTable::Resize() {
+  if (length_bits_ >= max_length_bits_) {
+    // Due to reaching limit of hash information, if we made the table
+    // bigger, we would allocate more addresses but only the same
+    // number would be used.
+    return;
+  }
+  if (length_bits_ >= 31) {
+    // Avoid undefined behavior shifting uint32_t by 32
+    return;
+  }
+
+  //printf("DCA Resize initiated: %d -> %d bits\n", length_bits_, length_bits_ + 1);
+
+  uint32_t old_length = uint32_t{1} << length_bits_;
+  int new_length_bits = length_bits_ + 1;
+  std::unique_ptr<LRUHandle* []> new_list {
+    new LRUHandle* [size_t{1} << new_length_bits] {}
+  };
+
+  //this is where move starts
+  beforeMasterLock();
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < old_length; i++) {
+    LRUHandle* h = list_[i];
+    while (h != nullptr) {
+      LRUHandle* next = h->next_hash_cbht;
+      uint32_t hash = h->hash;
+      LRUHandle** ptr = &new_list[hash >> (32 - new_length_bits)];
+      h->next_hash_cbht = *ptr;
+      *ptr = h;
+      h = next;
+      count++;
+    }
+  }
+  assert(elems_ == count);
+  list_ = std::move(new_list);
+  length_bits_ = new_length_bits;
+  afterMasterLock();
 }
 
 LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
@@ -177,7 +218,7 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
     //there is a slight chance that the entry may have been de-DCAed.
     int stamptmp = ptr->DCAstamp;
     int stamptmp_tc = stamptmp * threadcount;
-    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << max_length_bits_)){
       DCA_ref_pool[stamptmp_tc + getmytid()]++;
     }
   }
@@ -196,8 +237,15 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
       return h;
     }
 
+    elems_++;
+    if ((elems_ >> length_bits_) > 0) {  // elems_ >= length
+      // Since each cache entry is fairly large, we aim for a small
+      // average linked list length (<= 1).
+      Resize();
+    }
+
     //start eviction if table is half full    
-    if (elems_ + 1 > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
+    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
       //remove one entry from DCA
       rete = EvictHeap();
       if(rete == nullptr){
@@ -236,10 +284,10 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   uint32_t stamptmp = 0;
   uint32_t looped = 0;
   uint32_t i = stampincr;
-  while(looped < (size_t{1} << length_bits_)){
+  while(looped < (size_t{1} << max_length_bits_)){
     i++;
     looped++;
-    if(i >= (size_t{1} << length_bits_)){
+    if(i >= (size_t{1} << max_length_bits_)){
       i = 0;
     }
     if(DCA_ref_pool[availindex + i] == 0){
@@ -253,7 +301,6 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   //if(Shard(h->hash) == 4) printf("looped: %d\ti: %d\n", looped, i);
   h->DCAstamp = stamptmp;
   h->DCAstamp_tc = stamptmp * threadcount;
-
 
   /*
   may return:
@@ -274,7 +321,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
     int stamptmp = result->DCAstamp;
     int stamptmp_tc = stamptmp * threadcount;
     //sanity check
-    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
+    if(stamptmp > -1 && stamptmp < (int)(size_t{1} << max_length_bits_)){
       int refstmp = 0;
       for(uint32_t i = 0; i < threadcount; i++){
         refstmp += DCA_ref_pool[stamptmp_tc + i];
@@ -313,7 +360,7 @@ void CBHTable::Unref(LRUHandle *e){
   //there is a slight chance that the entry may have been de-DCAed.
   int stamptmp = e->DCAstamp;
   int stamptmp_tc = stamptmp * threadcount;
-  if(stamptmp > -1 && stamptmp < (int)(size_t{1} << length_bits_)){
+  if(stamptmp > -1 && stamptmp < (int)(size_t{1} << max_length_bits_)){
     DCA_ref_pool[stamptmp_tc + getmytid()]--;
   }
 }
@@ -360,11 +407,15 @@ void CBHTable::BuildHeap(int suggestedElems){
       iter = hashkeylist.erase(iter);
     }
   }
+  //printf("buildheap initiated: %lu elements in queue %lu elements in vect\n",
+  // hashkeylist.size(), hashkeytemp.size());
 
   //get the least access timestamp for DCA
-  std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
-  indcafreqmin = hashkeytemp.back()->indcafreq;
-  std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+  if(hashkeytemp.size() > 0){
+    std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+    indcafreqmin = hashkeytemp.back()->indcafreq;
+    std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+  }
 }
 
 //loose LRU garbage collector for DCA
@@ -474,7 +525,7 @@ void CBHTable::afterWriteLock(){
 }
 
 void CBHTable::beforeReadLock(uint32_t& hash){
-  if(whash == hash || !DCAwritebypass){
+  if(whash == hash || !DCAwritebypass || masterlock){
     ReadLock rl(&htl);  //only for stopping when writelock
   }
   rlist_[getmytid()] = hash;
@@ -482,6 +533,28 @@ void CBHTable::beforeReadLock(uint32_t& hash){
 
 void CBHTable::afterReadLock(){
   rlist_[getmytid()] = 0;
+}
+
+void CBHTable::beforeMasterLock(){
+  while(1){
+    uint32_t i = 0;
+    for(; i < threadcount; i++){
+      if(rlist_[i] != 0){
+        break;
+      }
+    }
+    //none of the readers use this hash
+    if(i == threadcount){
+      htl.WriteLock();
+      masterlock = true;
+      return;
+    }
+  }
+}
+
+void CBHTable::afterMasterLock(){
+  masterlock = false;
+  htl.WriteUnlock();
 }
 
 LRUCacheShard::LRUCacheShard(
