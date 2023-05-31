@@ -70,6 +70,8 @@ DEFINE_uint32(nlimit, 20000, "DCA N_LIMIT");
 
 DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capacity");
 
+DEFINE_uint32(dcaclear_rate, 50, "DCA Clear rate (default 50%)");
+
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
 DEFINE_bool(dcawritebypass, true, "DCA Write Bypass on/off");
@@ -412,6 +414,7 @@ class CacheBench {
     DCAsizelimit = FLAGS_dcasizelimit;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAprefetch = FLAGS_dcaprefetch;
+    DCAclear_rate = FLAGS_dcaclear_rate;
     DCAwritebypass = FLAGS_dcawritebypass;
     DCAhardlimit = FLAGS_dcahardlimit;
 
@@ -792,7 +795,7 @@ class CacheBench {
       printf("\n\nlargest NLIMIT: shard=%d with %d %%\n", maxphiti, maxphitcount);
       printf("average NLIMIT = %ld %%\n", phittotal / (uint64_t)pow(2, numshardbits));
     }
-
+    
     //results - DCAentrycount
     {
       memset(displayarr, 0, sizeof(uint64_t)*SHARDLIMIT);

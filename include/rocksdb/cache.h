@@ -119,6 +119,7 @@ extern int compaction_lasthit[SHARDCOUNT * PADDING];
 extern bool compactioninprogress;
 extern int NDEFAULT;
 extern int CBHTturnoff;
+extern int DCAclear_rate;
 extern bool DCAprefetch;
 extern uint32_t DCAsizelimit;
 extern uint32_t threadcount;
