@@ -377,6 +377,7 @@ class CBHTable {
   int virtual_totalhit = 0;
   
   //for eviction
+  int dcaevictlim;
   std::deque<std::pair<Slice, uint32_t>> hashkeylist;
   std::vector<LRUHandle*> hashkeytemp;
 

@@ -158,6 +158,7 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       //rlist_(new uint32_t [threadcount] {}),
       //DCA_ref_pool(new int [((size_t{1} << length_bits_) * threadcount) + (size_t{1} << length_bits_)] {}),
       max_length_bits_(max_upper_hash_bits) {
+        dcaevictlim = DCAsizelimit;
 
         //for DCA ref pool
         rlist_ = (uint32_t*)calloc(threadcount, sizeof(uint32_t));
@@ -255,7 +256,6 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse, bool forceinsert) {
       if(rete == nullptr){
         //failed
         insertblocked++;
-        afterWriteLock();
         return h;
       }
     }
@@ -1081,8 +1081,9 @@ Cache::Handle* LRUCacheShard::Lookup(
               cbhtable_.BuildHeap(1);
             }
 
-            if(DCAsizelimit > 0){
-              cbhtable_.LRU_GC();
+/*
+            if(DCAclear_rate > 0){
+              //cbhtable_.LRU_GC();
               for(auto elem : cbhtable_.DCA_evicted_list){
                 if(elem->refs == 0){
                   LRU_Insert(elem);
@@ -1091,7 +1092,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               evictmiddlecount[hashshard] += cbhtable_.DCA_evicted_list.size();
               cbhtable_.DCA_evicted_list.clear();
             }
-
+*/
             LRUHandle* rete = cbhtable_.Insert(temp);
             if(rete != nullptr && rete != temp){
               if(rete->refs == 0){
