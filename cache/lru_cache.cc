@@ -182,15 +182,13 @@ void CBHTable::Resize() {
     return;
   }
 
-  //printf("DCA Resize initiated: %d -> %d bits\n", length_bits_, length_bits_ + 1);
-
+  //printf("tid: %d DCA Resize initiated: %d -> %d bits\n", getmytid(), length_bits_, length_bits_ + 1);
   uint32_t old_length = uint32_t{1} << length_bits_;
   int new_length_bits = length_bits_ + 1;
   std::unique_ptr<LRUHandle* []> new_list {
     new LRUHandle* [size_t{1} << new_length_bits] {}
   };
 
-  //this is where move starts
   beforeMasterLock();
   uint32_t count = 0;
   for (uint32_t i = 0; i < old_length; i++) {
@@ -211,10 +209,10 @@ void CBHTable::Resize() {
   afterMasterLock();
 }
 
-LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
-  beforeReadLock(hash);
+LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash, bool insidemlock) {
+  if(!insidemlock) beforeReadLock(hash);
   LRUHandle* ptr = *FindPointer(key, hash);
-  afterReadLock();
+  if(!insidemlock) afterReadLock();
   if(ptr != nullptr){
     //since its not protected by write lock,
     //there is a slight chance that the entry may have been de-DCAed.
@@ -228,37 +226,40 @@ LRUHandle* CBHTable::Lookup(const Slice& key, uint32_t hash) {
 }
 
 //this replaces to new entry from old entry via same key, and returns old one?
-LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
+LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse, bool insidemlock) {
   LRUHandle* rete = nullptr;
 
+  
   //pre check if its a new element
-  if(Lookup(h->key(), h->hash) == nullptr){
+  if(Lookup(h->key(), h->hash, insidemlock) == nullptr){
     //dont insert if h is older than DCA
     if(h->indcafreq < indcafreqmin){
       insertblocked++;
       return h;
     }
 
-    elems_++;
-    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {
+    //fast resize(reduce crash)
+    if (elems_ + 10000 > (size_t{1} << (length_bits_ - DCAhardlimit))) {
       Resize();
     }
-
+    /*
     //start eviction if table is half full    
-    if (elems_ > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
+    if (elems_ + 1 > (size_t{1} << (length_bits_ - DCAhardlimit))) {  // elems_ >= length / 2
       //remove one entry from DCA
       rete = EvictHeap();
       if(rete == nullptr){
         //failed
         insertblocked++;
+        if(!insidemlock) afterWriteLock();
         return h;
       }
     }
+    */
   }
 
   //insert
   //before insert, hash lock
-  beforeWriteLock(h->hash);
+  if(!insidemlock) beforeWriteLock(h->hash);
   LRUHandle** ptr = FindPointer(h->key(), h->hash);
   LRUHandle* old = *ptr;
   h->next_hash_cbht = (old == nullptr ? nullptr : old->next_hash_cbht);
@@ -308,12 +309,12 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse) {
   -nullptr (h was inserted)
   -old entry (also must LRU_Insert this outside)
   */
-  afterWriteLock();
+  if(!insidemlock) afterWriteLock();
   return old;
 }
 
-LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
-  beforeWriteLock(hash);
+LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce, bool insidemlock) {
+  if(!insidemlock) beforeWriteLock(hash);
   LRUHandle** ptr = FindPointer(key, hash);
   LRUHandle* result = *ptr;
   if (result != nullptr) {
@@ -330,7 +331,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       //don't force. return nullptr if it is still referenced.
       if(dontforce){
         if(refstmp != 0){
-          afterWriteLock();
+          if(!insidemlock) afterWriteLock();
           return nullptr;
         }
       }
@@ -351,7 +352,7 @@ LRUHandle* CBHTable::Remove(const Slice& key, uint32_t hash, bool dontforce) {
       --elems_;
     }
   }
-  afterWriteLock();
+  if(!insidemlock) afterWriteLock();
   return result;
 }
 
@@ -396,7 +397,7 @@ void CBHTable::BuildHeap(int suggestedElems){
   //copy list to temp list, as well as cleanup list
   auto iter = hashkeylist.begin();
   while(iter != hashkeylist.end()){
-    e = Lookup(iter->first, iter->second);
+    e = Lookup(iter->first, iter->second, true);
     if(e != nullptr){
       hashkeytemp.push_back(e);
       std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
@@ -431,7 +432,7 @@ void CBHTable::LRU_GC(){
     std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
     min = hashkeytemp.back();
     hashkeytemp.pop_back();
-    result = Remove(min->key(), min->hash, true);
+    result = Remove(min->key(), min->hash, true, true);
     if(result != nullptr){  //remove successful
       evictedfromclear++;
       DCA_evicted_list.push_back(min);
@@ -975,7 +976,7 @@ Cache::Handle* LRUCacheShard::Lookup(
   LRUHandle* e = nullptr;
   {
 
-    /*
+/*
     //time to print out important stats
     time_t elapsed = (tstart.tv_sec - inittime) / 10;
     if(elapsed != prevtime){
@@ -983,8 +984,7 @@ Cache::Handle* LRUCacheShard::Lookup(
       printf("%ld seconds in, pinned_usage: %lld%%, lru_usage: %lld%%, total: %lld%%\n", elapsed, ((long long)usage_ - (long long)lru_usage_) * 100 / (long long)capacity_, (long long)lru_usage_ * 100 / (long long)capacity_, (long long)usage_ * 100 / (long long)capacity_);
     }
     //important stats end
-    */
-    
+  */  
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
     if(CBHTturnoff){
       cbhtable_.lookupcount++;
@@ -997,15 +997,14 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(e != nullptr){
           e->SetHit();
           e->indcafreq = cbhtable_.accessstamp++;
-
-          /*
+/*
           clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
           telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
           telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
           time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
           shardtotaltime[hashshard] += telapsedtotal;
           shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
-          */
+*/
           return reinterpret_cast<Cache::Handle*>(e);
         }
         else{
@@ -1058,6 +1057,7 @@ Cache::Handle* LRUCacheShard::Lookup(
         if(N[hashshard] > NLIMITtmp){
           MutexLock m(&dcamaster_); //this is to make sure DCA update doesnt happen repeatedly
           if(N[hashshard] > NLIMITtmp){
+            
             N[hashshard] = 0;
 
             LRUHandle* temp = e;
@@ -1079,7 +1079,7 @@ Cache::Handle* LRUCacheShard::Lookup(
               cbhtable_.BuildHeap(1);
             }
 
-
+/*
             if(DCAclear_rate > 0){
               cbhtable_.LRU_GC();
               for(auto elem : cbhtable_.DCA_evicted_list){
@@ -1090,8 +1090,8 @@ Cache::Handle* LRUCacheShard::Lookup(
               evictmiddlecount[hashshard] += cbhtable_.DCA_evicted_list.size();
               cbhtable_.DCA_evicted_list.clear();
             }
-
-            LRUHandle* rete = cbhtable_.Insert(temp);
+*/
+            LRUHandle* rete = cbhtable_.Insert(temp, false, true);
             if(rete != nullptr && rete != temp){
               if(rete->refs == 0){
                 LRU_Insert(rete);
@@ -1115,7 +1115,7 @@ Cache::Handle* LRUCacheShard::Lookup(
                 i++;
                 temp2 = temp->prev;
                 LRU_Remove(temp); //keep all dca entries out of lru
-                rete = cbhtable_.Insert(temp, true); //prefetched entries shall be evicted first
+                rete = cbhtable_.Insert(temp, true, true); //prefetched entries shall be evicted first
                 if(rete != nullptr && rete != temp){
                   if(rete->refs == 0){
                     LRU_Insert(rete);
@@ -1133,6 +1133,7 @@ Cache::Handle* LRUCacheShard::Lookup(
             cbhtable_.virtual_totalhit = 0;
             CBHTState[hashshard] = 1; //re-enable DCA
             DCAentrycount[hashshard] = cbhtable_.elems_;
+
           }
         }
       }

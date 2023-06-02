@@ -19,15 +19,17 @@ shardbit=4
 threads=32
 constant=0.25
 
-for const in 0.0 0.25 0.50 0.75 1.0; do
+for const in 0.0; do
     ./memcheck.sh > results_cache/2023_throughput_skew"$const"_memusage.txt &
     ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=50 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew"$const".txt
     sleep 5
 done
 
-for percent in 90 80 70 60 50; do
+for percent in 90; do
     ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --dcaclear_rate=50 --enableshardfix=false --skewed=true --zipf_const=0.25 --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=$percent --insert_percent=$((100-$percent)) --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_insertmix_lookup$percent.txt
 done
+
+exit
 
 
 for const in 0.0 0.25 0.50 0.75 1.0; do

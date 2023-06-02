@@ -306,9 +306,9 @@ class CBHTable {
   explicit CBHTable(int max_upper_hash_bits);
   ~CBHTable();
 
-  LRUHandle* Lookup(const Slice& key, uint32_t hash);
-  LRUHandle* Insert(LRUHandle* h, bool reverse = false);
-  LRUHandle* Remove(const Slice& key, uint32_t hash, bool dontforce = false);
+  LRUHandle* Lookup(const Slice& key, uint32_t hash, bool insidemlock = false);
+  LRUHandle* Insert(LRUHandle* h, bool reverse = false, bool insidemlock = false);
+  LRUHandle* Remove(const Slice& key, uint32_t hash, bool dontforce = false, bool insidemlock = false);
   void Unref(LRUHandle* e); //for DCA_ref_pool
 
   template <typename T>
