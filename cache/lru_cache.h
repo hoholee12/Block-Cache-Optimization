@@ -332,7 +332,7 @@ class CBHTable {
   LRUHandle* EvictFIFO();
   void BuildHeap(int); // frequency is same as DCA Update
   LRUHandle* LeastRecentlyAccessedElem();
-  void LRU_GC();
+  void LRU_GC(uint64_t lrutime);
   LRUHandle* EvictHeap();
   
   bool IsTableFull();

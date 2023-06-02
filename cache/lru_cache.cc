@@ -239,7 +239,7 @@ LRUHandle* CBHTable::Insert(LRUHandle* h, bool reverse, bool insidemlock) {
     }
 
     //fast resize(reduce crash)
-    if (elems_ + 10000 > (size_t{1} << (length_bits_ - DCAhardlimit))) {
+    if (elems_ + NDEFAULT > (size_t{1} << (length_bits_ - DCAhardlimit))) {
       Resize();
     }
     /*
@@ -420,17 +420,22 @@ void CBHTable::BuildHeap(int suggestedElems){
 }
 
 //loose LRU garbage collector for DCA
-void CBHTable::LRU_GC(){
+void CBHTable::LRU_GC(uint64_t lrutime){
   LRUHandle* min = nullptr;
   LRUHandle* result = nullptr;
   //BuildHeap(); //already done outside
 
   //LRU based eviction
-  uint64_t hardlimit = (size_t{1} << (length_bits_ - DCAhardlimit)) * DCAclear_rate / 100;
+  uint64_t hardlimit = (size_t{1} << (length_bits_ - DCAhardlimit)) * DCAsizelimit / 100;
 
   while(!hashkeytemp.empty() && hardlimit-- > 0){ 
     std::pop_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
     min = hashkeytemp.back();
+    //lru is older than dca. stop evicting.
+    if(min->indcafreq > lrutime){
+      std::push_heap(hashkeytemp.begin(), hashkeytemp.end(), greater());
+      return;
+    }
     hashkeytemp.pop_back();
     result = Remove(min->key(), min->hash, true, true);
     if(result != nullptr){  //remove successful
@@ -1079,18 +1084,12 @@ Cache::Handle* LRUCacheShard::Lookup(
               cbhtable_.BuildHeap(1);
             }
 
-/*
-            if(DCAclear_rate > 0){
-              cbhtable_.LRU_GC();
-              for(auto elem : cbhtable_.DCA_evicted_list){
-                if(elem->refs == 0){
-                  LRU_Insert(elem);
-                }
-              }
-              evictmiddlecount[hashshard] += cbhtable_.DCA_evicted_list.size();
-              cbhtable_.DCA_evicted_list.clear();
+            //LRU GC
+            if(DCAsizelimit > 0){
+              uint64_t lrutime = lru_.prev->indcafreq;
+              cbhtable_.LRU_GC(lrutime);
             }
-*/
+
             LRUHandle* rete = cbhtable_.Insert(temp, false, true);
             if(rete != nullptr && rete != temp){
               if(rete->refs == 0){
@@ -1125,6 +1124,15 @@ Cache::Handle* LRUCacheShard::Lookup(
               }
               if(i > 0) called_refill++;
             }
+
+            //LRU GC CLEANUP
+            for(auto elem : cbhtable_.DCA_evicted_list){
+              if(elem->refs == 0){
+                LRU_Insert(elem);
+              }
+            }
+            evictmiddlecount[hashshard] += cbhtable_.DCA_evicted_list.size();
+            cbhtable_.DCA_evicted_list.clear();
             
             cbhtable_.nohit = 0;
             cbhtable_.totalhit = 0;

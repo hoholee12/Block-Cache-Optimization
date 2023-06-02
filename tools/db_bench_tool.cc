@@ -407,8 +407,6 @@ DEFINE_uint32(dcasizelimit, 50, "DCA size limit percentage based on total capaci
 
 DEFINE_uint32(cbhtturnoff, 20, "DCA TURN OFF Miss Percentage");
 
-DEFINE_uint32(dcaclear_rate, 50, "DCA Clear rate (default 50%)");
-
 DEFINE_bool(dcaprefetch, true, "DCA Prefetch on/off");
 
 DEFINE_bool(dcawritebypass, true, "DCA Write Bypass on/off");
@@ -3451,7 +3449,6 @@ class Benchmark {
     DCAsizelimit = FLAGS_dcasizelimit;
     CBHTturnoff = FLAGS_cbhtturnoff; //hitrate
     DCAprefetch = FLAGS_dcaprefetch;
-    DCAclear_rate = FLAGS_dcaclear_rate;
     DCAwritebypass = FLAGS_dcawritebypass;
     DCAhardlimit = FLAGS_dcahardlimit;
     
