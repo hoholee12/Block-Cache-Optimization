@@ -19,6 +19,10 @@ shardbit=4
 threads=32
 constant=0.25
 
+name=resizetest
+./cache_bench --nlimit=10000 --dcasizelimit=50 --enableshardfix=false --skewed=true --zipf_const=$constant --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/"$name".txt
+exit
+
 for const in 0.0 0.25 0.50 0.75 1.0; do
     ./memcheck.sh > results_cache/2023_throughput_skew"$const"_memusage.txt &
     ./cache_bench --nlimit=10000 --dcasizelimit=50 --cbhtturnoff=100 --enableshardfix=false --skewed=true --zipf_const=$const --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/2023_throughput_skew"$const".txt
@@ -43,11 +47,7 @@ done
 exit
 
 
-name=resizetest
-./memcheck.sh > results_cache/"$name"_memusage.txt &
-./cache_bench --nlimit=10000 --dcasizelimit=50 --enableshardfix=false --skewed=true --zipf_const=$constant --resident_ratio=1 --value_bytes=4096 --cache_size=$((2*1024*1024*1024)) --threads=$threads --lookup_percent=100 --insert_percent=0 --erase_percent=0 --lookup_insert_percent=0 --num_shard_bits=$shardbit --ops_per_thread=$(($ops/$threads)) > results_cache/"$name".txt
-sleep 5
-exit
+
 
 for const in 0.0 0.25 0.5 0.75 1.0; do
     for shard in 0 1 2 3 4 5; do

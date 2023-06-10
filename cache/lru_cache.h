@@ -407,11 +407,11 @@ class CBHTable {
   if hash is different, it won't have problems accessing the hashtable
   that is being modified.
   */
-  port::RWMutex htl;    //wait for write lock
-  uint32_t whash; //for write lock hash
+  alignas(PADDING) port::RWMutex htl;    //wait for write lock
+  alignas(PADDING) uint32_t whash; //for write lock hash
   //std::unique_ptr<uint32_t[]> rlist_; //for read lock hash
-  uint32_t* rlist_;
-  bool masterlock;
+  alignas(PADDING) uint32_t* rlist_;
+  alignas(PADDING) bool masterlock;
 
   //DCA ref pool
   //std::unique_ptr<int[]> DCA_ref_pool; //[actual ref slots], [slot avail index]

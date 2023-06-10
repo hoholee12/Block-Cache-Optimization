@@ -159,7 +159,7 @@ CBHTable::CBHTable(int max_upper_hash_bits)
       //DCA_ref_pool(new int [((size_t{1} << length_bits_) * threadcount) + (size_t{1} << length_bits_)] {}),
       max_length_bits_(max_upper_hash_bits) {
         //for DCA ref pool
-        rlist_ = (uint32_t*)calloc(threadcount, sizeof(uint32_t));
+        rlist_ = (uint32_t*)calloc(threadcount * PADDING, sizeof(uint32_t));
         DCA_ref_pool = (int*)calloc(((size_t{1} << max_length_bits_) * threadcount)
          + (size_t{1} << max_length_bits_), sizeof(int));
         stampincr = 0;
@@ -182,6 +182,7 @@ void CBHTable::Resize() {
     return;
   }
 
+  resizecount++;
   //printf("tid: %d DCA Resize initiated: %d -> %d bits\n", getmytid(), length_bits_, length_bits_ + 1);
   uint32_t old_length = uint32_t{1} << length_bits_;
   int new_length_bits = length_bits_ + 1;
@@ -507,18 +508,32 @@ bool CBHTable::IsTableFull(){
   else return false;
 }
 
+void CBHTable::beforeReadLock(uint32_t& hash){
+  if(whash == hash || !DCAwritebypass || masterlock){
+    ReadLock rl(&htl);  //only for stopping when writelock
+  }
+  rlist_[getmytid() * PADDING] = hash;
+}
+
+void CBHTable::afterReadLock(){
+  rlist_[getmytid() * PADDING] = 0;
+}
+
 void CBHTable::beforeWriteLock(uint32_t& hash){
+  //lock before checking reader array
+  whash = hash;
+  htl.WriteLock();
+
   while(1){
     uint32_t i = 0;
     for(; i < threadcount; i++){
-      if(rlist_[i] == hash){
+      if(rlist_[i * PADDING] == hash){
         break;
       }
     }
-    //none of the readers use this hash
+
     if(i == threadcount){
-      htl.WriteLock();
-      whash = hash;
+      //continue writer thread when everything is fine
       return;
     }
   }
@@ -529,29 +544,21 @@ void CBHTable::afterWriteLock(){
   htl.WriteUnlock();
 }
 
-void CBHTable::beforeReadLock(uint32_t& hash){
-  if(whash == hash || !DCAwritebypass || masterlock){
-    ReadLock rl(&htl);  //only for stopping when writelock
-  }
-  rlist_[getmytid()] = hash;
-}
-
-void CBHTable::afterReadLock(){
-  rlist_[getmytid()] = 0;
-}
-
 void CBHTable::beforeMasterLock(){
+  //lock before checking reader array
+  masterlock = true;
+  htl.WriteLock();
+
   while(1){
     uint32_t i = 0;
     for(; i < threadcount; i++){
-      if(rlist_[i] != 0){
+      if(rlist_[i * PADDING] != 0){
         break;
       }
     }
-    //none of the readers use this hash
+
     if(i == threadcount){
-      htl.WriteLock();
-      masterlock = true;
+      //continue writer thread when everything is fine
       return;
     }
   }
@@ -983,13 +990,15 @@ Cache::Handle* LRUCacheShard::Lookup(
 
 /*
     //time to print out important stats
-    time_t elapsed = (tstart.tv_sec - inittime) / 10;
+    time_t elapsed = (tstart.tv_sec - inittime) / 40;
     if(elapsed != prevtime){
       prevtime = elapsed;
-      printf("%ld seconds in, pinned_usage: %lld%%, lru_usage: %lld%%, total: %lld%%\n", elapsed, ((long long)usage_ - (long long)lru_usage_) * 100 / (long long)capacity_, (long long)lru_usage_ * 100 / (long long)capacity_, (long long)usage_ * 100 / (long long)capacity_);
+      //printf("%ld seconds in, pinned_usage: %lld%%, lru_usage: %lld%%, total: %lld%%\n", elapsed, ((long long)usage_ - (long long)lru_usage_) * 100 / (long long)capacity_, (long long)lru_usage_ * 100 / (long long)capacity_, (long long)usage_ * 100 / (long long)capacity_);
+      printf("%d\n", resizecount);
+      resizecount = 0;
     }
     //important stats end
-  */  
+  */
     //if turnoff is 0, always disable CBHT. if 100, always have it enabled
     if(CBHTturnoff){
       cbhtable_.lookupcount++;
@@ -1202,14 +1211,14 @@ Cache::Handle* LRUCacheShard::Lookup(
       }
     }
   }
-  /*
+/*
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tend);
   telapsed.tv_sec += (tend.tv_sec - tstart.tv_sec);
   telapsed.tv_nsec += (tend.tv_nsec - tstart.tv_nsec);
   time_t telapsedtotal = telapsed.tv_sec * 1000000000 + telapsed.tv_nsec;
   shardtotaltime[hashshard] += telapsedtotal;
   shardlasttime[hashshard] = tend.tv_sec * 1000000000 + tend.tv_nsec;
-  */
+*/
   return reinterpret_cast<Cache::Handle*>(e);
 }
 

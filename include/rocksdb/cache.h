@@ -61,7 +61,7 @@ class RWMutex_tmp {
 };
 
 #define SHARDCOUNT 256
-#define PADDING 64
+#define PADDING 16
 
 //////////////////
 // benchmark stuff
@@ -99,8 +99,7 @@ extern int freecount_insertitem;
 extern int freecount_secondarycache;
 extern int freecount_release;
 extern int freecount_erase;
-extern uint64_t maxchain;
-extern uint64_t fullchain;
+extern int resizecount;
 //////////////////
 
 //////////////////////////////

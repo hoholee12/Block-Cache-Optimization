@@ -54,8 +54,7 @@ alignas(PADDING) int freecount_insertitem = 0;
 alignas(PADDING) int freecount_secondarycache = 0;
 alignas(PADDING) int freecount_release = 0;
 alignas(PADDING) int freecount_erase = 0;
-alignas(PADDING) uint64_t maxchain = 0;
-alignas(PADDING) uint64_t fullchain = 0;
+alignas(PADDING) int resizecount = 0;
 //////////////////
 
 //////////////////////////////

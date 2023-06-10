@@ -551,8 +551,6 @@ class CacheBench {
 
     printf("\n%s", stats_report.c_str());
 
-    printf("\n\n fullchain: %lu, maxchain: %lu\n\n", fullchain, maxchain);
-
     printf("\n\n how much is DCA update called: %d\n\n", called + called_refill);
 
     printf("\n\n count DCA update self/prefetch from lru: %d/%d\n\n", called, called_refill);
